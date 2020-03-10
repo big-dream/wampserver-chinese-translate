@@ -1,0 +1,55 @@
+<?php
+
+// translated by ZDYX <zhangduyixiong@gmail.com>
+
+$w_allServicesRunning = '所有服务正常运行中';
+$w_oneServiceRunning = '%n / %t 个服务正在运行';
+$w_allServicesStopped = '%t 个服务都没有运行';
+
+$w_serverOffline = '服务器离线';
+$w_serverOnline = '服务器在线';
+
+$w_about = '关于(&A)...';
+$w_helpFile = '帮助文件';
+$w_help = '帮助文件';
+$w_exit = '退出';
+
+$w_localhost = 'Localhost';
+$w_phpmyadmin = 'phpMyAdmin';
+$w_sqlitemanager = 'SQLiteManager';
+$w_wwwDirectory = 'www 目录';
+$w_logFiles = '日志文件';
+$w_configFiles = '配置文件';
+$w_apacheModules = 'Apache 模块';
+$w_phpSettings = 'PHP 设置';
+$w_aliasDirectories = 'Alias 目录';
+$w_services = '服务';
+$w_apache = 'Apache';
+$w_mysql = 'MySQL';
+$w_startServices = '启动所有服务';
+$w_stopServices = '停止所有服务';
+$w_restartServices = '重新启动所有服务';
+$w_putOnline = '切换到在线状态';
+$w_putOffline = '切换到离线状态';
+
+$w_apacheErrorLog = 'Apache 错误日志';
+$w_apacheAccessLog = 'Apache 访问日志';
+$w_phpLog = 'PHP 错误日志';
+$w_mysqlLog = 'MySQL 日志';
+$w_addAlias = '添加一个 Alias';
+$w_refresh = '刷新';
+$w_phpExtensions = 'PHP 扩展';
+$w_addExtension = '添加扩展';
+
+$w_startResume = '启动/继续服务(&S)';
+$w_pauseService = '暂停服务(&P)';
+$w_stopService = '停止服务(&T)';
+$w_restartService = '重新启动服务(&R)';
+$w_testPort80 = '测试 80 端口';
+$w_installService = '安装服务(&I)';
+$w_removeService = '卸载服务(&R)';
+$w_mysqlConsole = 'MySQL 控制台';
+
+$w_language = '语言';
+
+?>
