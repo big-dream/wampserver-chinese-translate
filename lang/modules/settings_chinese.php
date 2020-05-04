@@ -17,25 +17,26 @@
 // 3.2.0 $w_verifySymlink  - $w_settings['NotVerifyHosts']
 
 // Projects sub-menu
-$w_projectsSubMenu = 'Your projects';
-// VirtualHosts sub-menu
-$w_virtualHostsSubMenu = 'Your VirtualHosts';
-$w_add_VirtualHost = 'VirtualHost Management';
-$w_aliasSubMenu = 'Your Aliases';
-$w_portUsed = 'Port used by Apache: ';
-$w_portUsedMysql = 'Port used by MySQL: ';
-$w_portUsedMaria = 'Port used by MariaDB : ';
-$w_testPortUsed = 'Test port used: ';
-$w_portForApache = 'Port for Apache';
-$w_listenForApache = 'Listen Port to add to Apache';
-$w_portForMysql = 'Port for MySQL';
-$w_testPortMysql = 'Test port 3306';
-$w_testPortMysqlUsed = 'Test MySQL port used: ';
-$w_testPortMariaUsed = 'Test MariaDB port used: ';
-$w_enterPort = 'Enter the desired port number';
+$w_projectsSubMenu = '你的项目';
+// VirtualHosts sub-menu	// VirtualHosts sub-menu
+$w_virtualHostsSubMenu = 'Your VirtualHosts';	$w_virtualHostsSubMenu = '你的虚拟主机';
+$w_add_VirtualHost = 'VirtualHost Management';	$w_add_VirtualHost = '虚拟主机管理';
+$w_aliasSubMenu = 'Your Aliases';	$w_aliasSubMenu = '你的别名';
+$w_portUsed = 'Port used by Apache: ';	$w_portUsed = 'Apache使用端口: ';
+$w_portUsedMysql = 'Port used by MySQL: ';	$w_portUsedMysql = 'MySQL使用端口: ';
+$w_portUsedMaria = 'Port used by MariaDB : ';	$w_portUsedMaria = 'MariaDB使用端口: ';
+$w_testPortUsed = 'Test port used: ';	$w_testPortUsed = '测试端口是否被使用: ';
+$w_portForApache = 'Port for Apache';	$w_portForApache = 'Apache使用端口';
+$w_listenForApache = 'Listen Port to add to Apache';	$w_listenForApache = '添加Apache新端口监听';
+$w_portForMysql = 'Port for MySQL';	$w_portForMysql = 'MySQL端口';
+$w_testPortMysql = 'Test port 3306';	$w_testPortMysql = '测试3306端口';
+$w_testPortMysqlUsed = 'Test MySQL port used: ';	$w_testPortMysqlUsed = 'Test MySQL port used: ';
+$w_testPortMariaUsed = 'Test MariaDB port used: ';	$w_testPortMariaUsed = 'Test MariaDB port used: ';
+$w_enterPort = 'Enter the desired port number';	$w_enterPort = 'Enter the desired port number';
 
-// Right-click Settings
-$w_wampSettings = 'Wamp Settings';
+
+// Right-click Settings	// Right-click Settings
+$w_wampSettings = 'Wamp Settings';	$w_wampSettings = 'Wamp设置';
 $w_settings = array(
 	'urlAddLocalhost' => 'Add localhost in url',
 	'VirtualHostSubMenu' => 'VirtualHosts sub-menu',
