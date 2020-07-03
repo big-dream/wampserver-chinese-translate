@@ -1,6 +1,6 @@
 <?php
 
-// translated by ZDYX <zhangduyixiong@gmail.com>
+// 原翻译： ZDYX <zhangduyixiong@gmail.com>
 
 
 
@@ -24,7 +24,7 @@ $w_services_msc = '服务管理';
 $w_doc = '文档';
 $w_cmdWindows = '命令行窗口';
 
-$w_localhost = 'Localhost';
+$w_localhost = 'localhost';
 $w_phpmyadmin = 'phpMyAdmin';
 $w_sqlitemanager = 'SQLiteManager';
 $w_wwwDirectory = 'www 目录';
@@ -32,7 +32,7 @@ $w_logFiles = '日志文件';
 $w_configFiles = '配置文件';
 $w_apacheModules = 'Apache 模块';
 $w_phpSettings = 'PHP 设置';
-$w_aliasDirectories = 'Alias 目录';
+$w_aliasDirectories = '别名(Alias)目录';
 $w_services = '服务';
 $w_apache = 'Apache';
 $w_apacheCommand = '在' . $w_cmdWindows . '打开' . $w_apache . ' bin目录';
@@ -54,10 +54,10 @@ $w_phpLog = 'PHP 错误日志';
 $w_phpDoc = 'PHP '.$w_doc;
 $w_mysqlLog = 'MySQL 日志';
 $w_mariadbLog = 'MariaDB 日志';
-$w_addAlias = '添加 Alias';
-$w_editAlias = '编辑 Alias';
+$w_addAlias = '添加别名(Alias)';
+$w_editAlias = '编辑别名(Alias)';
 $w_editHtaccess = '编辑 .htaccess';
-$w_deleteAlias = '删除 Alias';
+$w_deleteAlias = '删除别名(Alias)';
 $w_refresh = '刷新';
 $w_phpExtensions = 'PHP 扩展';
 $w_addExtension = '添加扩展';
@@ -69,13 +69,11 @@ $w_restartService = '重新启动服务(&R)';
 $w_testPort80 = '测试 80 端口';
 $w_installService = '安装服务(&I)';
 $w_removeService = '卸载服务(&R)';
-$w_mysqlConsole = 'MySQL 控制台';
+$w_mysqlConsole = $w_mysql . ' 控制台';
 $w_mysqlCommand =  '在' . $w_cmdWindows . '打开' . $w_mysql . 'bin目录';
 $w_mariadbConsole = 'MariaDB ' . $w_cmdWindows;
 $w_mariadbCommand = '在' . $w_cmdWindows . '打开MariaDB bin目录';
 
-$w_noDBMS = 'No Database System';
+$w_noDBMS = '无DBMS(数据库管理系统)';
 
 $w_language = '语言';
-
-?>
