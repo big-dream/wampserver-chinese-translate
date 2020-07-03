@@ -17,25 +17,25 @@
 // 3.2.0 $w_verifySymlink  - $w_settings['NotVerifyHosts']
 
 // Projects sub-menu
-$w_projectsSubMenu = 'ÏîÄ¿ÁÐ±í';
+$w_projectsSubMenu = 'ï¿½ï¿½Ä¿ï¿½Ð±ï¿½';
 // VirtualHosts sub-menu
-$w_virtualHostsSubMenu = 'ÐéÄâÖ÷»úÁÐ±í';
-$w_add_VirtualHost = 'ÐéÄâÖ÷»ú¹ÜÀí';
-$w_aliasSubMenu = '±ðÃûÁÐ±í';
-$w_portUsed = 'ApacheÊ¹ÓÃ¶Ë¿Ú: ';
-$w_portUsedMysql = 'MySQLÊ¹ÓÃ¶Ë¿Ú: ';
-$w_portUsedMaria = 'MariaDBÊ¹ÓÃ¶Ë¿Ú: ';
-$w_testPortUsed = '²âÊÔ¶Ë¿ÚÊÇ·ñ±»Ê¹ÓÃ: ';
-$w_portForApache = 'ApacheÊ¹ÓÃ¶Ë¿Ú';
-$w_listenForApache = 'Ìí¼ÓApacheÐÂ¶Ë¿Ú¼àÌý';
-$w_portForMysql = 'MySQL¶Ë¿Ú';
-$w_testPortMysql = '²âÊÔ3306¶Ë¿Ú';
+$w_virtualHostsSubMenu = 'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ð±ï¿½';
+$w_add_VirtualHost = 'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
+$w_aliasSubMenu = 'ï¿½ï¿½ï¿½ï¿½ï¿½Ð±ï¿½';
+$w_portUsed = 'ApacheÊ¹ï¿½Ã¶Ë¿ï¿½: ';
+$w_portUsedMysql = 'MySQLÊ¹ï¿½Ã¶Ë¿ï¿½: ';
+$w_portUsedMaria = 'MariaDBÊ¹ï¿½Ã¶Ë¿ï¿½: ';
+$w_testPortUsed = 'ï¿½ï¿½ï¿½Ô¶Ë¿ï¿½ï¿½Ç·ï¿½Ê¹ï¿½ï¿½: ';
+$w_portForApache = 'ApacheÊ¹ï¿½Ã¶Ë¿ï¿½';
+$w_listenForApache = 'ï¿½ï¿½ï¿½Apacheï¿½Â¶Ë¿Ú¼ï¿½ï¿½ï¿½';
+$w_portForMysql = 'MySQLï¿½Ë¿ï¿½';
+$w_testPortMysql = 'ï¿½ï¿½ï¿½ï¿½3306ï¿½Ë¿ï¿½';
 $w_testPortMysqlUsed = 'Test MySQL port used: ';
 $w_testPortMariaUsed = 'Test MariaDB port used: ';
 $w_enterPort = 'Enter the desired port number';
 
 // Right-click Settings
-$w_wampSettings = 'WampÉèÖÃ';
+$w_wampSettings = 'Wampï¿½ï¿½ï¿½ï¿½';
 $w_settings = array(
 	'urlAddLocalhost' => 'Add localhost in url',
 	'VirtualHostSubMenu' => 'VirtualHosts sub-menu',

@@ -1,6 +1,6 @@
 <?php
 // 3.2.0 - txtProjects
-//
+// 3.2.1 - defaultDBMS - HelpMySQLMariaDB
 
 defined('WAMPSERVER_ROOT') or define('WAMPSERVER_ROOT', str_replace('\\', '/', dirname(dirname(__DIR__))));
 
@@ -28,16 +28,16 @@ $langues = array(
 	'txtAlias' => '你的别名',
 	'txtNoAlias' => '尚无别名<br />如果想创建别名，可以在“' . WAMPSERVER_ROOT . '/alias”目录下创建',
 	'txtVhost' => '你的虚拟主机',
-	'txtServerName' => 'ServerName %s 存在语法错误，文件定位： %s',
-	'txtDocRoot' => '%s 域名使用了 %s 目录，此目录应该保留给 localhost',
-	'txtTLDdev' => '%s 域名使用了受WEB浏览器控制的顶级域（%s），推荐您使用其它顶级域，如：.test',
+    'txtServerName' => 'ServerName %s 存在语法错误，文件定位： %s',
+    'txtDocRoot' => '%s 域名使用了 %s 目录，此目录应该保留给 localhost',
+    'txtTLDdev' => '%s 域名使用了受WEB浏览器控制的顶级域（%s），推荐您使用其它顶级域，如：.test',
 	'txtServerNameIp' => 'IP %s for Servername %s is not valid in file %s',
 	'txtVhostNotClean' => 'The %s file has not been cleaned. There remain VirtualHost examples like: dummy-host.example.com',
 	'txtNoVhost' => 'No VirtualHost yet. Add one for each project in the file: wamp/bin/apache/apache%s/conf/extra/httpd-vhosts.conf',
 	'txtNoIncVhost' => 'Uncomment or add <i>Include conf/extra/httpd-vhosts.conf</i> in file wamp/bin/apache/apache%s/conf/httpd.conf',
 	'txtNoVhostFile' => '文件“ %s ”不存在',
 	'txtNoPath' => '路径%s不存在，定义自%s（文件：%s）',
-	'txtNotWritable' => '文件（%s）不可写',
+    'txtNotWritable' => '文件（%s）不可写',
 	'txtNbNotEqual' => 'The number of %s does not match the number of %s in %s file',
 	'txtAddVhost' => '添加一个虚拟主机',
 	'txtPortNumber' => 'Port number for %s has not correct value or is not the same in file %s',
@@ -47,5 +47,7 @@ $langues = array(
 	'portUsed' => 'Apache 端口：',
 	'mysqlportUsed' => 'MySQL 端口：',
 	'mariaportUsed' => 'MariaDB 端口：',
+    'defaultDBMS' => '默认DBMS',
+    'HelpMySQLMariaDB' => 'How to use MySQL and/or MariaDB?<br>What is a default DBMS?<br>How to change the default DBMS?<br>Go to the related help: Left-click Wampmanager icon -> Help -> MariaDB - MySQL',
 	'nolocalhost' => 'It\'s a bad idea to add localhost in the url of launching projects. It is best to define VirtualHost in<br />wamp/bin/apache/apache%s/conf/extra/httpd-vhosts.conf<br />file and not add localhost in the url.',
 	);
