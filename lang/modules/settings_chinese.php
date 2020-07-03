@@ -17,26 +17,25 @@
 // 3.2.0 $w_verifySymlink  - $w_settings['NotVerifyHosts']
 
 // Projects sub-menu
-$w_projectsSubMenu = 'ä½ çš„é¡¹ç›®';
-// VirtualHosts sub-menu	// VirtualHosts sub-menu
-$w_virtualHostsSubMenu = 'Your VirtualHosts';	$w_virtualHostsSubMenu = 'ä½ çš„è™šæ‹Ÿä¸»æœº';
-$w_add_VirtualHost = 'VirtualHost Management';	$w_add_VirtualHost = 'è™šæ‹Ÿä¸»æœºç®¡ç†';
-$w_aliasSubMenu = 'Your Aliases';	$w_aliasSubMenu = 'ä½ çš„åˆ«å';
-$w_portUsed = 'Port used by Apache: ';	$w_portUsed = 'Apacheä½¿ç”¨ç«¯å£: ';
-$w_portUsedMysql = 'Port used by MySQL: ';	$w_portUsedMysql = 'MySQLä½¿ç”¨ç«¯å£: ';
-$w_portUsedMaria = 'Port used by MariaDB : ';	$w_portUsedMaria = 'MariaDBä½¿ç”¨ç«¯å£: ';
-$w_testPortUsed = 'Test port used: ';	$w_testPortUsed = 'æµ‹è¯•ç«¯å£æ˜¯å¦è¢«ä½¿ç”¨: ';
-$w_portForApache = 'Port for Apache';	$w_portForApache = 'Apacheä½¿ç”¨ç«¯å£';
-$w_listenForApache = 'Listen Port to add to Apache';	$w_listenForApache = 'æ·»åŠ Apacheæ–°ç«¯å£ç›‘å¬';
-$w_portForMysql = 'Port for MySQL';	$w_portForMysql = 'MySQLç«¯å£';
-$w_testPortMysql = 'Test port 3306';	$w_testPortMysql = 'æµ‹è¯•3306ç«¯å£';
-$w_testPortMysqlUsed = 'Test MySQL port used: ';	$w_testPortMysqlUsed = 'Test MySQL port used: ';
-$w_testPortMariaUsed = 'Test MariaDB port used: ';	$w_testPortMariaUsed = 'Test MariaDB port used: ';
-$w_enterPort = 'Enter the desired port number';	$w_enterPort = 'Enter the desired port number';
+$w_projectsSubMenu = 'ÏîÄ¿ÁÐ±í';
+// VirtualHosts sub-menu
+$w_virtualHostsSubMenu = 'ÐéÄâÖ÷»úÁÐ±í';
+$w_add_VirtualHost = 'ÐéÄâÖ÷»ú¹ÜÀí';
+$w_aliasSubMenu = '±ðÃûÁÐ±í';
+$w_portUsed = 'ApacheÊ¹ÓÃ¶Ë¿Ú: ';
+$w_portUsedMysql = 'MySQLÊ¹ÓÃ¶Ë¿Ú: ';
+$w_portUsedMaria = 'MariaDBÊ¹ÓÃ¶Ë¿Ú: ';
+$w_testPortUsed = '²âÊÔ¶Ë¿ÚÊÇ·ñ±»Ê¹ÓÃ: ';
+$w_portForApache = 'ApacheÊ¹ÓÃ¶Ë¿Ú';
+$w_listenForApache = 'Ìí¼ÓApacheÐÂ¶Ë¿Ú¼àÌý';
+$w_portForMysql = 'MySQL¶Ë¿Ú';
+$w_testPortMysql = '²âÊÔ3306¶Ë¿Ú';
+$w_testPortMysqlUsed = 'Test MySQL port used: ';
+$w_testPortMariaUsed = 'Test MariaDB port used: ';
+$w_enterPort = 'Enter the desired port number';
 
-
-// Right-click Settings	// Right-click Settings
-$w_wampSettings = 'Wamp Settings';	$w_wampSettings = 'Wampè®¾ç½®';
+// Right-click Settings
+$w_wampSettings = 'WampÉèÖÃ';
 $w_settings = array(
 	'urlAddLocalhost' => 'Add localhost in url',
 	'VirtualHostSubMenu' => 'VirtualHosts sub-menu',
