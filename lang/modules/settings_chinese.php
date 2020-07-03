@@ -17,63 +17,63 @@
 // 3.2.0 $w_verifySymlink  - $w_settings['NotVerifyHosts']
 
 // Projects sub-menu
-$w_projectsSubMenu = 'ï¿½ï¿½Ä¿ï¿½Ð±ï¿½';
+$w_projectsSubMenu = 'ÏîÄ¿ÁÐ±í';
 // VirtualHosts sub-menu
-$w_virtualHostsSubMenu = 'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ð±ï¿½';
-$w_add_VirtualHost = 'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
-$w_aliasSubMenu = 'ï¿½ï¿½ï¿½ï¿½ï¿½Ð±ï¿½';
-$w_portUsed = 'ApacheÊ¹ï¿½Ã¶Ë¿ï¿½: ';
-$w_portUsedMysql = 'MySQLÊ¹ï¿½Ã¶Ë¿ï¿½: ';
-$w_portUsedMaria = 'MariaDBÊ¹ï¿½Ã¶Ë¿ï¿½: ';
-$w_testPortUsed = 'ï¿½ï¿½ï¿½Ô¶Ë¿ï¿½ï¿½Ç·ï¿½Ê¹ï¿½ï¿½: ';
-$w_portForApache = 'ApacheÊ¹ï¿½Ã¶Ë¿ï¿½';
-$w_listenForApache = 'ï¿½ï¿½ï¿½Apacheï¿½Â¶Ë¿Ú¼ï¿½ï¿½ï¿½';
-$w_portForMysql = 'MySQLï¿½Ë¿ï¿½';
-$w_testPortMysql = 'ï¿½ï¿½ï¿½ï¿½3306ï¿½Ë¿ï¿½';
+$w_virtualHostsSubMenu = 'ÐéÄâÖ÷»úÁÐ±í';
+$w_add_VirtualHost = 'ÐéÄâÖ÷»ú¹ÜÀí';
+$w_aliasSubMenu = '±ðÃû(Alias)ÁÐ±í';
+$w_portUsed = 'ApacheÊ¹ÓÃ¶Ë¿Ú: ';
+$w_portUsedMysql = 'MySQLÊ¹ÓÃ¶Ë¿Ú: ';
+$w_portUsedMaria = 'MariaDBÊ¹ÓÃ¶Ë¿Ú: ';
+$w_testPortUsed = '²âÊÔ¶Ë¿ÚÊÇ·ñ±»Ê¹ÓÃ: ';
+$w_portForApache = 'ApacheÊ¹ÓÃ¶Ë¿Ú';
+$w_listenForApache = 'Ìí¼ÓApacheÐÂ¶Ë¿Ú¼àÌý';
+$w_portForMysql = 'MySQL¶Ë¿Ú';
+$w_testPortMysql = '²âÊÔ3306¶Ë¿Ú';
 $w_testPortMysqlUsed = 'Test MySQL port used: ';
 $w_testPortMariaUsed = 'Test MariaDB port used: ';
 $w_enterPort = 'Enter the desired port number';
 
 // Right-click Settings
-$w_wampSettings = 'Wampï¿½ï¿½ï¿½ï¿½';
+$w_wampSettings = 'WampÉèÖÃ';
 $w_settings = array(
 	'urlAddLocalhost' => 'Add localhost in url',
-	'VirtualHostSubMenu' => 'VirtualHosts sub-menu',
-	'AliasSubmenu' => 'Alias sub-menu',
-	'ProjectSubMenu' => 'Projects sub-menu',
-	'HomepageAtStartup' => 'Wampserver Homepage at startup',
-	'MenuItemOnline' => 'Menu item: Online / Offline',
+	'VirtualHostSubMenu' => 'ÏÔÊ¾ÐéÄâÖ÷»ú²Ëµ¥',
+	'AliasSubmenu' => 'ÏÔÊ¾±ðÃû(Alias)²Ëµ¥',
+	'ProjectSubMenu' => 'ÏÔÊ¾ÏîÄ¿²Ëµ¥',
+	'HomepageAtStartup' => 'Æô¶¯Wampserver×Ô¶¯´ò¿ªlocalhost',
+	'MenuItemOnline' => 'ÏÔÊ¾ÇÐ»»ÔÚÏß/ÀëÏß²Ëµ¥',
 	'ItemServicesNames' => 'Tools menu item: Change services names',
-	'NotCheckVirtualHost' => 'Don\'t check VirtualHost definitions',
-	'NotCheckDuplicate' => 'Don\'t check duplicate ServerName',
+	'NotCheckVirtualHost' => '²»¼ì²éÐéÄâÖ÷»úÊÇ·ñÒÑ¶¨Òå',
+	'NotCheckDuplicate' => '²»¼ì²éServerNameÊÇ·ñÖØ¸´',
 	'VhostAllLocalIp' => 'Allow VirtualHost local IP\'s others than 127.*',
-	'SupportMySQL' => 'Allow MySQL',
-	'SupportMariaDB' => 'Allow MariaDB',
+	'SupportMySQL' => 'ÆôÓÃMySQL',
+	'SupportMariaDB' => 'ÆôÓÃMariaDB',
 	'DaredevilOptions' => 'Caution: Risky! Only for experts.',
-	'ShowphmyadMenu' => 'Show PhpMyAdmin in Menu',
-	'ShowadminerMenu' => 'Show Adminer in Menu',
+	'ShowphmyadMenu' => 'ÔÚ²Ëµ¥ÏÔÊ¾PhpMyAdmin',
+	'ShowadminerMenu' => 'ÔÚ²Ëµ¥ÏÔÊ¾Adminer',
 	'mariadbUseConsolePrompt' => 'Modify default Mariadb console prompt',
 	'mysqlUseConsolePrompt' => 'Modify default Mysql console prompt',
-	'NotVerifyPATH' => 'Do not verify PATH',
-	'NotVerifyTLD' => 'Do not verify TLD',
-	'NotVerifyHosts' => 'Do not verify hosts file',
-	'Cleaning' => 'Automatic Cleaning',
-	'AutoCleanLogs' => 'Clean log files automatically',
+	'NotVerifyPATH' => '²»¼ìÑéPATH',
+	'NotVerifyTLD' => '²»¼ìÑéTLD',
+	'NotVerifyHosts' => '²»¼ìÑéhostsÎÄ¼þ',
+	'Cleaning' => '×Ô¶¯ÇåÀí',
+	'AutoCleanLogs' => '×Ô¶¯ÇåÀíÈÕÖ¾ÎÄ¼þ',
 	'AutoCleanLogsMax' => 'Number of lines before cleaning',
 	'AutoCleanLogsMin' => 'Number of lines after cleaning',
-	'AutoCleanTmp' => 'Clean tmp directory automatically',
+	'AutoCleanTmp' => '×Ô¶¯ÇåÀíÁÙÊ±(tmp)Ä¿Â¼',
 	'AutoCleanTmpMax' => 'Number of files before cleaning',
-	'ForTestOnly' => 'Only for test purpose',
+	'ForTestOnly' => '½öÊÊÓÃÓÚ²âÊÔ»·¾³(¿ª·¢µ÷ÊÔ)',
 	'iniCommented' => 'Commented php.ini directives (; at the beginning of the line)',
-	'BackupHosts' => 'Backup hosts file',
+	'BackupHosts' => '±¸·ÝhostsÎÄ¼þ',
 );
 
 // Right-click Tools
-$w_wampTools = 'Tools';
-$w_restartDNS = 'Restart DNS';
-$w_testConf = 'Check httpd.conf syntax';
-$w_testServices = 'Check state of services';
-$w_changeServices = 'Change the names of services';
+$w_wampTools = '¹¤¾ß';
+$w_restartDNS = 'ÖØÆôDNS';
+$w_testConf = '¼ì²éhttpd.confÓï·¨';
+$w_testServices = '¼ì²é·þÎñ×´Ì¬';
+$w_changeServices = '¸ü¸Ä·þÎñÃû³Æ';
 $w_enterServiceNameApache = "Enter an index number for the Apache service. It will be added to 'wampapache'";
 $w_enterServiceNameMysql = "Enter an index number for the Mysql service. It will be added to 'wampmysqld'";
 $w_enterServiceNameAll = "Enter a number for the suffix of service names (empty to return original services)";
@@ -81,21 +81,21 @@ $w_compilerVersions = 'Check Compiler VC, compatibility and ini files';
 $w_UseAlternatePort = 'Use a port other than %s';
 $w_AddListenPort = 'Add a Listen port for Apache';
 $w_vhostConfig = 'Show VirtualHost examined by Apache';
-$w_apacheLoadedModules = 'Show Apache loaded Modules';
-$w_empty = 'Empty';
+$w_apacheLoadedModules = 'ÏÔÊ¾ApacheÒÑ¼ÓÔØÄ£¿é';
+$w_empty = 'Çå¿Õ';
 $w_misc = 'Miscellaneous';
-$w_emptyAll = 'Empty ALL';
+$w_emptyAll = 'Çå¿ÕËùÓÐ';
 $w_dnsorder = 'Check DNS search order';
-$w_deleteVer = 'Delete unused versions';
+$w_deleteVer = 'É¾³ýÎ´Ê¹ÓÃ°æ±¾';
 $w_deleteListenPort = 'Delete a Listen port Apache';
-$w_delete = 'Delete';
-$w_defaultDBMS = 'Default DBMS:';
-$w_invertDefault = 'Invert default DBMS ';
-$w_changeCLI = 'Change PHP CLI version';
-$w_reinstallServices = 'Reinstall all services';
+$w_delete = 'É¾³ý';
+$w_defaultDBMS = 'Ä¬ÈÏDBMS:';
+$w_invertDefault = 'µ÷»»Ä¬ÈÏDBMS ';
+$w_changeCLI = '¸ü¸ÄPHP CLI°æ±¾';
+$w_reinstallServices = 'ÖØÐÂ°²×°ËùÓÐ·þÎñ';
 $w_wampReport = 'Wampserver Configuration Report';
-$w_dowampReport = 'Create '.$w_wampReport;
-$w_verifySymlink = 'Verify symbolic links';
+$w_dowampReport = '´´½¨ '.$w_wampReport;
+$w_verifySymlink = 'ÑéÖ¤ÈíÁ´½Ó(symbolic links)';
 
 //miscellaneous
 $w_ext_spec = 'Special extensions';
@@ -117,4 +117,3 @@ $w_Integer = "Integer Value";
 $w_EnterInteger = "Enter an integer";
 $w_MysqlMariaUser = "Enter a valid username. If you don't know, keep 'root' by default.";
 
-?>
