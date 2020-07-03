@@ -17,25 +17,25 @@
 // 3.2.0 $w_verifySymlink  - $w_settings['NotVerifyHosts']
 
 // Projects sub-menu
-$w_projectsSubMenu = '你的项目';
+$w_projectsSubMenu = '��Ŀ�б�';
 // VirtualHosts sub-menu
-$w_virtualHostsSubMenu = '你的虚拟主机';
-$w_add_VirtualHost = '虚拟主机管理';
-$w_aliasSubMenu = '你的别名';
-$w_portUsed = 'Apache使用端口: ';
-$w_portUsedMysql = 'MySQL使用端口: ';
-$w_portUsedMaria = 'MariaDB使用端口: ';
-$w_testPortUsed = '测试端口是否被使用: ';
-$w_portForApache = 'Apache使用端口';
-$w_listenForApache = '添加Apache新端口监听';
-$w_portForMysql = 'MySQL端口';
-$w_testPortMysql = '测试3306端口';
+$w_virtualHostsSubMenu = '��������б�';
+$w_add_VirtualHost = '����������';
+$w_aliasSubMenu = '�����б�';
+$w_portUsed = 'Apacheʹ�ö˿�: ';
+$w_portUsedMysql = 'MySQLʹ�ö˿�: ';
+$w_portUsedMaria = 'MariaDBʹ�ö˿�: ';
+$w_testPortUsed = '���Զ˿��Ƿ�ʹ��: ';
+$w_portForApache = 'Apacheʹ�ö˿�';
+$w_listenForApache = '���Apache�¶˿ڼ���';
+$w_portForMysql = 'MySQL�˿�';
+$w_testPortMysql = '����3306�˿�';
 $w_testPortMysqlUsed = 'Test MySQL port used: ';
 $w_testPortMariaUsed = 'Test MariaDB port used: ';
 $w_enterPort = 'Enter the desired port number';
 
 // Right-click Settings
-$w_wampSettings = 'Wamp设置';
+$w_wampSettings = 'Wamp����';
 $w_settings = array(
 	'urlAddLocalhost' => 'Add localhost in url',
 	'VirtualHostSubMenu' => 'VirtualHosts sub-menu',
