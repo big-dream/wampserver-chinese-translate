@@ -25,7 +25,7 @@ $w_doc = '文档';
 $w_cmdWindows = '命令行窗口';
 
 $w_localhost = 'localhost';
-$w_phpmyadmin = 'phpMyAdmin';
+$w_phpmyadmin = 'PHPMyAdmin';
 $w_sqlitemanager = 'SQLiteManager';
 $w_wwwDirectory = 'www 目录';
 $w_logFiles = '日志文件';

@@ -50,7 +50,7 @@ $w_settings = array(
     'SupportMySQL' => '启用MySQL',
     'SupportMariaDB' => '启用MariaDB',
     'DaredevilOptions' => '更改下列值有风险，不熟悉者勿改！',
-    'ShowphmyadMenu' => '在菜单显示PhpMyAdmin',
+    'ShowphmyadMenu' => '在菜单显示PHPMyAdmin',
     'ShowadminerMenu' => '在菜单显示Adminer',
     'mariadbUseConsolePrompt' => '修改默认的MariaDB控制台提示',
     'mysqlUseConsolePrompt' => '修改默认的MySQL控制台提示',
@@ -64,7 +64,7 @@ $w_settings = array(
     'AutoCleanTmp' => '自动清理临时(tmp)目录',
     'AutoCleanTmpMax' => '清理前文件数',// 文件数>=设定值时清理
     'ForTestOnly' => '仅适用于测试环境(开发调试)',
-    'iniCommented' => 'Commented php.ini directives (; at the beginning of the line)',
+    'iniCommented' => '已注释 php.ini 配置',
     'BackupHosts' => '备份hosts文件',
 );
 
