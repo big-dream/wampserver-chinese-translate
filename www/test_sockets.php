@@ -1,28 +1,26 @@
 <?php
 if (extension_loaded('sockets')) {
-	//Create socket IPv4
+	//创建 IPv4 socket
 	$socket = socket_create(AF_INET, SOCK_STREAM, SOL_TCP) ;
-	if($socket === false) {
+	if ($socket === false) {
 		$errorcode = socket_last_error() ;
 		$errormsg = socket_strerror($errorcode);
-		echo "<p>Error socket IPv4: ".$errormsg."</p>\n" ;
-	}
-	else {
-		echo "<p>Socket IPv4 supported</p>\n" ;
+		echo "<p>IPv4 Socket 错误: ".$errormsg."</p>\n" ;
+	} else {
+		echo "<p>IPv4 Socket: 支持</p>\n" ;
 		socket_close($socket);
 	}
 
-	//Create socket IPv6
+	//创建 IPv6 socket
 	$socket = socket_create(AF_INET6, SOCK_STREAM, SOL_TCP) ;
-	if($socket === false) {
+	if ($socket === false) {
 		$errorcode = socket_last_error() ;
 		$errormsg = socket_strerror($errorcode);
-		echo "<p>Error socket IPv6: ".$errormsg."</p>\n" ;
-	}
-	else {
-		echo "<p>Socket IPv6 supported</p>\n" ;
+		echo "<p>IPv6 Socket 错误: ".$errormsg."</p>\n" ;
+	} else {
+		echo "<p>IPv6 Socket: 支持</p>\n" ;
 		socket_close($socket);
 	}
+} else {
+	echo "<p>PHP扩展(sockets)未启用</p>\n" ;
 }
-else echo "<p>Extension PHP sockets not loaded</p>\n" ;
-?>
