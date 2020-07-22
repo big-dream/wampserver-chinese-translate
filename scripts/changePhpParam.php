@@ -24,9 +24,9 @@ if(!empty($_SERVER['argv'][4])) {
 	if($choose == 'Seconds') {
 		if(preg_match('/^[1-9][0-9]{1,3}$/m',$newvalue) != 1) {
 		$changeError = <<< EOFERROR
-The value you entered ({$newvalue}) is out of range.
-The number of seconds must be between 10 and 9999.
-The value is set to 300 seconds by default.
+您输入的值({$newvalue})超出范围.
+输入的值必须是整数，范围在10至9999之间。
+已将值设为默认的 60 秒.
 EOFERROR;
 		$newvalue = '300';
 		}
@@ -35,10 +35,10 @@ EOFERROR;
 		$newvalue = strtoupper($newvalue);
 		if(preg_match('/^[1-9][0-9]{1,3}(M|G)$/m',$newvalue) != 1) {
 		$changeError = <<< EOF1ERROR
-The value you entered ({$newvalue}) is out of range.
-The number must be between 10 and 9999.
-The number must be followed by M (For Mega) or G (For Giga)
-The value is set to 128M by default.
+您输入的值({$newvalue})超出范围.
+输入的值必须是整数，范围在10至9999之间.
+数字后面必须跟着单位，M或G.
+已将值设为默认的 128M.
 EOF1ERROR;
 		$newvalue = '128M';
 		}
@@ -48,10 +48,9 @@ EOF1ERROR;
 		list($min, $max, $default) = explode("^",$_SERVER['argv'][5]);
 		if($newvalue < $min || $newvalue > $max) {
 		$changeError = <<< EOF2ERROR
-The value you entered ({$newvalue}) is out of range.
-The number must be between {$min} and {$max}.
-And must be an integer value.
-The value is set to {$default} by default.
+您输入的值({$newvalue})超出范围.
+输入的值必须是整数，范围在 {$min} 至 {$max} 之间.
+已将值设为默认的 {$default}.
 EOF2ERROR;
 		$newvalue = $default;
 		}
@@ -89,7 +88,7 @@ if(in_array($parameter,$phpCLIparams)) {
 if(!empty($changeError)) {
 	echo "********************* WARNING ********************\n\n";
 	echo $changeError;
-	echo "\nPress ENTER to continue...";
+	echo "\n按回车键(ENTER)继续...";
   trim(fgets(STDIN));
 }
 

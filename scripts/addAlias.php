@@ -87,8 +87,8 @@ file_put_contents($aliasDir.$newAliasDir.'.conf',$newConfFileContents) or die ("
 
 echo '
 别名创建成功！按回车键(Enter)退出...';
-trim(fgets(STDIN));
-exit();
+    trim(fgets(STDIN));
+    exit();
 
 
 ?>

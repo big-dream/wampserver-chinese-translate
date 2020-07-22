@@ -51,11 +51,11 @@ elseif($action == 'delete') {
 	//Check if variable to delete is used in httpd-vhosts.conf
 	$httpdVhostFileContents = file_get_contents($c_apacheVhostConfFile);
 	if(strpos($httpdVhostFileContents,'MYPORT'.$portToTreat) !== false) {
-		echo "The port number you give: ".$portToTreat."\n\n";
+		echo "您输入的端口: ".$portToTreat."\n\n";
 		echo "is used in httpd-vhosts.conf file as port number\n";
 		echo "with Apache variable \${MYPORT".$portToTreat."}\n";
 		echo "and cannot be suppressed\n\n";
-		echo "\nPress ENTER to continue...";
+		echo "\n按回车键(Enter)继续...";
   	trim(fgets(STDIN));
   	exit;
 	}
@@ -84,9 +84,9 @@ elseif($action == 'delete') {
 }
 
 if(!$goodPort) {
-	echo "The port number you give: ".$portToTreat."\n\n";
-	echo "is not valid or already used or is default port\n";
-	echo "\nPress ENTER to continue...";
+	echo "您输入的端口: ".$portToTreat."\n\n";
+	echo "无效/已使用或是默认端口\n";
+	echo "\n按回车键(Enter)继续...";
   trim(fgets(STDIN));
 }
 

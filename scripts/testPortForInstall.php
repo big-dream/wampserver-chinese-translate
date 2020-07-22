@@ -19,7 +19,7 @@ $fp = @fsockopen("127.0.0.1", $port_to_check, $errno, $errstr, 1);
    $out .= "Connection: Close\r\n\r\n";
 if ($fp)
 {
-           echo  'Your port '.$port_to_check.' is actually used by :
+           echo  $port_to_check.' 已被它使用 :
 
 ';
    fwrite($fp, $out);
@@ -35,19 +35,19 @@ if ($fp)
     }
     fclose($fp);
     if ($gotInfo != 1)
-        echo 'Information not available (might be Skype).';
+        echo '未找到占用该端口的程序信息 (可能是Skype).';
     echo '
-Cannot install the Apache service, please stop this application and try again.
+无法安装Apache服务，请先停止该程序后再试.
 
-Press Enter to exit...';
+按回车键(Enter)退出...';
 trim(fgets(STDIN));
 }
 else
 { if(!$reinstall) {
-    echo 'Your port '.$port_to_check.' is available, Install will proceed.';
+    echo $port_to_check.' 端口可用，安装可继续进行.';
     echo '
 
-Press Enter to continue...';
+按回车键(Enter)继续...';
     trim(fgets(STDIN));
   }
 }
