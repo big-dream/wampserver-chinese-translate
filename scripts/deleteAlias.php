@@ -8,14 +8,14 @@ require 'config.inc.php';
 echo '
 
 
-Alias : \''.$_SERVER['argv'][1].'.conf\'
+别名 : \''.$_SERVER['argv'][1].'.conf\'
 
 
 
 
 
-Do you really want to delete this alias?
-Type \'yes\' to confirm : ';
+确定要删除该别名吗?
+输入 \'yes\' 确认删除 : ';
 $confirm =    trim(fgets(STDIN));
 $confirm =    trim($confirm ,'\'');
 
@@ -33,34 +33,14 @@ if ($confirm == 'yes')
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-Alias deleted. Press Enter to exit...';
+别名删除成功！按回车键(Enter)退出...';
     trim(fgets(STDIN));
     exit();
 }
 else
 {
     echo'
-Alias not deleted. Press Enter to exit...';
+别名未能删除！按回车键(Enter)退出...';
     trim(fgets(STDIN));
     exit();
 }

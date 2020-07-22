@@ -42,7 +42,7 @@ else {
 if(file_exists($delDir) && is_dir($delDir)) {
 	//exec("rd /s /q {$delDir}");
 	if(rrmdir($delDir) === false)
-		error_log("Folder ".$delDir." not deleted");
+		error_log("ÎÄ¼þ¼Ð ".$delDir." Î´ÄÜÉ¾³ý");
 }
 
 ?>

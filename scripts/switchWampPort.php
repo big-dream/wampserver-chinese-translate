@@ -60,9 +60,9 @@ if($goodPort) {
 	wampIniSet($configurationFile, $apacheConf);
 }
 else {
-	echo "The port number you give: ".$portToUse."\n\n";
-	echo "is not valid or is not allowed.\n";
-	echo "\nPress ENTER to continue...";
+	echo "您输入的端口: ".$portToUse."\n\n";
+	echo "无效或不允许.\n";
+	echo "\n按回车键(Enter)继续...";
   trim(fgets(STDIN));
 }
 

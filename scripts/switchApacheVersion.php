@@ -54,13 +54,13 @@ if(substr($wampConf['apacheVersion'],0,3) == '2.4' && substr($newApacheVersion,0
 		$copyFile = false;
 		if($virtualHost['include_vhosts'] && $virtualHost['vhosts_exist'] && $virtualHost['nb_Server'] > 0) {
 			echo "\n\n**********************************************************\n";
-			echo "** Want to copy the VirtualHost already configured for Apache ".$c_apacheVersion."\n";
-			echo "** to Apache ".$newApacheVersion."?\n\n";
-			echo "Hit y then Enter for 'YES' - Enter for 'NO'\n\n";
+			echo "** 要复制 Apache ".$c_apacheVersion." 已配置的虚拟主机\n";
+			echo "** 到 Apache ".$newApacheVersion." 吗?\n\n";
+			echo "输入 'YES' 或 'NO'\n\n";
 			$touche = strtoupper(trim(fgets(STDIN)));
 			if($touche === "Y") {
 				if(copy($oldVhost,$newVhost) === false) {
-					echo "\n\n**** Copy error ****\n\nPress ENTER to continue...\n";
+					echo "\n\n**** 复制错误 ****\n\n按回车键(Enter)继续...\n";
 					trim(fgets(STDIN));
 				}
 				else
@@ -87,9 +87,9 @@ if(substr($wampConf['apacheVersion'],0,3) == '2.4' && substr($newApacheVersion,0
 	if(!empty($portList)) {
 
 		echo "\n\n**********************************************************\n";
-		echo "** Listen port(s) ".$portList." are added to Apache ".$c_apacheVersion."\n";
-		echo "** \n** You may need to add them to the new version ".$newApacheVersion." of Apache\n";
-		echo "**\n**\n** Press ENTER to continue...\n";
+		echo "** Apache ".$c_apacheVersion." 已监听这些端口：".$portList."\n";
+		echo "** \n** 你可能需要手动将它们添加到 Apache ".$newApacheVersion."\n";
+		echo "**\n**\n** 按回车键(Enter)继续...\n";
 		trim(fgets(STDIN));
 	}
 }

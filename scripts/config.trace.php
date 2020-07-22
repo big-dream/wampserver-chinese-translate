@@ -10,7 +10,7 @@ if(WAMPTRACE_PROCESS) {
 		define('WAMPTRACE_FILE', $wampConf['installDir']."/logs/wamptrace.log");
 		//Create file with datetime in first line
 		$fp = fopen(WAMPTRACE_FILE, "ab");
-		fwrite($fp,"- Wampserver trace report - ".date(DATE_RSS)."\n");
+		fwrite($fp,"- Wampserver ¸ú×Ù±¨¸æ - ".date(DATE_RSS)."\n");
 		fclose($fp);
 		unset($wampConf,$fp);
 	}
