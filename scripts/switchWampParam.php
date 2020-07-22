@@ -22,7 +22,7 @@ else {
   			$mariadbVersionList = listDir($c_mariadbVersionDir,'checkMariaDBConf','mariadb');
   			if(count($mariadbVersionList) == 0) {
   				$goodParam = false;
-  				$errorMessage .= "No version of MariaDB is installed.\nAt least one version of MariaDB must be installed in Wampserver.\n";
+  				$errorMessage .= "未安装 MariaDB.\nWampserver中至少安装一个MariaDB版本.\n";
   			}
   			else {
   				//Check if mariadb version installed is that in wampmanager.conf
@@ -44,7 +44,7 @@ else {
 							$output = `$command`;
 							if(strpos($output, 'successfully installed') === false) {
 								$goodParam = false;
-  							$errorMessage .= "The service '".$c_mariadbService."' seems to be not successfully installed\n";
+  							$errorMessage .= "'".$c_mariadbService."' 似乎未成功安装\n";
 							}
 					}
   			}
@@ -79,7 +79,7 @@ else {
 		}
 		else {
 			$goodParam = false;
-			$errorMessage .= $c_mariadbVersionDir." does not exist or is not a directory\n";
+			$errorMessage .= $c_mariadbVersionDir." 不存在或不是目录\n";
 		}
 		if($goodParam) {
 			if($_SERVER['argv'][2] == 'on') {
@@ -102,7 +102,7 @@ else {
   			$mysqlVersionList = listDir($c_mysqlVersionDir,'checkMysqlConf','mysql');
   			if(count($mysqlVersionList) == 0) {
   				$goodParam = false;
-  				$errorMessage .= "No version of MySQL is installed.\nAt least one version of MySQL must be installed in Wampserver.\n";
+  				$errorMessage .= "未安装 MySQL.\nWampserver中至少安装一个MySQL版本.\n";
   			}
   			else {
   				//Check if mysql version installed is that in wampmanager.conf
@@ -125,7 +125,7 @@ else {
 							$output = `$command`;
 							if(strpos($output, 'successfully installed') === false) {
 								$goodParam = false;
-  							$errorMessage .= "The service '".$c_mysqlService."' seems to be not successfully installed\n";
+  							$errorMessage .= "'".$c_mysqlService."' 似乎未成功安装\n";
 							}
 					}
   			}
@@ -160,7 +160,7 @@ else {
 		}
 		else {
 			$goodParam = false;
-			$errorMessage .= $c_mysqlVersionDir." does not exist or is not a directory\n";
+			$errorMessage .= $c_mysqlVersionDir." 不存在或不是目录\n";
 		}
 		if($goodParam) {
 			if($_SERVER['argv'][2] == 'on') {
@@ -183,10 +183,10 @@ else {
 		wampIniSet($configurationFile, $wampIniNewContents);
 	}
 	else {
-		echo "The parameter '".$_SERVER['argv'][1]."' cannot be switched '".$_SERVER['argv'][2]."'\n\n";
+		echo "参数 '".$_SERVER['argv'][1]."' 不能切换到 '".$_SERVER['argv'][2]."'\n\n";
 		echo $errorMessage."\n\n";
-		echo "----- Switch canceled -----\n\n";
-		echo "\nPress ENTER to continue...";
+		echo "----- 操作取消 -----\n\n";
+		echo "\n按回车键(Enter)继续...";
  		trim(fgets(STDIN));
 	}
 }
