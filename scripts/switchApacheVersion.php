@@ -1,5 +1,7 @@
 <?php
 //3.2.0 use write_file instead of fwrite, fclose
+//3.2.1 improvement of the VirtualHost copy request message
+
 if(!defined('WAMPTRACE_PROCESS')) require('config.trace.php');
 if(WAMPTRACE_PROCESS) {
 	$errorTxt = "script ".__FILE__;
@@ -53,7 +55,7 @@ if(substr($wampConf['apacheVersion'],0,3) == '2.4' && substr($newApacheVersion,0
 		$virtualHost = check_virtualhost();
 		$copyFile = false;
 		if($virtualHost['include_vhosts'] && $virtualHost['vhosts_exist'] && $virtualHost['nb_Server'] > 0) {
-			echo "\n\n**********************************************************\n";
+			echo "\n\n*************************************************************\n";
 			echo "** 要复制 Apache ".$c_apacheVersion." 已配置的虚拟主机\n";
 			echo "** 到 Apache ".$newApacheVersion." 吗?\n\n";
 			echo "输入 'YES' 或 'NO'\n\n";

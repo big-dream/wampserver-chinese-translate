@@ -26,19 +26,35 @@ else {
 //MariaDB submenu
 $typebase = 'mariadb';
 $myPattern = ';WAMPMARIADBMENUSTART';
-$myreplace = <<< EOF
+$DBMSFooter = '';
+if($nbDBMS > 1 && $DBMSdefault !== 'mariadb') {
+	$DBMSFooter = <<< EOF
+Type: separator; Caption: "${w_defaultDBMS} ${DefaultDBMS}"
+Type: item; Caption: "${w_help} -> MariaDB - MySQL"; Action: run; Filename: "%Windows%\Notepad.exe"; Parameters: "%AeTrayMenuPath%\mariadb_mysql.txt"; ShowCmd: Normal; Glyph: 31
+EOF;
+	$DBMSHeader = <<< EOF
+Type: separator; Caption: "MariaDB ${c_mariadbVersion}"
+EOF;
+}
+else {
+	$DBMSHeader = <<< EOF
+Type: separator; Caption: "MariaDB ${c_mariadbVersion}  (${w_defaultDBMS})"
+EOF;
+}$myreplace = <<< EOF
 ;WAMPMARIADBMENUSTART
+${DBMSHeader}
 Type: submenu; Caption: "${w_version}"; SubMenu: mariadbVersion; Glyph: 3
 Type: servicesubmenu; Caption: "${w_service} '${c_mariadbService}'"; Service: ${c_mariadbService}; SubMenu: mariadbService
 Type: submenu; Caption: "${w_mariaSettings}"; SubMenu: mariadb_params; Glyph: 25
 Type: item; Caption: "${w_mariadbConsole}"; Action: run; FileName: "${c_mariadbConsole}";Parameters: "-u %MariaUser% -p"; Glyph: 0
 Type: item; Caption: "my.ini"; Glyph: 6; Action: run; FileName: "${c_editor}"; parameters: "${c_mariadbConfFile}"
-Type: item; Caption: "${w_mariadbLog}"; Glyph: 6; Action: run; FileName: "${c_logviewer}"; parameters: "${c_installDir}/${logDir}mariadb.log"
+Type: item; Caption: "${w_mariadbLog}	(${logFilesSize['mariadb.log']})"; Glyph: 6; Action: run; FileName: "${c_logviewer}"; parameters: "${c_installDir}/${logDir}mariadb.log"
 Type: item; Caption: "${w_mariadbDoc}"; Action: run; FileName: "${c_navigator}"; Parameters: "${c_edge}http://mariadb.com/kb/en/mariadb/documentation"; Glyph: 35
 ${MariaTestPortUsed}Type: separator; Caption: "${w_portUsedMaria}${c_UsedMariaPort}"
 ${TestPort3306}${MariaTestPortUsed}Type: item; Caption: "${w_testPortMysql}"; Action: run; FileName: "${c_phpExe}"; Parameters: "testPort.php 3306 ${c_mariadbService}";WorkingDir: "$c_installDir/scripts"; Flags: waituntilterminated; Glyph: 24
 ${MariaTestPortUsed}Type: item; Caption: "${w_AlternateMariaPort}"; Action: multi; Actions: UseAlternateMariaPort; Glyph: 24
 ${MariaTestPortUsed}Type: item; Caption: "${w_testPortMariaUsed}${c_UsedMariaPort}"; Action: run; FileName: "${c_phpExe}"; Parameters: "testPort.php ${c_UsedMariaPort} ${c_mariadbService}";WorkingDir: "$c_installDir/scripts"; Flags: waituntilterminated; Glyph: 24
+${DBMSFooter}
 EOF;
 $tpl = str_replace($myPattern,$myreplace,$tpl);
 
@@ -126,6 +142,7 @@ $mareplace = $maPattern."
 ";
 $mareplacemenu = '';
 foreach ($mariadbVersionList as $oneMariaDBVersion) {
+	$count = 0;
   //File wamp/bin/mariadb/mariadbx.y.z/wampserver.conf
   //Check service name if it is modified
   $maConfile = $c_mariadbVersionDir.'/mariadb'.$oneMariaDBVersion.'/'.$wampBinConfFiles;
@@ -195,7 +212,9 @@ Action: readconfig
 EOF;
 	}
 }
+$mareplace .= 'Type: submenu; Caption: " "; Submenu: AddingVersions; Glyph: 1
 
+';
 $tpl = str_replace($maPattern,$mareplace.$mareplacemenu,$tpl);
 
 // Configuration of MariaDB
@@ -304,20 +323,24 @@ foreach ($params_for_mariadb as $paramname=>$paramstatus)
 ';
 			$information_only = true;
 		}
-		$glyph = '22';
 		if($paramname == 'skip-grant-tables') {
-			$glyph = '19';
 			$WarningsAtEnd = true;
 			if(!isset($WarningMariadb)) {
 				$WarningMariadb = true;
 				$WarningText .= 'Type: separator; Caption: "Warning MariaDB"
 ';
 			}
-			$WarningText .= 'Type: item; Caption: "'.$paramname.' = '.$mariadbini[$paramname].'"; Glyph: '.$glyph.'; Action: multi; Actions: maria_'.$mariadbParams[$paramname].'
+			$WarningText .= 'Type: item; Caption: "'.$paramname.' = '.$mariadbini[$paramname].'"; Glyph: 19; Action: multi; Actions: maria_'.$mariadbParams[$paramname].'
 ';
 		}
-     $mariadbConfForInfo .= 'Type: item; Caption: "'.$paramname.' = '.$mariadbini[$paramname].'"; Glyph: '.$glyph.'; Action: multi; Actions: maria_'.$mariadbParams[$paramname].'
+		if($seeInfoMessage) {
+    	$mariadbConfForInfo .= 'Type: item; Caption: "'.$paramname.' = '.$mariadbini[$paramname].'"; Action: multi; Actions: maria_'.$mariadbParams[$paramname].'
 ';
+		}
+		else {
+    	$mariadbConfForInfo .= 'Type: item; Caption: "'.$paramname.' = '.$mariadbini[$paramname].'"; Action: multi; Actions: none
+';
+		}
 		if($doReport && ($paramname == 'basedir' || $paramname == 'datadir')) $wampReport['mariadb'] .= "\nMariaDB ".$paramname." = ".$mariadbini[$paramname];
 	}
 	elseif ($params_for_mariadb[$paramname] == -3) { // Indicate different from 0 or 1 or On or Off but can be changed
@@ -350,12 +373,16 @@ foreach ($params_for_mariadb as $paramname=>$paramstatus)
 				$mariadbini['sql-mode'] = 'none';
       	$mariadbConfTextInfo .= 'Type: separator; Caption: "sql-mode: '.$w_mysql_none.'"
 ';
+      	$mariadbConfTextInfo .= 'Type: separator; Caption: "sql-mode="""" in my.ini"
+';
 				$mariadbConfTextMode = 'Type: submenu; Caption: "'.$paramname.'"; Submenu: '.$paramname.$typebase.'; Glyph: 9
 ';
 			}
 			elseif($mariadbini['sql-mode'] == 'default') {
 				$valeurs = $default_valeurs;
       	$mariadbConfTextInfo .= 'Type: separator; Caption: "sql-mode:  '.$w_mysql_default.'"
+';
+      	$mariadbConfTextInfo .= 'Type: separator; Caption: ";sql-mode=""..."" commented in my.ini"
 ';
 				foreach($valeurs as $val) {
 					$mariadbConfTextInfo .= 'Type: item; Caption: "'.$val.'"; Action: multi; Actions: none
@@ -535,6 +562,7 @@ if(count($MenuSup) > 0) {
 
 $tpl = str_replace(';WAMPMARIADB_PARAMSSTART',$mariadbConfText,$tpl);
 $TestPort3306 = ';';
+unset($mariadbConfText);
 }
 
 ?>

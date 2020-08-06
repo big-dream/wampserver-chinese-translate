@@ -26,21 +26,26 @@ if($goodPort) {
 	//Change port into my.ini
 	$mySqlIniFileContents = @file_get_contents($c_mysqlConfFile) or die ("my.ini file not found");
 	$nb_myIni = 0; //must be three replacements: [client], [wampmysqld] and [mysqld] groups
-	$findTxtRegex = array(
-	'/^(port)[ \t]*=.*$/m',
-	);
-	$mySqlIniFileContents = preg_replace($findTxtRegex,"$1 = ".$portToUse, $mySqlIniFileContents, -1, $nb_myIni);
-	if($nb_myIni == 3)
-		$myIniReplace = true;
+	//Find already used ports
+	$portCount = preg_match_all('/^port[ \t]*=[ \t]*('.$portToUse.').*$/m',$mySqlIniFileContents,$matches);
+	//If the port number already exists three times, there is nothing to change.
+	if($portCount !== 3) {
+		$findTxtRegex = array(
+		'/^(port)[ \t]*=.*$/m',
+		);
+		$mySqlIniFileContents = preg_replace($findTxtRegex,"$1 = ".$portToUse, $mySqlIniFileContents, -1, $nb_myIni);
+		if($nb_myIni == 3)
+			$myIniReplace = true;
 
-	if($myIniReplace) {
-		write_file($c_mysqlConfFile,$mySqlIniFileContents);
-		$myIniConf['mysqlPortUsed'] = $portToUse;
-		if($portToUse == $c_DefaultMysqlPort)
-			$myIniConf['mysqlUseOtherPort'] = "off";
-		else
-			$myIniConf['mysqlUseOtherPort'] = "on";
-		wampIniSet($configurationFile, $myIniConf);
+		if($myIniReplace) {
+			write_file($c_mysqlConfFile,$mySqlIniFileContents);
+			$myIniConf['mysqlPortUsed'] = $portToUse;
+			if($portToUse == $c_DefaultMysqlPort)
+				$myIniConf['mysqlUseOtherPort'] = "off";
+			else
+				$myIniConf['mysqlUseOtherPort'] = "on";
+			wampIniSet($configurationFile, $myIniConf);
+		}
 	}
 }
 

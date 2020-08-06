@@ -26,20 +26,37 @@ else {
 // MySQL submenu
 $typebase = 'mysql';
 $myPattern = ';WAMPMYSQLMENUSTART';
+$DBMSFooter = '';
+if($nbDBMS > 1 && $DBMSdefault !== 'mysql') {
+	$DBMSFooter = <<< EOF
+Type: separator; Caption: "${w_defaultDBMS} ${DefaultDBMS}"
+Type: item; Caption: "${w_help} -> MariaDB - MySQL"; Action: run; Filename: "%Windows%\Notepad.exe"; Parameters: "%AeTrayMenuPath%\mariadb_mysql.txt"; ShowCmd: Normal; Glyph: 31
+EOF;
+	$DBMSHeader = <<< EOF
+Type: separator; Caption: "MySQL ${c_mysqlVersion}"
+EOF;
+}
+else {
+	$DBMSHeader = <<< EOF
+Type: separator; Caption: "MySQL ${c_mysqlVersion}  (${w_defaultDBMS})"
+EOF;
+}
 $myreplace = <<< EOF
 ;WAMPMYSQLMENUSTART
+${DBMSHeader}
 Type: submenu; Caption: "${w_version}"; SubMenu: mysqlVersion; Glyph: 3
 Type: servicesubmenu; Caption: "${w_service} '${c_mysqlService}'"; Service: ${c_mysqlService}; SubMenu: mysqlService
 Type: submenu; Caption: "${w_mysqlSettings}"; SubMenu: mysql_params; Glyph: 25
 ;Type: item; Caption: "${w_mysqlConsole}"; Action: run; FileName: "${c_mysqlConsole}"; Parameters: "-u root -p"; Glyph: 0
 Type: item; Caption: "${w_mysqlConsole}"; Action: run; FileName: "${c_mysqlConsole}"; Parameters: "-u %MysqlUser% -p"; Glyph: 0
 Type: item; Caption: "my.ini"; Glyph: 33; Action: run; FileName: "${c_editor}"; parameters: "${c_mysqlConfFile}"
-Type: item; Caption: "${w_mysqlLog}"; Glyph: 33; Action: run; FileName: "${c_logviewer}"; parameters: "${c_installDir}/${logDir}mysql.log"
+Type: item; Caption: "${w_mysqlLog}	(${logFilesSize['mysql.log']})"; Glyph: 33; Action: run; FileName: "${c_logviewer}"; parameters: "${c_installDir}/${logDir}mysql.log"
 Type: item; Caption: "${w_mysqlDoc}"; Action: run; FileName: "${c_navigator}"; Parameters: "${c_edge}http://dev.mysql.com/doc/index.html"; Glyph: 35
 ${MysqlTestPortUsed}Type: separator; Caption: "${w_portUsedMysql}${c_UsedMysqlPort}"
 ${TestPort3306}${MysqlTestPortUsed}Type: item; Caption: "${w_testPortMysql}"; Action: run; FileName: "${c_phpExe}"; Parameters: "testPort.php 3306 ${c_mysqlService}";WorkingDir: "$c_installDir/scripts"; Flags: waituntilterminated; Glyph: 24
 ${MysqlTestPortUsed}Type: item; Caption: "${w_AlternateMysqlPort}"; Action: multi; Actions: UseAlternateMysqlPort; Glyph: 24
 ${MysqlTestPortUsed}Type: item; Caption: "${w_testPortMysqlUsed}${c_UsedMysqlPort}"; Action: run; FileName: "${c_phpExe}"; Parameters: "testPort.php ${c_UsedMysqlPort} ${c_mysqlService}";WorkingDir: "$c_installDir/scripts"; Flags: waituntilterminated; Glyph: 24
+${DBMSFooter}
 EOF;
 $tpl = str_replace($myPattern,$myreplace,$tpl);
 
@@ -210,6 +227,9 @@ Action: run; FileName: "'.$c_phpExe.'";Parameters: "msg.php 13 '.base64_encode($
 	}
 
 }
+$myreplace .= 'Type: submenu; Caption: " "; Submenu: AddingVersions; Glyph: 1
+
+';
 
 $tpl = str_replace($myPattern,$myreplace.$myreplacemenu,$tpl);
 
@@ -280,7 +300,7 @@ foreach($mysqlParams as $next_param_name=>$next_param_text)
   	  	if(!empty($mysqlParamsNotOnOff[$next_param_name]['msg']))
   	  		$mysqlErrorMsg[$next_param_name] = "\n".$mysqlParamsNotOnOff[$next_param_name]['msg']."\n";
    	  	else
-					$mysqlErrorMsg[$next_param_name] = "\nThe value of this MySQL parameter must be modified in the file:\n".$c_mysqlConfFile."\nNot to change the wrong file, the best way to access this file is:\nWampmanager icon->MySQL->my.ini\n";
+					$mysqlErrorMsg[$next_param_name] = "\nThe value of this MySQL parameter must be modified in the file:\n".$c_mysqlConfFile."\n";
   		}
   		else {
   	  $params_for_mysqlini[$next_param_name] = -3;
@@ -321,20 +341,24 @@ foreach ($params_for_mysqlini as $paramname=>$paramstatus)
 ';
 			$information_only = true;
 		}
-		$glyph = '22';
 		if($paramname == 'skip-grant-tables') {
-			$glyph = '19';
 			$WarningsAtEnd = true;
 			if(!isset($WarningMysql)) {
 				$WarningMysql = true;
 				$WarningText .= 'Type: separator; Caption: "Warning MySQL"
 ';
 			}
-			$WarningText .= 'Type: item; Caption: "'.$paramname.' = '.$mysqlini[$paramname].'"; Glyph: '.$glyph.'; Action: multi; Actions: '.$mysqlParams[$paramname].'
+			$WarningText .= 'Type: item; Caption: "'.$paramname.' = '.$mysqlini[$paramname].'"; Glyph: 19; Action: multi; Actions: '.$mysqlParams[$paramname].'
 ';
 		}
-    $mysqlConfForInfo .= 'Type: item; Caption: "'.$paramname.' = '.$mysqlini[$paramname].'"; Glyph: '.$glyph.'; Action: multi; Actions: '.$mysqlParams[$paramname].'
+		if($seeInfoMessage) {
+    	$mysqlConfForInfo .= 'Type: item; Caption: "'.$paramname.' = '.$mysqlini[$paramname].'"; Action: multi; Actions: '.$mysqlParams[$paramname].'
 ';
+		}
+		else {
+    	$mysqlConfForInfo .= 'Type: item; Caption: "'.$paramname.' = '.$mysqlini[$paramname].'"; Action: multi; Actions: none
+';
+		}
 		if($doReport && ($paramname == 'basedir' || $paramname == 'datadir')) $wampReport['mysql'] .= "\nMySQL ".$paramname." = ".$mysqlini[$paramname];
 	}
 	elseif ($params_for_mysqlini[$paramname] == -3) { // Indicate different from 0 or 1 or On or Off but can be changed
@@ -372,12 +396,16 @@ foreach ($params_for_mysqlini as $paramname=>$paramstatus)
 				$mysqlini['sql-mode'] = 'none';
       	$mysqlConfTextInfo .= 'Type: separator; Caption: "sql-mode: '.$w_mysql_none.'"
 ';
+      	$mysqlConfTextInfo .= 'Type: separator; Caption: "sql-mode="""" in my.ini"
+';
 				$mysqlConfTextMode = 'Type: submenu; Caption: "'.$paramname.'"; Submenu: '.$paramname.$typebase.'; Glyph: 9
 ';
 			}
 			elseif($mysqlini['sql-mode'] == 'default') {
 				$valeurs = $default_valeurs;
       	$mysqlConfTextInfo .= 'Type: separator; Caption: "sql-mode:  '.$w_mysql_default.'"
+';
+      	$mysqlConfTextInfo .= 'Type: separator; Caption: ";sql-mode=""..."" commented in my.ini"
 ';
 				foreach($valeurs as $val) {
 					$mysqlConfTextInfo .= 'Type: item; Caption: "'.$val.'"; Action: multi; Actions: none
@@ -557,6 +585,7 @@ if(count($MenuSup) > 0) {
 
 $tpl = str_replace(';WAMPMYSQL_PARAMSSTART',$mysqlConfText,$tpl);
 $TestPort3306 = ';';
+unset($mysqlConfText);
 }
 
 ?>

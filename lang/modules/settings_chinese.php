@@ -15,6 +15,7 @@
 // $w_wampReport - $w_dowampReport
 // 3.1.9 $w_settings 'BackupHosts'
 // 3.2.0 $w_verifySymlink  - $w_settings['NotVerifyHosts']
+// 3.2.1 $w_addingVer - $w_addingVerTxt - $w_goto - $w_FileRepository
 
 // Projects sub-menu
 $w_projectsSubMenu = '项目列表';
@@ -87,6 +88,7 @@ $w_misc = '杂项';
 $w_emptyAll = '清空所有';
 $w_dnsorder = '检查DNS搜索顺序';
 $w_deleteVer = '删除未使用版本';
+$w_addingVer = '添加 Apache, PHP, MySQL, MariaDB等版本.';
 $w_deleteListenPort = '删除Apache监听端口';
 $w_delete = '删除';
 $w_defaultDBMS = '默认DBMS:';
@@ -96,6 +98,8 @@ $w_reinstallServices = '重新安装所有服务';
 $w_wampReport = 'Wampserver配置报告';
 $w_dowampReport = '创建 '.$w_wampReport;
 $w_verifySymlink = '验证软链接(symbolic links)';
+$w_goto = '转到:';
+$w_FileRepository = 'Wampserver文件储存库网站';
 
 //miscellaneous
 $w_ext_spec = '专用扩展';
@@ -116,4 +120,16 @@ $w_EnterTime = "输入秒数";
 $w_Integer = "整数数值";
 $w_EnterInteger = "输入整数数值";
 $w_MysqlMariaUser = "Enter a valid username. If you don't know, keep 'root' by default.";
+
+// Long texts - Quotation marks " in texts must be escaped: \"
+$w_addingVerTxt ="所有“附加组件”，即 Apache, PHP, MySQL 或 MariaDB 所有版本的安装程序，以及更新程序 (Wampserver, Aestan Tray Menu, xDebug 等) 和 Web应用程序 (PhpMyAdmin, Adminer) 都可在 Sourceforge 下载.\r\n\r\n".
+	"'https://sourceforge.net/projects/wampserver/'\r\n\r\n".
+	"只需要下载所需的安装程序文件，右键单击下载的安装程序文件，然后选择“以管理员身份运行”，安装完之后，插件或应用就会添加到您的Wampserver中.\r\n\r\n".
+	"然后只需要用鼠标操作几下，即可更改 Apache, PHP, MySQL 或 MariaDB 的版本:\r\n".
+	"左键菜单 -> PHP|Apache|MySQL|MariaDB -> 版本 -> 选择版本\r\n\r\n".
+	"版本更改后，旧版本的参数配置/扩展配置和数据都不会自动转移到新版本，需要自行迁移.\r\n\r\n".
+	"除了 Sourceforge ，我们还有更好更方便的储存库网站:\r\n\r\n".
+	"1. http://wampserver.aviatechno.net\r\n\r\n".
+	"2. http://wampserver.site\r\n\r\n".
+	"储存库网站的链接还可以在 右键菜单 -> 帮助 里打开\r\n";
 

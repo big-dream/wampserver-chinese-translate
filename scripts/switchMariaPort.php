@@ -27,29 +27,34 @@ if($goodPort) {
 	//Change port into my.ini
 	$mariaIniFileContents = @file_get_contents($c_mariadbConfFile) or die ("my.ini file not found");
 	$nb_myIni = 0; //must be three replacements: [client], [wampmariadb] and [mysqld] groups
-	$findTxtRegex = array(
-	'/^(port)[ \t]*=.*$/m',
-	);
-	$mariaIniFileContents = preg_replace($findTxtRegex,"$1 = ".$portToUse, $mariaIniFileContents, -1, $nb_myIni);
-	if($nb_myIni == 3)
-		$myIniReplace = true;
+	//Find already used ports
+	$portCount = preg_match_all('/^port[ \t]*=[ \t]*('.$portToUse.').*$/m',$mariaIniFileContents,$matches);
+	//If the port number already exists three times, there is nothing to change.
+	if($portCount !== 3) {
+		$findTxtRegex = array(
+		'/^(port)[ \t]*=.*$/m',
+		);
+		$mariaIniFileContents = preg_replace($findTxtRegex,"$1 = ".$portToUse, $mariaIniFileContents, -1, $nb_myIni);
+		if($nb_myIni == 3)
+			$myIniReplace = true;
 
-	if($myIniReplace) {
-		write_file($c_mariadbConfFile,$mariaIniFileContents);
-		$myIniConf['mariaPortUsed'] = $portToUse;
-		if($portToUse == $c_DefaultMysqlPort)
-			$myIniConf['mariaUseOtherPort'] = "off";
-		else
-			$myIniConf['mariaUseOtherPort'] = "on";
-		wampIniSet($configurationFile, $myIniConf);
+		if($myIniReplace) {
+			write_file($c_mariadbConfFile,$mariaIniFileContents);
+			$myIniConf['mariaPortUsed'] = $portToUse;
+			if($portToUse == $c_DefaultMysqlPort)
+				$myIniConf['mariaUseOtherPort'] = "off";
+			else
+				$myIniConf['mariaUseOtherPort'] = "on";
+			wampIniSet($configurationFile, $myIniConf);
+		}
 	}
 }
 
 else {
-	echo "ÄúÊäÈëµÄ¶Ë¿Ú: ".$portToUse."\n\n";
-	echo "ÎŞĞ§\n";
-	echo "ÔÊĞí·¶Î§ ".$minPort." ÖÁ ".$maxPort."\nµ« ".$wampConf['mysqlPortUsed']." ²»ÊÇÎª MySQL ±£ÁôµÄ\n";
-	echo "\n°´»Ø³µ¼ü(Enter)¼ÌĞø...";
+	echo "æ‚¨è¾“å…¥çš„ç«¯å£: ".$portToUse."\n\n";
+	echo "æ— æ•ˆ\n";
+	echo "å…è®¸èŒƒå›´ ".$minPort." è‡³ ".$maxPort."\nä½† ".$wampConf['mysqlPortUsed']." ä¸æ˜¯ä¸º MySQL ä¿ç•™çš„\n";
+	echo "\næŒ‰å›è½¦é”®(Enter)ç»§ç»­...";
   trim(fgets(STDIN));
 }
 

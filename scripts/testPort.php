@@ -111,7 +111,7 @@ if(!$only_process) {
 	}
 	else {
 		$message .=   $port." 端口已被它使用 :\n\n";
-		$gotinfo = false;
+		$gotInfo = false;
 		fwrite($fp, $out);
 		while (!feof($fp)) {
 			$line = fgets($fp, 128);
@@ -136,7 +136,7 @@ if($doReport){
 
 echo $message;
 	if(!empty($message)) {
-		echo "\n--- 是否要将结果复制到剪贴板?
+		echo "\n--- 是否要将结果复制到剪贴板?\n
 --- 输入 'y' 确认复制 - 按回车键(Enter)继续...";
     $confirm = trim(fgetc(STDIN));
 		$confirm = strtolower(trim($confirm ,'\''));
