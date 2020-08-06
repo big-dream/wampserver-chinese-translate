@@ -1,5 +1,7 @@
 <?php
 //3.2.0 use write_file instead of fwrite, fclose
+//3.2.1 improvement of the VirtualHost copy request message
+
 if(!defined('WAMPTRACE_PROCESS')) require('config.trace.php');
 if(WAMPTRACE_PROCESS) {
 	$errorTxt = "script ".__FILE__;
@@ -53,14 +55,14 @@ if(substr($wampConf['apacheVersion'],0,3) == '2.4' && substr($newApacheVersion,0
 		$virtualHost = check_virtualhost();
 		$copyFile = false;
 		if($virtualHost['include_vhosts'] && $virtualHost['vhosts_exist'] && $virtualHost['nb_Server'] > 0) {
-			echo "\n\n**********************************************************\n";
-			echo "** 要复制 Apache ".$c_apacheVersion." 已配置的虚拟主机\n";
-			echo "** 到 Apache ".$newApacheVersion." 吗?\n\n";
-			echo "输入 'YES' 或 'NO'\n\n";
+			echo "\n\n*************************************************************\n";
+			echo "** Do you want to copy the already configured VirtualHosts from Apache ".$c_apacheVersion."\n";
+			echo "** to Apache ".$newApacheVersion."?\n\n";
+			echo "Press the Y key and then the Enter key for 'YES'\nPress only the Enter key for 'NO'\n\n";
 			$touche = strtoupper(trim(fgets(STDIN)));
 			if($touche === "Y") {
 				if(copy($oldVhost,$newVhost) === false) {
-					echo "\n\n**** 复制错误 ****\n\n按回车键(Enter)继续...\n";
+					echo "\n\n**** Copy error ****\n\nPress ENTER to continue...\n";
 					trim(fgets(STDIN));
 				}
 				else
@@ -87,9 +89,9 @@ if(substr($wampConf['apacheVersion'],0,3) == '2.4' && substr($newApacheVersion,0
 	if(!empty($portList)) {
 
 		echo "\n\n**********************************************************\n";
-		echo "** Apache ".$c_apacheVersion." 已监听这些端口：".$portList."\n";
-		echo "** \n** 你可能需要手动将它们添加到 Apache ".$newApacheVersion."\n";
-		echo "**\n**\n** 按回车键(Enter)继续...\n";
+		echo "** Listen port(s) ".$portList." are added to Apache ".$c_apacheVersion."\n";
+		echo "** \n** You may need to add them to the new version ".$newApacheVersion." of Apache\n";
+		echo "**\n**\n** Press ENTER to continue...\n";
 		trim(fgets(STDIN));
 	}
 }

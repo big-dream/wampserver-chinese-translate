@@ -1,8 +1,7 @@
 <?php
-//Update 3.2.0
-// Check Visual C++ 2019 (PHP 7.4)
-// Check Thread Safe for all PHP versions
-// Check BINARY_PATH_NAME all services
+//Update 3.2.1
+// Check SERVICE_START_NAME all services
+// See Event Viewer error Apache Service if not started
 
 $msgId = $_SERVER['argv'][1];
 $doReport = false;
@@ -102,22 +101,30 @@ elseif(is_string($msgId)) {
 			$command = 'sc query '.$value.' | FINDSTR "STOPPED RUNNING"';
 			$output = `$command`;
 			if(stripos($output, "RUNNING") !== false) {
-				$message['stateservices'] .= " is started\n\n";
+				$message['stateservices'] .= " is started\n";
 				// Checks if the service matches the Apache, MySQL or MariaDB version used.
 				// Command is: sc qc service | findstr "BINARY_PATH_NAME"
 				// For Apache :        BINARY_PATH_NAME   : "J:\wamp\bin\apache\apache2.4.39\bin\httpd.exe" -k runservice
 				// For MySQL  :        BINARY_PATH_NAME   : J:\wamp\bin\mysql\mysql5.7.27\bin\mysqld.exe wampmysqld
 				// For MariaDB:        BINARY_PATH_NAME   : J:\wamp\bin\mariadb\mariadb10.4.6\bin\mysqld.exe wampmariadb
-				$command = 'sc qc '.$value.' | FINDSTR "BINARY_PATH_NAME"';
+				$command = 'sc qc '.$value.' | FINDSTR "BINARY_PATH_NAME SERVICE_START_NAME"';
 				$output = `$command`;
 				if(preg_match("/[ \t]+BINARY_PATH_NAME[ \t]+:[ \t]+(.+)$/m", $output, $matches) > 0) {
 					$service_path = str_replace(array("\\",'"'),array("/",""),$matches[1]);
 					if(strcasecmp($service_path_correct[$value],$service_path) <> 0) {
 						$message['binarypath'] .= "*** BINARY_PATH_NAME of the service ".$value." is not the good one:\n";
 						$message['binarypath'] .= $service_path."\n*** should be:\n";
-						$message['binarypath'] .= $service_path_correct[$value]."\n\n";
+						$message['binarypath'] .= $service_path_correct[$value]."\n";
 						$service_PATH = false;
 					}
+				}
+				// Checks service session : LocalSystem by default
+				//Command is: sc qc service | findstr "SERVICE_START_NAME" (done before, see upper)
+				if(preg_match("/[ \t]+SERVICE_START_NAME[ \t]+:[ \t]+(.+)$/m", $output, $matches) > 0) {
+					$message['stateservices'] .= " Service Session : ".$matches[1]."\n";
+				}
+				else {
+					$message['stateservices'] .= " Service Session : not found\n";
 				}
 			}
 			elseif(stripos($output, "STOPPED") !== false) {
@@ -129,7 +136,18 @@ elseif(is_string($msgId)) {
 					$message['stateservices'] .= " EXIT error code:".$matches[1]."\n";
 					$command = 'net helpmsg '.$matches[1];
 					$output = `$command`;
-					$message['stateservices'] .= " Help message for error code ".$matches[1]." is:".$output."\n\n";
+					$message['stateservices'] .= " Help message for error code ".$matches[1]." is:".str_replace(array("\r","\n"),"",$output)."\n";
+				}
+				//Specific check for STOPPED Apache Service in Event Viewer
+				if($value == $c_apacheService) {
+					$command = "wevtutil qe Application /c:2 /rd:true /f:text /q:\"*[System[Provider[@Name='Apache Service'] and (Level=2)]]\"";
+					$output = `$command`;
+					//Check if there is 'Apache Service' in the result
+					if(stripos($output,"Apache Service") !== false) {
+						if(preg_match_all("~>>>.*~",$output,$matches) > 0) {
+							foreach($matches[0] as $errorVal) $message['stateservices'] .= $errorVal."\n";
+						}
+					}
 				}
 			}
 			else {
@@ -140,8 +158,9 @@ elseif(is_string($msgId)) {
 				if(stripos($output, "1060")) {
 					$message['stateservices'] .= " [SC] EnumQueryServicesStatus:OpenService failure(s) 1060 :\n The specified service does not exist as an installed service.\n";
 				}
-				$message['stateservices'] .= " ********* The service '".$value."' does not exist ********\n\n";
+				$message['stateservices'] .= " ********* The service '".$value."' does not exist ********\n";
 			}
+			$message['stateservices'] .= "\n";
 		}
 		if(!$services_OK) {
 			$message['stateservices'] .= "WampServer (Apache, PHP and MySQL) will not function properly if any service\n";
@@ -155,7 +174,7 @@ elseif(is_string($msgId)) {
 		if(!$service_PATH) {
 			$message['stateservices'] .= "***** One or more BINARY_PATH_NAME is incorrect *****\n";
 			$message['stateservices'] .= $message['binarypath'];
-			$message['stateservices'] .= "You should reinstall the services using the integrated Wampserver's tool:\nRight-click -> Tools -> Reinstall all services\n\n";
+			$message['stateservices'] .= "You should reinstall the services using the integrated Wampserver's tool:\nLeft-Click-> Apache or MySQL or MariaDB -> Service administration then four steps: Stop, Remove, Install, Start then Right-Click -> Refresh\n\n";
 		}
 		else
 			$message['stateservices'] .= "\tall services BINARY_PATH_NAME are OK\n";
@@ -393,16 +412,16 @@ elseif(is_string($msgId)) {
     	$message['compilerversions'] .= "PHP ".$key." ".$value."\n";
     	reset($apacheVersionTot);
     	foreach($apacheVersion as $apache) {
-    		$apacheTot = each($apacheVersionTot);
-    		//error_log("php ".$key." VC=".$phpVC[$key]." - Apache ".$apacheTot[1]." VC=".$apacheVC[$apacheTot[1]]);
+    		$apacheTot = current($apacheVersionTot);
+    		next($apacheVersionTot);
     		if($phpApacheDll[$key][$apache]) {
-    			$message['compilerversions'] .= "\tis compatible with Apache ".$apacheTot[1]."\n";
-    			if($apacheVC[$apacheTot[1]] <= 11 && $phpVC[$key] >= 15) {
-    				$message['compilerversions'] .= "There could be some problems between Apache VC".$apacheVC[$apacheTot[1]]." and PHP VC".$phpVC[$key]."\n";
+    			$message['compilerversions'] .= "\tis compatible with Apache ".$apacheTot."\n";
+    			if($apacheVC[$apacheTot] <= 11 && $phpVC[$key] >= 15) {
+    				$message['compilerversions'] .= "There could be some problems between Apache VC".$apacheVC[$apacheTot]." and PHP VC".$phpVC[$key]."\n";
     			}
     		}
     		else {
-    			$message['compilerversions'] .= "\tis NOT COMPATIBLE with Apache ".$apacheTot[1]."\n";
+    			$message['compilerversions'] .= "\tis NOT COMPATIBLE with Apache ".$apacheTot."\n";
     			$message['compilerversions'] .= "\t".$phpErrorMsg[$key][$apache]."\n";
     		}
     	}
@@ -599,26 +618,23 @@ elseif(is_string($msgId)) {
 			$complete_result = $message['apachemodules'];
 		}
 	}
-	elseif($msgId == "changeServiceName") {
-		require_once 'config.inc.php';
-		require_once 'wampserver.lib.php';
-		echo "\n***************************************************************\n";
-		echo "*************** SERVICE NAMES HAVE BEEN CHANGED ***************\n";
-		echo "***************************************************************\n";
-		echo "\n  Apache -> ".$c_apacheService."\n";
-		echo "  MySQL  -> ".$c_mysqlService."\n";
-		echo "  MariaDB  -> ".$c_mariadbService."\n\n";
-		echo "***************** WAMPSERVER WILL BE SHUTDOWN *****************\n\n";
-		echo "* YOU MUST RESTART WampServer  for the changes to take effect *\n";
-	}
 	elseif($msgId == "refreshLogs") {
+		require 'config.inc.php';
 		$logToClean = array();
 		echo "\nLog file(s) to be cleaned:\n\n";
-		for($i = 2 ; $i <= $nb_arg ; $i++) {
-			$logToClean[$i] = trim($_SERVER['argv'][$i]);
-			echo "\t".$logToClean[$i]."\n";
+		if(trim($_SERVER['argv'][2]) ==  'alllogs') {
+			foreach($logFilesList as $value) {
+				$logToClean[] = $value;
+				echo "\t".$value."\n";
+			}
 		}
-		echo "\nDo you want to clean these file(s)? (y/n)\n\n";
+		else {
+			for($i = 2 ; $i <= $nb_arg ; $i++) {
+				$logToClean[$i] = trim($_SERVER['argv'][$i]);
+				echo "\t".$logToClean[$i]."\n";
+			}
+		}
+		echo "\nDo you want to clean these file(s)? (Y/N)\n\n";
 		$touche = strtoupper(trim(fgets(STDIN)));
 		if($touche === "Y") {
 			foreach($logToClean as $value) {
@@ -633,7 +649,7 @@ elseif(is_string($msgId)) {
 
 	if(!empty($complete_result)) {
 		echo "\n--- Do you want to copy the results into Clipboard?
---- Type 'y' to confirm - Press ENTER to continue... ";
+--- Press the Y key to confirm - Press ENTER to continue... ";
     $confirm = trim(fgetc(STDIN));
 		$confirm = strtolower(trim($confirm ,'\''));
 		if ($confirm == 'y') {

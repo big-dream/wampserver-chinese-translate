@@ -15,6 +15,7 @@
 // $w_wampReport - $w_dowampReport
 // 3.1.9 $w_settings 'BackupHosts'
 // 3.2.0 $w_verifySymlink  - $w_settings['NotVerifyHosts']
+// 3.2.1 $w_addingVer - $w_addingVerTxt - $w_goto - $w_FileRepository
 
 // Projects sub-menu
 $w_projectsSubMenu = '项目列表';
@@ -87,6 +88,7 @@ $w_misc = '杂项';
 $w_emptyAll = '清空所有';
 $w_dnsorder = '检查DNS搜索顺序';
 $w_deleteVer = '删除未使用版本';
+$w_addingVer = 'Add Apache, PHP, MySQL, MariaDB, etc. versions.';
 $w_deleteListenPort = '删除Apache监听端口';
 $w_delete = '删除';
 $w_defaultDBMS = '默认DBMS:';
@@ -96,6 +98,8 @@ $w_reinstallServices = '重新安装所有服务';
 $w_wampReport = 'Wampserver配置报告';
 $w_dowampReport = '创建 '.$w_wampReport;
 $w_verifySymlink = '验证软链接(symbolic links)';
+$w_goto = 'Go to:';
+$w_FileRepository = 'Links to Wampserver repositories files & addons';
 
 //miscellaneous
 $w_ext_spec = '专用扩展';
@@ -116,4 +120,7 @@ $w_EnterTime = "输入秒数";
 $w_Integer = "整数数值";
 $w_EnterInteger = "输入整数数值";
 $w_MysqlMariaUser = "Enter a valid username. If you don't know, keep 'root' by default.";
+
+// Long texts - Quotation marks " in texts must be escaped: \"
+$w_addingVerTxt ="All \"addons\", i.e. all installers of Apache, PHP, MySQL or MariaDB versions as well as installers of updates (Wampserver, Aestan Tray Menu, xDebug, etc.) and web applications (PhpMyAdmin, Adminer) are on\r\n\r\n'https://sourceforge.net/projects/wampserver/'\r\n\r\nJust download the installer files you want and launch them by right-clicking on the name of the downloaded file then \"Run as administrator\" to have the addon or application added to your version of Wampserver.\r\n\r\nThen, changing Apache, PHP, MySQL or MariaDB version is a matter of three clicks:\r\nLeft-Click -> PHP|Apache|MySQL|MariaDB -> Version -> Choose version\r\n\r\nThe version change does not include any parameter changes you might have made, nor does it transfer databases from the old version to the new one.\r\n\r\nA much better organized and always up to date repository than Sourceforge exists:\r\n\r\n'http://wampserver.aviatechno.net'.\r\n\r\nThe links to the repositories are in Right-Click -> Help\r\n";
 

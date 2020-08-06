@@ -24,6 +24,8 @@ $modulesDir = 'modules/';
 $logDir = 'logs/';
 $wampBinConfFiles = 'wampserver.conf';
 $phpConfFileForApache = 'phpForApache.ini';
+// List of log files
+$logFilesList = glob($c_installDir.'/'.$logDir.'*.log');
 
 //We enter the variables of the template with the local conf
 $c_wampVersion = $wampConf['wampserverVersion'];
@@ -31,6 +33,10 @@ $c_wampMode = $wampConf['wampserverMode'];
 $c_wampserverID = ($c_wampMode == '32bit') ? '{wampserver32}' : '{wampserver64}';
 $c_wampVersionInstall = !empty($wampConf['installVersion']) ? $wampConf['installVersion'] : 'unknown';
 $c_navigator = $wampConf['navigator'];
+
+// See Message For information items in configuration submenus
+$seeInfoMessage = true;
+
 //For Windows 10 and Edge it is not the same as for other browsers
 //It is not complete path to browser with parameter http://website/
 //but by 'cmd.exe /c "start /b Microsoft-Edge:http://website/"'
@@ -49,8 +55,12 @@ if($c_navigator == "Edge") {
 		$c_edgeDefinedError = true;
 	}
 	else {
-	$c_navigator = "cmd.exe";
+	// There are several methods to launch Edge from the command line with a url in parameter :
+	// /c start microsoft-edge:http://localhost/
+  // /c start shell:AppsFolder\Microsoft.MicrosoftEdge_8wekyb3d8bbwe!MicrosoftEdge http://localhost/
+ 	$c_navigator = "cmd.exe";
 	$c_edge = "/c start /b Microsoft-Edge:";
+	//$c_edge = "/c start shell:AppsFolder\\Microsoft.MicrosoftEdge_8wekyb3d8bbwe!MicrosoftEdge ";
 	}
 }
 $c_editor = $wampConf['editor'];
@@ -132,7 +142,7 @@ if(file_exists($c_hostsFile)) {
 		$WarningMsg .= $c_hostsFile." is not a file\r\n";
 	}
 	elseif(!is_writable($c_hostsFile)) {
-		if(chmod($c_hostsFile, 0644) === false) {
+		if(@chmod($c_hostsFile, 0644) === false) {
 			$WarningMsg .= "Impossible to modify the file ".$c_hostsFile." to be writable\r\n";
 		}
 		if(!is_writable($c_hostsFile)) {
@@ -193,44 +203,52 @@ $phpDllToCopy = array_merge(
 $phpParams = array (
 	'allow_url_fopen',
 	'allow_url_include',
+	'auto_append_file',
+	'auto_detect_line_endings',
 	'auto_globals_jit',
+	'auto_prepend_file',
 	'date.timezone',
 	'default_charset',
+	'default_mimetype',
+	'disable_classes',
+	'disable_functions',
 	'display_errors',
 	'display_startup_errors',
-	'ignore_repeated_errors',
-	'ignore_repeated_source',
-	'report_memleaks',
-	'log_errors',
+	'enable_dl',
 	'expose_php',
 	'file_uploads',
+	'filter.default',
+	'ignore_repeated_errors',
+	'ignore_repeated_source',
 	'implicit_flush',
+	'include_path',
 	'intl.default_locale',
+	'log_errors',
 	'max_execution_time',
 	'max_input_time',
 	'max_input_vars',
 	'memory_limit',
+	'opcache.enable',
 	'output_buffering',
 	'post_max_size',
 	'realpath_cache_size',
 	'realpath_cache_ttl',
 	'register_argc_argv',
+	'report_memleaks',
+	'request_order',
 	'session.save_path',
 	'short_open_tag',
 	'upload_max_filesize',
 	'upload_tmp_dir',
-	'auto_detect_line_endings',
-	'error_reporting',
-	'filter.default',
-	'include_path',
-	'opcache.enable',
+	'variables_order',
 	'zend.enable_gc',
 	'zlib.output_compression',
 	'zlib.output_compression_level',
-	'xdebug.profiler_enable_trigger',
-	'xdebug.profiler_enable',
+	'error_reporting',
 	'xdebug.remote_enable',
-	'xdebug.overload_var_dump',
+	'xdebug.profiler_enable',
+	'xdebug.profiler_enable_trigger',
+	'xdebug.show_local_vars',
 	);
 
 //PHP parameters with values not On or Off cannot be switched on or off
@@ -245,15 +263,12 @@ $phpParamsNotOnOff = array(
 		'quoted' => true,
 		'values' => array('Africa', 'America', 'Antarctica', 'Arctic', 'Asia', 'Atlantic', 'Australia', 'Europe', 'Indian', 'Pacific'),
 		),
-	'default_charset' => array('change' => false),
 	'memory_limit' => array(
 		'change' => true,
 		'title' => 'Size',
 		'quoted' => false,
 		'values' => array('16M', '32M', '64M', '128M', '256M', '512M', '1G', 'Choose'),
 		),
-	'output_buffering' => array('change' => false),
-	'error_reporting' => array('change' => false),
 	'max_execution_time' => array(
 		'change' => true,
 		'title' => 'Seconds',
@@ -293,8 +308,19 @@ $phpParamsNotOnOff = array(
 		'quoted' => false,
 		'values' => array('2M', '4M', '8M', '16M','32M', '64M', '128M', '256M', 'Choose'),
 		),
+	'default_charset' => array('change' => false),
+	'disable_classes' => array('change' => false) ,
+	'disable_functions' => array('change' => false),
+	'output_buffering' => array('change' => false),
 	'session.save_path' => array('change' => false),
+	'variables_order' => array('change' => false),
+	'request_order' => array('change' => false),
+	'default_mimetype' => array('change' => false),
+	'auto_prepend_file' => array('change' => false),
+	'auto_append_file' => array('change' => false),
 	'upload_tmp_dir' => array('change' => false),
+	'error_reporting' => array('change' => false),
+	'zend.enable_gc' => array('change' => false),
 	'zlib.output_compression_level' => array('change' => false),
 	'xdebug.overload_var_dump' => array('change' => false),
 );
@@ -332,6 +358,8 @@ $mysqlParams = array (
 	'sort_buffer_size',
 	'prompt',
 	'skip-grant-tables',
+	'table_definition_cache',
+	'default_authentication_plugin',
 );
 //MySQL parameters with values not On or Off cannot be switched on or off
 //Can be changed if 'change' = true && 'title' && 'values'
@@ -420,10 +448,15 @@ $mysqlParamsNotOnOff = array(
 		'change' => false,
 		'msg' => "\nTo set the console prompt see:\n\nhttps://dev.mysql.com/doc/refman/5.7/en/mysql-commands.html\n",
 		),
+	'table_definition_cache' => array(
+		'change' => false,
+		'msg' => "\nTo set the table_definition_cache see:\n\nhttps://dev.mysql.com/doc/refman/8.0/en/server-system-variables.html#sysvar_table_definition_cache\n",
+		),
 	'skip-grant-tables' => array(
 		'change' => false,
 		'msg' => "\n\nWARNING!! WARNING!!\nThis option causes the server to start without using the privilege system at all, WHICH GIVES ANYONE WITH ACCESS TO THE SERVER UNRESTRICTED ACCESS TO ALL DATABASES.\nThis option also causes the server to suppress during its startup sequence the loading of user-defined functions (UDFs), scheduled events, and plugins that were installed.\n\nYou should leave this option 'uncommented' ONLY for the time required to perform certain operations such as the replacement of a lost password for 'root'.\n",
 		),
+	'default_authentication_plugin' => array('change' => false,),
 );
 
 //MariaDB parameters
@@ -609,5 +642,48 @@ $apacheModNotDisable = array(
 	'php5_module',
 	'php7_module',
 	);
+
+// Apache settings
+$apacheParams = array(
+	'AcceptFilter' => 'http none|https none',
+	'EnableMMAP' => 'On|Off',
+	'EnableSendFile' => 'On|Off',
+	'HostnameLookups' => 'On|Off|Double',
+	'LogLevel' => 'Debug|Info|Notice|Warn|Error|Crit|Alert|Emerg|trace[1-8]?',
+	'ServerSignature' => 'On|Off|Email',
+	'ServerTokens' => 'Major|Minor|Minimal|Min|ProductOnly|Prod|OS|Full',
+	'ThreadStackSize' => '[0-9]+',
+	'ThreadPerChild' => '[0-9]+',
+	'ThreadLimit' => '[0-9]+',
+);
+$apacheParamsDefault = array(
+	'ThreadPerChild' => 64,
+	'ThreadLimit' => 1920,
+);
+
+// BigMenu -> Aestan Tray Menu column menus since 3.2.2.6
+// Name of menu (Caption), number of items by column, separator 0 or 1
+$AesBigMenu = array(
+	array('$w_apacheModules',29,1),
+	array('Africa',18,1),
+	array('America',37,1),
+	array('Asia',21,1),
+	array('Europe',21,1),
+	array('Pacific',21,1),
+	array('$w_phpSettings',24,1),
+);
+
+// TextMenus -> Aestan Tray Menu Popup text menu items since 3.2.2.9
+// Meaning of the items in the order:
+// 1 = submenuname ; 2 = caption ; 3 = Type 0=info 1=custom 2=Warning 3=Confirm 4=Error
+// 4 Text color in RGB delphi mode (Example $00D77800), default 123 ; 5 Dialog box title
+// 6 Text of popup : only one line, #13 for line feed ; &#44; for comma
+//   End-of-line and comma conversions are done by refresh.php
+//   For a file : '#File:../relative path of txt file'
+// All items except Type and Text color can be variables.
+$AesTextMenus = array(
+	// Add Apache, PHP, MySQL, MariaDB, etc. versions.
+	array('AddingVersions','$w_addingVer',0,'$00000000','$w_addingVer','$w_addingVerTxt'),
+);
 
 ?>

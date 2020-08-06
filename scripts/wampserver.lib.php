@@ -64,7 +64,6 @@ function write_file($file, $string, $clipboard = false, $delete = true, $mode = 
 	return $writeFileOK;
 }
 
-
 function wampIniSet($iniFile, $params) {
 	if(WAMPTRACE_PROCESS) error_log("function ".__FUNCTION__."\n",3,WAMPTRACE_FILE);
 	$iniFileContents = @file_get_contents($iniFile);
@@ -249,7 +248,7 @@ function CheckSymlink($php_version) {
 
 function switchPhpVersion($newPhpVersion) {
 	require 'config.inc.php';
-	if(WAMPTRACE_PROCESS) error_log("function ".__FUNCTION__."\n",3,WAMPTRACE_FILE);
+	if(WAMPTRACE_PROCESS) error_log("function ".__FUNCTION__." ".$newPhpVersion."\n",3,WAMPTRACE_FILE);
 
 	//loading the configuration file of the new version
 	require $c_phpVersionDir.'/php'.$newPhpVersion.'/'.$wampBinConfFiles;
@@ -291,7 +290,7 @@ function switchPhpVersion($newPhpVersion) {
 			error_log("Error file_put_contents for file ".$c_apacheConfFile);
 		}
 		else {
-			if(WAMPTRACE_PROCESS) error_log("File ".$c_apacheConfFile." -+- HAS BEEN REWRITTEN -+- (file_put_contents)\n",3,WAMPTRACE_FILE);
+			if(WAMPTRACE_PROCESS) error_log("File ".$c_apacheConfFile." -+- HAS BEEN WRITTEN -+- (file_put_contents)\n",3,WAMPTRACE_FILE);
 		}
 	}
 
@@ -467,7 +466,7 @@ function listen_ports() {
 // Function to check if VirtualHost exist and are valid
 function check_virtualhost($check_files_only = false) {
 	if(WAMPTRACE_PROCESS) error_log("function ".__FUNCTION__."\n",3,WAMPTRACE_FILE);
-	global $wampConf, $c_apacheConfFile, $c_apacheVhostConfFile, $c_DefaultPort, $c_UsedPort, $wwwDir;
+	global $wampConf, $c_apacheConfFile, $c_apacheVhostConfFile, $c_DefaultPort, $c_UsedPort, $wwwDir, $c_phpVersion;
 	clearstatcache();
 	$virtualHost = array(
 		'include_vhosts' => true,
@@ -652,7 +651,10 @@ function check_virtualhost($check_files_only = false) {
 			}
 			else {
 				$virtualHost['ServerNameIDNA'][$value] = true;
-				$virtualHost['ServerNameUTF8'][$value] = idn_to_utf8($value,IDNA_DEFAULT,INTL_IDNA_VARIANT_UTS46);
+				if(version_compare($c_phpVersion , '5.4.0', '<'))
+					$virtualHost['ServerNameUTF8'][$value] = idn_to_utf8($value);
+				else
+					$virtualHost['ServerNameUTF8'][$value] = idn_to_utf8($value,IDNA_DEFAULT,INTL_IDNA_VARIANT_UTS46);
 			}
 			//Check optionnal IP
 			if(!empty($virtualHost['virtual_ip'][$i])) {
@@ -812,7 +814,7 @@ function array_filter_recursive($array, $callback) {
 
 // Get content of file and set lines end to DOS (CR/LF) if needed
 function file_get_contents_dos($file, $retour = true) {
-	if(WAMPTRACE_PROCESS) error_log("function ".__FUNCTION__.' - '.$file."\n",3,WAMPTRACE_FILE);
+	if(WAMPTRACE_PROCESS) error_log("function ".__FUNCTION__.' - '.$file." - return=".($retour ? 'true' : 'false')."\n",3,WAMPTRACE_FILE);
 	$check_DOS = @file_get_contents($file) or die ($file."file not found");
 	//Check if there is \n without previous \r
 	if(preg_match("/(?<!\r)\n/",$check_DOS) > 0) {
@@ -951,6 +953,27 @@ function menu_multi_lines($texte, $limit = 70) {
 ';
 	}
 	return $ConfTextInfo;
+}
+
+//Function to convert filesize bytes into human units
+function FileSizeConvert($bytes) {
+	$bytes = floatval($bytes);
+	$arBytes = array(
+		0 => array('UNIT' => 'TiB','VALUE' => pow(1024,4)),
+		1 => array('UNIT' => 'GiB','VALUE' => pow(1024,3)),
+		2 => array('UNIT' => 'MiB','VALUE' => pow(1024,2)),
+		3 => array('UNIT' => 'KiB','VALUE' => 1024),
+		4 => array('UNIT' => 'B','VALUE' => 1),
+	);
+	$result = '0 B';
+	foreach($arBytes as $arItem) {
+		if($bytes >= $arItem['VALUE']) {
+			$result = $bytes/$arItem['VALUE'];
+      $result = strval(round($result, 2))." ".$arItem['UNIT'];
+      break;
+    }
+  }
+  return $result;
 }
 
 // Function test of IPv6 support

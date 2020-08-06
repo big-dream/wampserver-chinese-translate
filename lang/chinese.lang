@@ -2,6 +2,7 @@
 
 // 原翻译： ZDYX <zhangduyixiong@gmail.com>
 // 现翻译： jwj <jwjbjg@gmail.com>
+//3.2.1   $w_apacheSettings - $w_apacheDefaults
 
 
 
@@ -31,6 +32,8 @@ $w_wwwDirectory = 'www 目录';
 $w_logFiles = '日志文件';
 $w_configFiles = '配置文件';
 $w_apacheModules = 'Apache 模块';
+$w_apacheSettings = 'Apache settings';
+$w_apacheDefaults = 'Default Directives';
 $w_phpSettings = 'PHP 设置';
 $w_aliasDirectories = '别名(Alias)目录';
 $w_services = '服务';
