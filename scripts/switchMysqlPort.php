@@ -50,10 +50,10 @@ if($goodPort) {
 }
 
 else {
-	echo "The port number you give: ".$portToUse."\n\n";
-	echo "is not valid\n";
-	echo "Must be between ".$minPort." and ".$maxPort."\nbut not ".$wampConf['mariaPortUsed']." that is reserved for MariaDB\n";
-	echo "\nPress ENTER to continue...";
+	echo "您输入的端口: ".$portToUse."\n\n";
+	echo "无效\n";
+	echo "允许范围 ".$minPort." 至 ".$maxPort."\n但 ".$wampConf['mariaPortUsed']." 不是为 MariaDB 保留的\n";
+	echo "\n按回车键(Enter)继续...";
   trim(fgets(STDIN));
 }
 
