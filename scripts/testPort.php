@@ -1,7 +1,7 @@
 <?php
 // 3.2.0 - Use write_file function instead of fopen, fwrite, fclose
 //         Improvement of process and PID research
-if(!defined('WAMPTRACE_PROCESS')) require('config.trace.php');
+if(!defined('WAMPTRACE_PROCESS')) require 'config.trace.php';
 if(WAMPTRACE_PROCESS) {
 	$errorTxt = "script ".__FILE__;
 	$iw = 1; while(!empty($_SERVER['argv'][$iw])) {$errorTxt .= " ".$_SERVER['argv'][$iw];$iw++;}

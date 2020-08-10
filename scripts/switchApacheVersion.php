@@ -2,7 +2,7 @@
 //3.2.0 use write_file instead of fwrite, fclose
 //3.2.1 improvement of the VirtualHost copy request message
 
-if(!defined('WAMPTRACE_PROCESS')) require('config.trace.php');
+if(!defined('WAMPTRACE_PROCESS')) require 'config.trace.php';
 if(WAMPTRACE_PROCESS) {
 	$errorTxt = "script ".__FILE__;
 	$iw = 1; while(!empty($_SERVER['argv'][$iw])) {$errorTxt .= " ".$_SERVER['argv'][$iw];$iw++;}

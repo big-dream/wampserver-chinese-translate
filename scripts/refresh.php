@@ -1,11 +1,9 @@
 <?php
-// - 3.2.1 require refreshVerifyFiles.php
-//         fix DefaultDBMS if none
-//         fix first php date.timezone in submenus
-//         Apache configuration informations
-//         Improve automatic log files cleaning
+// - 3.2.3 - Improve Create definitions of TextMenu
+//   Support Windows command sc for mysql and mariadb services
+//   improve display of PHP error_reporting
 
-if(!defined('WAMPTRACE_PROCESS')) require('config.trace.php');
+if(!defined('WAMPTRACE_PROCESS')) require 'config.trace.php';
 if(WAMPTRACE_PROCESS) {
 	$errorTxt = "script ".__FILE__;
 	$iw = 1; while(!empty($_SERVER['argv'][$iw])) {$errorTxt .= " ".$_SERVER['argv'][$iw];$iw++;}
@@ -21,10 +19,10 @@ if($doReport) {
 	$wampReport['gen1'] .= time()."\n------ Wampserver configuration report\n".date(DATE_RSS)."\n";
 }
 
-require ('config.inc.php');
-require ('wampserver.lib.php');
+require 'config.inc.php';
+require 'wampserver.lib.php';
 //Verify some files
-require ('refreshVerifyFiles.php');
+require 'refreshVerifyFiles.php';
 
 // Get PhpMyAdmin version
 $phpmyadminVersion = '';
@@ -36,6 +34,7 @@ if(file_exists($aliasDir.'phpmyadmin.conf')) {
 	if(preg_match('~^Alias\s*/phpmyadmin\s*".*apps/phpmyadmin([0-9\.]*)/"\s?$~m',$myalias,$matches) > 0 )
 	$phpmyadminVersion = $matches[1];
 }
+
 // Get adminer version
 $adminerVersion = '';
 $adminerOK = false;
@@ -53,18 +52,18 @@ if(file_exists($aliasDir.'adminer.conf')) {
 $lang = $wampConf['language'];
 
 // Load language file if exists
-require($langDir.$wampConf['defaultLanguage'].'.lang');
+require $langDir.$wampConf['defaultLanguage'].'.lang';
 if (is_file($langDir.$lang.'.lang')){
-	require($langDir.$lang.'.lang');
+	require $langDir.$lang.'.lang';
 }
 /*if (is_file($langDir.$lang.'_utf8.lang')){
-	require($langDir.$lang.'_utf8.lang');
+	require $langDir.$lang.'_utf8.lang';
 }*/
 // Load modules default language files
 if ($handle = opendir($langDir.$modulesDir)) {
 	while (false !== ($file = readdir($handle)))	{
 		if ($file != "." && $file != ".." && preg_match('|_'.$wampConf['defaultLanguage'].'|',$file)) {
-			include($langDir.$modulesDir.$file);
+			include $langDir.$modulesDir.$file;
 			//Save array $w_settings default language
 			$w_settings_save = $w_settings;
 		}
@@ -76,7 +75,7 @@ if ($handle = opendir($langDir.$modulesDir)) {
 if ($handle = opendir($langDir.$modulesDir)) {
 	while (false !== ($file = readdir($handle)))	{
 		if ($file != "." && $file != ".." && preg_match('|_'.$lang.'|',$file)) {
-			include($langDir.$modulesDir.$file);
+			include $langDir.$modulesDir.$file;
 			//Merge save array with current language
 			$w_settings = array_replace($w_settings_save,$w_settings);
 		}
@@ -207,7 +206,6 @@ natcasesort($mysqlVersionList);
 if($wampConf['SupportMySQL'] == 'on' && count($mysqlVersionList) > 0) {
 	$SupportMySQL = '';
 	$EmptyMysqlLog = ' '.$c_installDir.'/'.$logDir.'mysql.log';
-	$newMysqlService = ' %MysqlService%';
 	//Check Console prompt
 	if($wampConf['mysqlUseConsolePrompt'] == 'on') {
 		$mysqlConsolePromptUsed = $wampConf['mysqlConsolePrompt'];
@@ -229,7 +227,6 @@ if($wampConf['SupportMySQL'] == 'on' && count($mysqlVersionList) > 0) {
 else {
 	$SupportMySQL = ';';
 	$EmptyMysqlLog = '';
-	$newMysqlService = '';
 }
 
 // Option to support MariaDB
@@ -262,6 +259,22 @@ if($wampConf['SupportMariaDB'] == 'on' && count($mariadbVersionList) > 0) {
 else {
 	$SupportMariaDB = ';';
 	$EmptyMariaLog = '';
+}
+
+// Support mysql Service with mysqld.exe or windows command sc
+$mysqlMysqlService = '';
+$mysqlCmdScService = ';';
+if(isset($wampConf['mysqlServiceCmd']) && $wampConf['mysqlServiceCmd'] == 'windows') {
+	$mysqlMysqlService = ';';
+	$mysqlCmdScService = '';
+}
+
+// Support mariadb Service with mysqld.exe or windows command sc
+$mariaMysqlService = '';
+$mariaCmdScService = ';';
+if(isset($wampConf['mariadbServiceCmd']) && $wampConf['mariadbServiceCmd'] == 'windows') {
+	$mariaMysqlService = ';';
+	$mariaCmdScService = '';
 }
 
 // Option if neither MySQL nor MariaDB
@@ -555,83 +568,52 @@ foreach($logFilesList as $value) {
 	$logFilesSize[str_replace($c_installDir.'/'.$logDir,'',$value)] = FileSizeConvert($size);
 }
 unset($logFilesSizeClean);
+// END of clean log files
+//***********************
 
-// *********************************************************
-// *** Load Template file - $tpl is string with the template
-require($templateFile);
-
-//********************************************
-// Create definitions of BigMenu (Column menus)
-// From $AesBigMenu in config.inc.php
-$BigKeys = "[BigMenu]\r\n";
-foreach($AesBigMenu as $key => $value) {
-	$BigKeys .= 'BigKey'.$key.'=';
-	if(strpos($value[0],'$') === 0) {
-		$temp = substr($value[0],1);
-		$BigKeys .= $$temp.',';
+//************************************
+// Load Template file as file contents
+// Find all variables assigned to the PromptText fields
+// of the Aestan Tray menu's Prompt variables type and
+// replace the end of lines with #13 and commas with &#44;
+$tpl = file_get_contents($templateFile);
+if(preg_match_all('~^.*PromptText:[\t ]*"(\$.+)"[\t ]*;.*$~mi',$tpl,$matches) > 0) {
+	foreach($matches[1] as $value) {
+		$value = str_replace(array('$','{','}'),'',$value);
+		if(isset($$value)) {
+			$$value = ReplaceAestan($$value);
+		}
 	}
-	else {
-		$BigKeys .= $value[0].',';
-	}
-	$BigKeys .= $value[1].','.$value[2]."\r\n";
 }
-$BigKeys .="\r\n";
-$search = ';WAMPBIGMENUSTART
-';
-$tpl = str_replace($search,$search.$BigKeys,$tpl);
-unset($BigKeys);
-// END of BigMenu
-//***************
+unset($tpl,$matches);
+// END of PromptText replacements
+//*******************************
 
 //**************************************************
 // Create definitions of TextMenu (TextKeyx) for Text items
 // From $AesTextMenus in config.inc.php
 $TextSubmenuName = $TextSubmenuCaption = array();
-$TextMenus = "[TextMenu]\r\n";
+$TextMenus = '';
 foreach($AesTextMenus as $key => $value) {
-	if(strpos($value[0],'$') === 0) {
-		$temp = substr($value[0],1);
-		$TextSubmenuName[] = $$temp;
-	}
-	else {
-		$TextSubmenuName[] = $value[0];
-	}
-	if(strpos($value[1],'$') === 0) {
+	$TextSubmenuName[] = (strpos($value[0],'$') === 0) ? ${$temp = substr($value[0],1)} : $value[0];
+	if(strpos($value[1],'$') === 0){
 		$temp = substr($value[1],1);
 		$CaptionTemp = $$temp;
+		// Add space at the end of the variable to avoid duplicate Captions
+		$$temp .= ' ';
 	}
-	else {
+	else
 		$CaptionTemp = $value[1];
-	}
 	$TextSubmenuCaption[] = $CaptionTemp;
-	$TextMenus .= 'TextKey'.$key.'="'.$CaptionTemp.'",'.$value[2].','.$value[3].',';
-	if(strpos($value[4],'$') === 0) {
-		$temp = substr($value[4],1);
-		$tempText = $$temp;
-	}
-	else {
-		$tempText = $value[4];
-	}
-	$tempText = str_replace(array("\r\n",', ',','),array('',' ',' '),$tempText);
+	$TextMenus .= 'TextKey'.$key.'="'.$CaptionTemp.'",'.$value[2].','.$value[3].','.$value[4].','.$value[5].',';
+	$tempText = (strpos($value[6],'$') === 0) ? ${$temp = substr($value[6],1)} : $value[6];
+	$tempText = ReplaceAestan($tempText, 'ToSpace');
 	$TextMenus .= $tempText.',';
-	if(strpos($value[5],'#File:') === 0) {
-		$temp = substr($value[5],6);
-		$tempText = file_get_contents($temp);
-	}
-	elseif(strpos($value[5],'$') === 0) {
-		$temp = substr($value[5],1);
-		$tempText = $$temp;
-	}
-	else {
-		$tempText = $value[5];
-	}
-	$tempText = wordwrap($tempText,96,"\r\n");
-	$tempText = str_replace(array("\r\n","\r","\n",','),array("#13",'','','&#44;'),$tempText);
+	$tempText = (strpos($value[7],'$') === 0) ? ${$temp = substr($value[7],1)} : $value[7];
+	if($value[8] > 0) $tempText = wordwrap($tempText,$value[8],"\r\n");
+	$tempText = ReplaceAestan($tempText);
 	$TextMenus .= $tempText."\r\n";
 }
-$search = ';WAMPTEXTMENUSTART
-';
-$tpl = str_replace($search,$search.$TextMenus,$tpl);
 // Create submenus definitions - Example below
 //[AddingVersions]
 //Type: item; Caption: "Add Apache, PHP, MySQL, MariaDB, etc. versions."; Action: Multi; Actions: none
@@ -640,17 +622,45 @@ $TextSubmenus = '';
 foreach($TextSubmenuName as $value) {
 	$TextSubmenus .= <<< EOF
 [${value}]
-Type:item; Caption: "${TextSubmenuCaption[$i]}"; Action: Multi; Actions: none
+Type: item; Caption: "${TextSubmenuCaption[$i]}"; Action: Multi; Actions: none
 
 EOF;
 $i++;
 }
+// END of TextMenu ************************
+//*****************************************
+
+//************************************
+// Create definitions of Custom Prompt
+// From $AesPromptCustom in config.inc.php
+$PromptCustom = '';
+foreach($AesPromptCustom as $key => $value) {
+	$PromptCustom .= 'PromptKey'.$key.'=';
+	$PromptTemp = '';
+	foreach($value as $indice) $PromptTemp .= $indice.',';
+	$PromptCustom .= substr($PromptTemp,0,-1)."\r\n";
+}
+$PromptCustom .="\r\n";
+// END of Custom Prompt
+//*********************
+
+// ***************************************************************
+// *** Load Template file as require - $tpl is the template string
+require $templateFile;
+
+// Do TextMenus replacements
+$search = ';WAMPTEXTMENUSTART
+';
+$tpl = str_replace($search,$search.$TextMenus,$tpl);
 $search = ';WAMPITEMSTEXTSTART
 ';
 $tpl = str_replace($search,$search.$TextSubmenus,$tpl);
 unset($TextMenus,$TextSubmenus,$TextSubmenuName,$TextSubmenuCaption,$tempText);
-// END of TextMenu ************************
-//*****************************************
+// Do CustomPrompt replacement
+$search = ';WAMPPROMPTCUSTOMSTART
+';
+$tpl = str_replace($search,$search.$PromptCustom,$tpl);
+unset($PromptCustom,$PromptTemp);
 
 // ****************************************
 // Create menu with the available languages
@@ -728,7 +738,7 @@ foreach ($phpVersionList as $onePhpVersion)
     $apacheVersionTemp = substr($apacheVersionTemp,0,$pos);
   }
 
-  // PHP incompatible with the current version of apache
+  // Is PHP incompatible with the current version of apache
   $incompatiblePhp = 0;
   if (empty($apacheVersionTemp))
   {
@@ -779,6 +789,7 @@ $myreplace .= 'Type: submenu; Caption: " "; Submenu: AddingVersions; Glyph: 1
 ';
 
 $tpl = str_replace($myPattern,$myreplace.$myreplacemenu,$tpl);
+unset($myreplace,$myreplacemenu,$myPattern);
 // END of PHP versions menu
 //*************************
 
@@ -786,7 +797,7 @@ $tpl = str_replace($myPattern,$myreplace.$myreplacemenu,$tpl);
 // Creating the PHP extensions menu
 $myphpini = file_get_contents_dos($c_phpConfFile);
 $myphpini = clean_file_contents($myphpini,array(2,1),false,true,$c_phpConfFile);
-
+$NBextPHPlines = 0;
 //recovering the extensions loading configuration
 preg_match_all('/^extension\s*=\s*"?([a-z0-9_]+)"?.*\r?$/im',$myphpini,$matchesON);
 preg_match_all('/^;extension\s*=\s*"?([a-z0-9_]+)"?.*\r$/im',$myphpini,$matchesOFF);
@@ -969,6 +980,7 @@ $extText .= $extTextNoline.$extTextNoDll.$extTextInfo;
 
 foreach ($ext as $extname=>$extstatus)
 {
+	$NBextPHPlines++;
 	if($ext[$extname] == 1 || $ext[$extname] == 0) {
 		$SwitchAction = ($ext[$extname] == 1 ? 'off' : 'on');
 	$extText .= <<< EOF
@@ -1010,9 +1022,10 @@ Action: run; FileName: "'.$c_phpExe.'";Parameters: "msg.php '.$msgNum.' '.base64
 ';
 	}
 }
+$NBextPHPlines = ceil(($NBextPHPlines + 2)/2);
 
 $tpl = str_replace(';WAMPPHP_EXTSTART',$extText,$tpl);
-unset($extText);
+unset($extText,$extTextNoline,$extTextNoDll,$extTextInfo);
 // *** END of PHP extensions menu
 // ******************************
 
@@ -1039,11 +1052,11 @@ foreach($phpParams as $next_param_name=>$next_param_text) {
   	}
   	elseif((stripos($next_param_name, 'xdebug') !== false) && $zend_extensions['php_xdebug']['loaded'] == '0')
 			$params_for_wampini[$next_param_name] = -4; //Extension not loaded - Parameter not to display
-  	elseif($myphpini[$next_param_text] == "Off")
+  	elseif(strtolower($myphpini[$next_param_text]) == "off")
   		$params_for_wampini[$next_param_name] = '0';
   	elseif($myphpini[$next_param_text] == 0)
   		$params_for_wampini[$next_param_name] = '0';
-  	elseif($myphpini[$next_param_text] == "On")
+  	elseif(strtolower($myphpini[$next_param_text]) == "on")
   		$params_for_wampini[$next_param_name] = '1';
   	elseif($myphpini[$next_param_text] == 1)
   		$params_for_wampini[$next_param_name] = '1';
@@ -1066,12 +1079,17 @@ $phpConfTextComment = "";
 $action_sup = $seeInfoGlyphException = array();
 $information_only = false;
 $xDebugSep = false;
+$NBparamPHP = $NBparamPHPinfo = $NBparamPHPcomment = $NBparamPHPxdebug = 0;
 foreach ($params_for_wampini as $paramname=>$paramstatus) {
+	$NBparamPHP++;
 	$seeInfoGlyphException[$paramname] = false;
-	if((stripos($paramname, 'xdebug') !== false) && $zend_extensions['php_xdebug']['loaded'] == '1' && !$xDebugSep) {
-		$xDebugSep = true;
-		$phpConfText .= 'Type: Separator; Caption: "Extension Zend php_xdebug '.$zend_extensions['php_xdebug']['version'].'"
+	if((stripos($paramname, 'xdebug') !== false) && $zend_extensions['php_xdebug']['loaded'] == '1') {
+		$NBparamPHPxdebug++;
+		if(!$xDebugSep) {
+			$xDebugSep = true;
+			$phpConfText .= 'Type: Separator; Caption: "Extension Zend php_xdebug '.$zend_extensions['php_xdebug']['version'].'"
 ';
+		}
 	}
   if ($params_for_wampini[$paramname] == 1)
     $phpConfText .= 'Type: item; Caption: "'.$paramname.'"; Glyph: 13; Action: multi; Actions: '.$phpParams[$paramname].'
@@ -1085,6 +1103,7 @@ foreach ($params_for_wampini as $paramname=>$paramstatus) {
 ';
 	}
 	elseif ($params_for_wampini[$paramname] == -2) { // Information to indicate different from 0 or 1 or On or Off
+		$NBparamPHPinfo++;
 		if(!$information_only) {
 			$phpConfTextInfo .= 'Type: separator; Caption: "'.$w_phpparam_info.'"
 ';
@@ -1093,19 +1112,29 @@ foreach ($params_for_wampini as $paramname=>$paramstatus) {
 		// Tests for 'error_reporting'
 		if(($paramname == 'error_reporting') && (version_compare($c_phpVersion, '5.4.0') >= 0)) {
 			$seeInfoGlyphException[$paramname] = true;
-		 	$report_err = errorLevel($myphpini[$paramname]);
+			$report_err = errorLevel($myphpini[$paramname]);
 			$phpConfTextInfo .= 'Type: separator;
 ';
-    	$phpConfTextInfo .= 'Type: item; Caption: "'.$paramname.' = '.$report_err[0]['str'].'"; Glyph: 22; Action: multi; Actions: '.$phpParams[$paramname].'
+			$firstReportErr = true;
+			foreach($report_err as $key => $value) {
+				if($firstReportErr) {
+    			$phpConfTextInfo .= 'Type: item; Caption: "'.$paramname.' = '.$report_err[$key]['str'].'"; Glyph: 22; Action: multi; Actions: '.$phpParams[$paramname].'
 ';
-			if(strpos($report_err[0]['comment'],'^') !== false) {
-				list($err_title, $err_info) = explode('^',$report_err[0]['comment']);
-   			$phpConfTextInfo .= 'Type: item; Caption: "       '.$err_title.'"; Action: multi; Actions: none
+					$firstReportErr = false;
+				}
+				else {
+    			$phpConfTextInfo .= 'Type: item; Caption: "'.$report_err[$key]['str'].'"; Action: multi; Actions: none
 ';
-				$phpConfTextInfo .= menu_multi_lines($err_info);
-			}
-			else {
-   			$phpConfTextInfo .= menu_multi_lines($report_err[0]['comment']);
+				}
+				if(strpos($report_err[$key]['comment'],'^') !== false) {
+					list($err_title, $err_info) = explode('^',$report_err[$key]['comment']);
+   				$phpConfTextInfo .= 'Type: item; Caption: "       '.$err_title.'"; Action: multi; Actions: none
+';
+					$phpConfTextInfo .= menu_multi_lines($err_info);
+				}
+				else {
+   				$phpConfTextInfo .= menu_multi_lines($report_err[$key]['comment']);
+				}
 			}
 			$phpConfTextInfo .= 'Type: separator;
 ';
@@ -1125,10 +1154,14 @@ foreach ($params_for_wampini as $paramname=>$paramstatus) {
 		// Do nothing
 	}
 	elseif ($params_for_wampini[$paramname] == -5) {
+		$NBparamPHPcomment++;
     $phpConfTextComment .= 'Type: item; Caption: ";'.$paramname.'"; Action: multi; Actions: none
 ';
 	}
 } // end foreach $params_for_wampini
+// $NBparamPHPlines used for BigMenus (Aestan Tray Menu columns menus)
+$NBparamPHPlines = $NBparamPHP -($NBparamPHPinfo + $NBparamPHPcomment + $NBparamPHPxdebug) + 1;
+unset($NBparamPHP,$NBparamPHPinfo,$NBparamPHPcomment,$NBparamPHPxdebug);
 
 //Check for supplemtary actions
 $MenuSup = $SubMenuSup = array();
@@ -1467,8 +1500,10 @@ foreach ($mod as $modname=>$modstatus)
 $httpdText = ";WAMPAPACHE_MODSTART
 ".$httpdTextNoLoad.$httpdTextNoModule.$httpdText.$httpdTextInfo;
 
+$NBmodApacheLines = 0;
 foreach ($mod as $modname=>$modstatus)
 {
+	$NBmodApacheLines++;
 	if ($mod[$modname] == 1 || $mod[$modname] == 0) {
 		$SwitchAction = ($mod[$modname] == 1 ? 'on' : 'off');
     $httpdText .= <<< EOF
@@ -1505,6 +1540,7 @@ if(preg_match_all('~^[ \t]+([a-zA-Z0-9_]+)\.c$~mi',$output,$matches) > 0) {
 ';
 	}
 }
+$NBmodApacheLines = ceil(($NBmodApacheLines+2)/4);
 
 $tpl = str_replace(';WAMPAPACHE_MODSTART',$httpdText,$tpl);
 // END of menu for Apache modules
@@ -1783,7 +1819,6 @@ Type: separator; Caption: \"".$w_aliasSubMenu."\"
 	// Place projects into submenu Hosts
 	// Folder to ignore in projects
 	$AliasListIgnore = array ('.','..');
-	// r?cup?ration des alias
 	$AliasContents = array();
 	if (is_dir($aliasDir)) {
     $handle=opendir($aliasDir);
@@ -2331,6 +2366,24 @@ unset($delListenPort,$delListenPortMenu,$delListenPortSub);
 // END of tool delete Listen Port Apache menu
 //*******************************************
 
+//********************************************
+// Create definitions of BigMenu (Column menus)
+// From $AesBigMenu in config.inc.php
+$BigKeys = "[BigMenu]\r\n";
+foreach($AesBigMenu as $key => $value) {
+	$BigKeys .= 'BigKey'.$key.'=';
+	$BigKeys .= ((strpos($value[0],'$') === 0) ? ${$temp = substr($value[0],1)} : $value[0]).',';
+	$BigKeys .= ((strpos($value[1],'$') === 0) ? ${$temp = substr($value[1],1)} : $value[1]).',';
+	$BigKeys .= $value[2]."\r\n";
+}
+$BigKeys .="\r\n";
+$search = ';WAMPBIGMENUSTART
+';
+$tpl = str_replace($search,$search.$BigKeys,$tpl);
+unset($BigKeys);
+// END of BigMenu
+//***************
+
 //******************************************************
 // Create wampserver configuration report file if needed
 if($doReport) {
@@ -2411,6 +2464,8 @@ Type: Separator;
 //The creation of wampmanager.ini file is complete, save the file.
 write_file($wampserverIniFile,$tpl);
 unset($tpl);
+// END of load Template file as require
+//*************************************
 
 //Check alias and paths in httpd-autoindex.conf
 check_autoindex();

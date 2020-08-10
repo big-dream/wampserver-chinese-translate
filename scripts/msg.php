@@ -1,13 +1,12 @@
 <?php
-//Update 3.2.1
-// Check SERVICE_START_NAME all services
-// See Event Viewer error Apache Service if not started
+//3.2.3 - Improve check state of services BINARY PATH NAME
+//
 
 $msgId = $_SERVER['argv'][1];
 $doReport = false;
 $iw = 2;while(!empty($_SERVER['argv'][$iw])){if($_SERVER['argv'][$iw] == 'doreport') $doReport = true;$iw++;};
 $nb_arg = $_SERVER['argc'] - 1;
-if(!defined('WAMPTRACE_PROCESS')) require('config.trace.php');
+if(!defined('WAMPTRACE_PROCESS')) require 'config.trace.php';
 if(WAMPTRACE_PROCESS) {
 	$errorTxt = "script ".__FILE__;
 	$iw = 1; while(!empty($_SERVER['argv'][$iw])) {$errorTxt .= " ".$_SERVER['argv'][$iw];$iw++;}
@@ -87,14 +86,14 @@ elseif(is_string($msgId)) {
 		require 'config.inc.php';
 		require_once 'wampserver.lib.php';
 		$services = array($c_apacheService);
-		$service_path_correct[$c_apacheService] = $c_installDir.'/bin/apache/apache'.$c_apacheVersion.'/bin/httpd.exe -k runservice';
+		$service_path_correct[$c_apacheService] = $c_installDir.'/bin/apache/apache'.$c_apacheVersion.'/bin/httpd.exe';
 		if($wampConf['SupportMySQL'] == 'on') {
 			$services[] = $c_mysqlService;
-			$service_path_correct[$c_mysqlService] = $c_installDir.'/bin/mysql/mysql'.$c_mysqlVersion.'/bin/mysqld.exe '.$c_mysqlService;
+			$service_path_correct[$c_mysqlService] = $c_installDir.'/bin/mysql/mysql'.$c_mysqlVersion.'/bin/mysqld.exe';
 		}
 		if($wampConf['SupportMariaDB'] == 'on'){
 			$services[] = $c_mariadbService;
-			$service_path_correct[$c_mariadbService] = $c_installDir.'/bin/mariadb/mariadb'.$c_mariadbVersion.'/bin/mysqld.exe '.$c_mariadbService;
+			$service_path_correct[$c_mariadbService] = $c_installDir.'/bin/mariadb/mariadb'.$c_mariadbVersion.'/bin/mysqld.exe';
 		}
 		foreach($services as $value) {
 			$message['stateservices'] .= " The service '".$value."'";
@@ -104,12 +103,13 @@ elseif(is_string($msgId)) {
 				$message['stateservices'] .= " is started\n";
 				// Checks if the service matches the Apache, MySQL or MariaDB version used.
 				// Command is: sc qc service | findstr "BINARY_PATH_NAME"
-				// For Apache :        BINARY_PATH_NAME   : "J:\wamp\bin\apache\apache2.4.39\bin\httpd.exe" -k runservice
-				// For MySQL  :        BINARY_PATH_NAME   : J:\wamp\bin\mysql\mysql5.7.27\bin\mysqld.exe wampmysqld
-				// For MariaDB:        BINARY_PATH_NAME   : J:\wamp\bin\mariadb\mariadb10.4.6\bin\mysqld.exe wampmariadb
+				// For Apache :        BINARY_PATH_NAME   : "J:\wamp\bin\apache\apache2.4.39\bin\httpd.exe"
+				// For MySQL  :        BINARY_PATH_NAME   : J:\wamp\bin\mysql\mysql5.7.27\bin\mysqld.exe
+				// For MariaDB:        BINARY_PATH_NAME   : J:\wamp\bin\mariadb\mariadb10.4.6\bin\mysqld.exe
 				$command = 'sc qc '.$value.' | FINDSTR "BINARY_PATH_NAME SERVICE_START_NAME"';
 				$output = `$command`;
-				if(preg_match("/[ \t]+BINARY_PATH_NAME[ \t]+:[ \t]+(.+)$/m", $output, $matches) > 0) {
+				if(preg_match("/[ \t]+BINARY_PATH_NAME[ \t]+:[ \t]+(.+\.exe).*$/m", $output, $matches) > 0) {
+					//error_log(print_r($matches,true));
 					$service_path = str_replace(array("\\",'"'),array("/",""),$matches[1]);
 					if(strcasecmp($service_path_correct[$value],$service_path) <> 0) {
 						$message['binarypath'] .= "*** BINARY_PATH_NAME of the service ".$value." is not the good one:\n";

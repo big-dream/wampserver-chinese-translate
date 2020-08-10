@@ -1,6 +1,7 @@
 <?php
-//3.0.6
-if(!defined('WAMPTRACE_PROCESS')) require('config.trace.php');
+// 3.2.3 - Support for service with windows command sc
+
+if(!defined('WAMPTRACE_PROCESS')) require 'config.trace.php';
 if(WAMPTRACE_PROCESS) {
 	$errorTxt = "script ".__FILE__;
 	$iw = 1; while(!empty($_SERVER['argv'][$iw])) {$errorTxt .= " ".$_SERVER['argv'][$iw];$iw++;}
@@ -14,7 +15,9 @@ $newMysqlVersion = $_SERVER['argv'][1];
 
 //on charge le fichier de conf de la nouvelle version
 require $c_mysqlVersionDir.'/mysql'.$newMysqlVersion.'/'.$wampBinConfFiles;
-
+if(!array_key_exists('mysqlServiceCmd',$mysqlConf)) {
+	$mysqlConf['mysqlServiceCmd'] = $mysqlConf['mysqlExeFile'];
+}
 $mysqlConf['mysqlVersion'] = $newMysqlVersion;
 wampIniSet($configurationFile, $mysqlConf);
 

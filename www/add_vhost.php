@@ -1,7 +1,7 @@
 <?php
 // 3.1.9 - Check session variables
 //   Support VirtualHost IDNA ServerName
-
+// 3.2.3 - Improve IDNA ServerName check
 
 $server_dir = "../";
 session_start();
@@ -35,10 +35,10 @@ foreach ($languages as $i_langue) {
 }
 $langueswitcher .= '</select></form>';
 
-include('wamplangues/add_vhost_english.php');
+include 'wamplangues/add_vhost_english.php';
 if(file_exists('wamplangues/add_vhost_'.$langue.'.php')) {
 	$langue_temp = $langues;
-	include('wamplangues/add_vhost_'.$langue.'.php');
+	include 'wamplangues/add_vhost_'.$langue.'.php';
 	$langues = array_merge($langue_temp, $langues);
 }
 
@@ -86,7 +86,7 @@ if(count($listenPort) > 1) {
 			<input style='width:20px;height:20px;margin:2px 0 5px 45px;' type='checkbox' name='vh_port_on' value='on'><select style='margin:5px 0 5px 10px;' name='vh_port'>
 EOF;
 	for($i=0;$i < count($authorizedPorts);$i++) {
-  	$w_VirtualPortForm .= "<option value='".$authorizedPorts[$i]."'>".$authorizedPorts[$i]."端口</option>";
+  	$w_VirtualPortForm .= "<option value='".$authorizedPorts[$i]."'>Listen Port&nbsp;:&nbsp;".$authorizedPorts[$i]."&nbsp;&nbsp;</option>";
 	}
 	$w_VirtualPortForm .= "</select><br>";
 
@@ -220,11 +220,11 @@ if($virtualHost['nb_Server'] > 0) {
 		$value_url = ((strpos($value, ':') !== false) ? strstr($value,':',true) : $value);
 		$value_aff = ($virtualHost['ServerNameIDNA'][$value] === true) ? $value." <span style='color:green;'><small>IDNA-> ".$virtualHost['ServerNameUTF8'][$value].'</small></span>' : $value_url;
 		if($virtualHost['ServerNameValid'][$value] === false)
-			$VhostDefine .= "<li><i>主机名: </i><span style='color:red;'>".$value_aff." - 主机名格式错误</span></li>\n";
+			$VhostDefine .= "<li><i>ServerName : </i><span style='color:red;'>".$value_aff." - ServerName syntax error</span></li>\n";
 		else
-			$VhostDefine .= "<li><i>主机名: </i><span style='color:blue;'>".$value_aff."</span>".$UrlPortVH." - <i>目录: </i>".$virtualHost['documentPath'][$i].$ip."</li>\n";
+			$VhostDefine .= "<li><i>ServerName : </i><span style='color:blue;'>".$value_aff."</span>".$UrlPortVH." - <i>Directory : </i>".$virtualHost['documentPath'][$i].$ip."</li>\n";
 		if($value != 'localhost')
-			$VhostDelete .= "<li><i>主机名: </i><input type='checkbox' name='virtual_del[]' value='".$value."'/> <span style='color:blue;'>".$value."</span></li>";
+			$VhostDelete .= "<li><i>ServerName : </i><input type='checkbox' name='virtual_del[]' value='".$value."'/> <span style='color:blue;'>".$value."</span></li>";
 		$i++;
 	}
 }
@@ -350,9 +350,10 @@ if (isset($_POST['submit'])
 	$vh_nameIDN = idn_to_ascii($vh_name,IDNA_DEFAULT,INTL_IDNA_VARIANT_UTS46);
 	if($vh_nameIDN !== $vh_name)
 		$vh_name = $vh_nameIDN;
-	// IDNA (Punycode) /^xn--[a-zA-Z0-9\-\.]+$/
-	// Non IDNA  /^[A-Za-z]+([-.](?![-.])|[A-Za-z0-9]){1,60}[A-Za-z0-9]$/
-	if(preg_match('/^xn--[a-zA-Z0-9\-\.]+$/',$vh_name,$matchesIDNA) == 0
+	// IDNA (Punycode) 3.2.3 - improve regex
+	$regexIDNA = '#^([\w-]+://?|www[\.])?xn--[a-z0-9]+[a-z0-9\-\.]*[a-z0-9]+(\.[a-z]{2,7})?$#';
+	// Not IDNA  /^[A-Za-z]+([-.](?![-.])|[A-Za-z0-9]){1,60}[A-Za-z0-9]$/
+	if(preg_match($regexIDNA,$vh_name,$matchesIDNA) == 0
 		&& preg_match('/^
 		(?=.*[A-Za-z]) # at least one letter somewhere
 		[A-Za-z0-9]+ 	 # letter or number in first place
@@ -513,9 +514,9 @@ EOFHOSTS;
 
 $pageContents = <<< EOPAGE
 <!DOCTYPE html>
-<html lang="zh-cn">
+<html lang="fr">
 	<head>
-		<title>虚拟主机管理</title>
+		<title>Ajouter un "Virtual Host"</title>
 		<meta charset="UTF-8">
 		<style>
 			* {
@@ -540,7 +541,7 @@ $pageContents = <<< EOPAGE
 				padding-bottom: 0em;
 				border-bottom: 1px solid #999;
 				height: 125px;
-				background: url('wampthemes/classic/img/gifLogo.gif') 0 0 no-repeat;
+				background: url('img/gifLogo.gif') 0 0 no-repeat;
 			}
 
 			header h1 {
@@ -583,7 +584,7 @@ $pageContents = <<< EOPAGE
 			label {
 				padding-left: 22px;
 				margin-left: 22px;
-				background: url('wampthemes/classic/img/pngWrench.png') 0 100% no-repeat;
+				background: url('img/pngWrench.png') 0 100% no-repeat;
 			}
 
 			input[type="text"] {
@@ -654,7 +655,7 @@ $pageContents = <<< EOPAGE
 	<header>
 		<h1><a href="add_vhost.php?lang={$langue}">{$langues['addVirtual']}</a> - <a href="index.php?lang={$langue}">{$langues['backHome']}</a></h1>
 		<ul class="utility">
-		  <li>版本 ${c_wampVersion} - ${c_wampMode}${langueswitcher}</li>
+		  <li>Version ${c_wampVersion} - ${c_wampMode}${langueswitcher}</li>
 	  </ul>
 	</header>
 EOPAGE;
@@ -668,7 +669,7 @@ else {
 		}
 	if($sub_menu_on === true) {
 	$pageContents .= <<< EOPAGEB
-		<p>Apache 虚拟主机配置：<code>{$c_apacheVhostConfFile}</code></p>
+		<p>Apache Virtual Hosts <code>{$c_apacheVhostConfFile}</code></p>
 EOPAGEB;
 	if(!empty($VhostDefine)) {
 	$pageContents .= <<< EOPAGEB
@@ -702,7 +703,7 @@ EOPAGEB;
 	$pageContents .= <<< EOPAGEB
 		</div>
 		<div style='clear:both;'></div>
-		<p>Windows hosts 文件： <code>{$c_hostsFile}</code></p>
+		<p>Windows hosts <code>{$c_hostsFile}</code></p>
 EOPAGEB;
 	$pageContents .= '<form method="post">';
 	if($errors_auto) {
