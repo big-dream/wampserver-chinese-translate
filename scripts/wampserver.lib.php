@@ -1,9 +1,8 @@
 <?php
-//Change 3.2.0
-// function write_file
-//
-//
-if(!defined('WAMPTRACE_PROCESS')) require('config.trace.php');
+// 3.2.3 modify switchPhpVersion function for LoadModule in httpd.conf
+//   improve IDNA ServerName check
+//   improve PHP error_reporting display
+if(!defined('WAMPTRACE_PROCESS')) require 'config.trace.php';
 if(WAMPTRACE_PROCESS) {
 	$errorTxt = "script ".__FILE__;
 	$iw = 1; while(!empty($_SERVER['argv'][$iw])) {$errorTxt .= " ".$_SERVER['argv'][$iw];$iw++;}
@@ -262,37 +261,18 @@ function switchPhpVersion($newPhpVersion) {
 
 	}
 
-	// modifying the conf apache file
-	$httpdContents = file($c_apacheConfFile);
-	$newHttpdContents = '';
-	$change = false;
-	foreach ($httpdContents as $line)
-	{
-		if (strpos($line,'LoadModule') !== false && (strpos($line,'php5_module') !== false || strpos($line,'php7_module') !== false))
-		{
-			$c_phpVersionDirA = (substr($c_apacheVersion,0,3) == '2.4') ? str_replace($c_installDir, '${INSTALL_DIR}',$c_phpVersionDir) : $c_phpVersionDir ;
-			$newline = 'LoadModule '.$phpConf['apache'][$apacheVersion]['LoadModuleName'].' "'.$c_phpVersionDirA.'/php'.$newPhpVersion.'/'.$phpConf['apache'][$apacheVersion]['LoadModuleFile'].'"'."\r\n";
-			if($line !== $newline) {
-				$newHttpdContents .= $newline;
-				$change = true;
-			}
-		}
-    elseif (!empty($phpConf['apache'][$apacheVersion]['AddModule']) && strstr($line,'AddModule') && strstr($line,'php')) {
-    	$newHttpdContents .= 'AddModule '.$phpConf['apache'][$apacheVersion]['AddModule']."\r\n";
-    	$change = true;
-    }
-		else
-			$newHttpdContents .= $line;
+	// modifying httpd.conf apache file for LoadModule php5_module or php7_module or php_module
+	// New method with preg_replace 3.2.2
+	$httpdFileContents = file_get_contents_dos($c_apacheConfFile);
+	$c_phpVersionDirA = (substr($c_apacheVersion,0,3) == '2.4') ? str_replace($c_installDir, '${INSTALL_DIR}',$c_phpVersionDir) : $c_phpVersionDir ;
+	$search = '~^(LoadModule[ \t]+)(php_module|php7_module|php5_module)([ \t]+".+/bin/php/)(.+)(/)(.+\.dll)"\r?$~mi';
+	$replacement = '${1}'.$phpConf['apache'][$apacheVersion]['LoadModuleName'].' "'.$c_phpVersionDirA.'/php'.$newPhpVersion.'${5}'.$phpConf['apache'][$apacheVersion]['LoadModuleFile'].'"';
+	$httpdFileContents = preg_replace($search, $replacement, $httpdFileContents, -1 , $count);
+	if($count > 0) {
+		write_file($c_apacheConfFile,$httpdFileContents);
 	}
-	if($change) {
-		$fileput = file_put_contents($c_apacheConfFile,$newHttpdContents);
-		if($fileput === false) {
-			error_log("Error file_put_contents for file ".$c_apacheConfFile);
-		}
-		else {
-			if(WAMPTRACE_PROCESS) error_log("File ".$c_apacheConfFile." -+- HAS BEEN WRITTEN -+- (file_put_contents)\n",3,WAMPTRACE_FILE);
-		}
-	}
+	unset($httpdFileContents);
+	// End of new method
 
 	//modifying the conf of WampServer
 	$wampIniNewContents['phpIniDir'] = $phpConf['phpIniDir'];
@@ -617,10 +597,11 @@ function check_virtualhost($check_files_only = false) {
 		$virtualHost['ServerNameIpValid'][$value] = false;
 
 		//Validity of ServerName (Like domain name)
-		// IDNA (Punycode) /^xn--[a-zA-Z0-9\-\.]+$/
-		// Non IDNA  /^[A-Za-z]+([-.](?![-.])|[A-Za-z0-9]){1,60}[A-Za-z0-9]$/
+		// IDNA (Punycode) - 3.2.3 improve regex
+		$regexIDNA = '#^([\w-]+://?|www[\.])?xn--[a-z0-9]+[a-z0-9\-\.]*[a-z0-9]+(\.[a-z]{2,7})?$#';
+		// Not IDNA  /^[A-Za-z]+([-.](?![-.])|[A-Za-z0-9]){1,60}[A-Za-z0-9]$/
 		if(
-			(preg_match('/^xn--[a-zA-Z0-9\-\.]+$/',$nameToCheck,$matchesIDNA) == 0)
+			(preg_match($regexIDNA,$nameToCheck,$matchesIDNA) == 0)
 			&& (preg_match('/^
 			(?=.*[A-Za-z])  # at least one letter somewhere
 		  [A-Za-z0-9]+ 		# letter or number in first place
@@ -928,6 +909,7 @@ function errorLevel($error_number) {
 	E_CORE_WARNING => array('str' => "E_CORE_WARNING", 'comment' => 'warnings (non-fatal errors) that occur during PHP\'s initial startup'), // 32
 	E_CORE_ERROR => array('str' => "E_CORE_ERROR", 'comment' => 'fatal errors that occur during PHP\'s initial startup'), // 16
 	E_NOTICE => array('str' => "E_NOTICE", 'comment' => 'run-time notices (these are warnings which often result from a bug in your code, but it\'s possible that it was intentional (e.g., using an uninitialized variable and relying on the fact it is automatically initialized to an empty string)'), // 8
+	(E_PARSE | E_ERROR) => array('str' => "E_PARSE | E_ERROR", 'comment' => 'compile-time parse errors - fatal run-time errors'), // 5
 	E_PARSE => array('str' => "E_PARSE", 'comment' => 'compile-time parse errors'), // 4
 	E_WARNING => array('str' => "E_WARNING", 'comment' => 'run-time warnings (non-fatal errors)'), // 2
 	E_ERROR => array('str' => "E_ERROR", 'comment' => 'fatal run-time errors'), // 1
@@ -974,6 +956,22 @@ function FileSizeConvert($bytes) {
     }
   }
   return $result;
+}
+
+//Function to replace some characters by entities
+//for Aestan Tray Menu PromptText fields and Text menu items
+//TypeAll = true  : \r\n by #13 and , by &#44;
+//TypeAll = false : \r\n by nothing and , by space
+function ReplaceAestan($value,$What = 'all') {
+	if($What == 'all') {
+		$search  = array("\r\n","\r","\n",',');
+		$replace = array("#13",'','','&#44;');
+	}
+	else {
+		$search  = array("\r\n","\r","\n",', ',',');
+		$replace = array('','','',' ',' ');
+	}
+	return str_replace($search,$replace,$value);
 }
 
 // Function test of IPv6 support

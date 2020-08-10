@@ -1,7 +1,7 @@
 <?php
 // script to change MariaDB port used
 // 3.2.0 use write_file instead of fwrite, fclose
-if(!defined('WAMPTRACE_PROCESS')) require('config.trace.php');
+if(!defined('WAMPTRACE_PROCESS')) require 'config.trace.php';
 if(WAMPTRACE_PROCESS) {
 	$errorTxt = "script ".__FILE__;
 	$iw = 1; while(!empty($_SERVER['argv'][$iw])) {$errorTxt .= " ".$_SERVER['argv'][$iw];$iw++;}

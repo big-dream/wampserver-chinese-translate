@@ -1,9 +1,8 @@
 <?php
-// Update 3.2.0
-// PHP 7.4.0 support
-// Possibility to trace Wampmanager processes
+// Update 3.2.3
+// PHP 8.0.0 support
 
-if(!defined('WAMPTRACE_PROCESS')) require('config.trace.php');
+if(!defined('WAMPTRACE_PROCESS')) require 'config.trace.php';
 if(WAMPTRACE_PROCESS) {
 	$errorTxt = "script ".__FILE__;
 	$iw = 1; while(!empty($_SERVER['argv'][$iw])) {$errorTxt .= " ".$_SERVER['argv'][$iw];$iw++;}
@@ -116,6 +115,8 @@ $c_mysqlBinDir = $c_mysqlVersionDir.'/mysql'.$wampConf['mysqlVersion'].'/'.$wamp
 $c_mysqlExe = $c_mysqlBinDir.'/'.$wampConf['mysqlExeFile'];
 $c_mysqlConfFile = $c_mysqlVersionDir.'/mysql'.$wampConf['mysqlVersion'].'/'.$wampConf['mysqlConfDir'].'/'.$wampConf['mysqlConfFile'];
 $c_mysqlConsole = $c_mysqlVersionDir.'/mysql'.$c_mysqlVersion.'/'.$wampConf['mysqlExeDir'].'/mysql.exe';
+$c_mysqlExeAnti = str_replace('/','\\',$c_mysqlExe);
+$c_mysqlConfFileAnti = str_replace('/','\\',$c_mysqlConfFile);
 
 // Variables for MariaDB
 $c_mariadbService = $wampConf['ServiceMariadb'];
@@ -128,6 +129,8 @@ $c_mariadbBinDir = $c_mariadbVersionDir.'/mariadb'.$wampConf['mariadbVersion'].'
 $c_mariadbExe = $c_mariadbBinDir.'/'.$wampConf['mariadbExeFile'];
 $c_mariadbConfFile = $c_mariadbVersionDir.'/mariadb'.$wampConf['mariadbVersion'].'/'.$wampConf['mariadbConfDir'].'/'.$wampConf['mariadbConfFile'];
 $c_mariadbConsole = $c_mariadbVersionDir.'/mariadb'.$c_mariadbVersion.'/'.$wampConf['mariadbExeDir'].'/mysql.exe';
+$c_mariadbExeAnti = str_replace('/','\\',$c_mariadbExe);
+$c_mariadbConfFileAnti = str_replace('/','\\',$c_mariadbConfFile);
 
 //Check symlink or copy PHP dll into Apache bin folder
 if(empty($wampConf['CreateSymlink']) || $wampConf['CreateSymlink'] != 'symlink' && $wampConf['CreateSymlink'] != 'copy')
@@ -169,9 +172,10 @@ if($wampConf['BackupHosts'] == 'on') {
 //End check hosts writable
 
 //dll to create symbolic links from php to apache/bin
-//Versions of ICU are 38, 40, 42, 44, 46, 48 to 57, 60 (PHP 7.2), 61 (PHP 7.2.5), 62 (PHP 7.2.8), 63 (PHP 7.2.12), 64 (PHP 7.2.20), 65 (PHP 7.4.0)
+//Versions of ICU are 38, 40, 42, 44, 46, 48 to 57, 60 (PHP 7.2), 61 (PHP 7.2.5)
+//  62 (PHP 7.2.8), 63 (PHP 7.2.12), 64 (PHP 7.2.20), 65 (PHP 7.4.0), 66 (PHP 7.4.6), 67 (PHP 8.0.0)
 $icu = array(
-	'number' => array('65','64', '63', '62', '61', '60', '57', '56', '55', '54', '53', '52', '51', '50', '49', '48', '46', '44', '42', '40', '38'),
+	'number' => array('67', '66', '65','64', '63', '62', '61', '60', '57', '56', '55', '54', '53', '52', '51', '50', '49', '48', '46', '44', '42', '40', '38'),
 	'name' => array('icudt', 'icuin', 'icuio', 'icule', 'iculx', 'icutest', 'icutu', 'icuuc'),
 	);
 $php_icu_dll = array();
@@ -196,6 +200,7 @@ $phpDllToCopy = array_merge(
 	'php5nsapi.dll',
 	'php5ts.dll',
 	'php7ts.dll', //For PHP 7
+	'php8ts.dll', //For PHP 8
 	)
 );
 
@@ -465,6 +470,7 @@ $mariadbParams = array (
 	'datadir',
 	'key_buffer_size',
 	'lc-messages',
+	'log_warnings',
 	'max_allowed_packet',
 	'innodb_lock_wait_timeout',
 	'innodb_buffer_pool_size',
@@ -498,6 +504,10 @@ $mariadbParamsNotOnOff = array(
 	'lc-messages' => array(
 		'change' => false,
 		'msg' => "\nTo set the Error Message Language see:\n\nhttps://mariadb.com/kb/en/mariadb/server-system-variables/#lc_messages\n",
+		),
+	'log_warnings' => array(
+		'change' => false,
+		'msg' => "\nTo set the log_warning directive see:\nhttps://mariadb.com/kb/en/server-system-variables/#log_warnings\n",
 		),
 	'prompt' => array(
 		'change' => false,
@@ -641,6 +651,7 @@ $apacheModNotDisable = array(
 	'authz_host_module',
 	'php5_module',
 	'php7_module',
+	'php_module',
 	);
 
 // Apache settings
@@ -662,28 +673,48 @@ $apacheParamsDefault = array(
 );
 
 // BigMenu -> Aestan Tray Menu column menus since 3.2.2.6
-// Name of menu (Caption), number of items by column, separator 0 or 1
+// Meaning of the items in the order:
+// 1 = Name of menu (Caption), 2 = number of items by column, 3 =separator 0 or 1
+// Items 1 & 2 may be a variable
 $AesBigMenu = array(
-	array('$w_apacheModules',29,1),
+	array('$w_apacheModules','$NBmodApacheLines',1),
 	array('Africa',18,1),
 	array('America',37,1),
 	array('Asia',21,1),
 	array('Europe',21,1),
 	array('Pacific',21,1),
-	array('$w_phpSettings',24,1),
+	array('$w_phpSettings','$NBparamPHPlines',1),
+	array('$w_phpExtensions','$NBextPHPlines',1),
 );
 
-// TextMenus -> Aestan Tray Menu Popup text menu items since 3.2.2.9
+// TextMenus -> Aestan Tray Menu text menu items since 3.2.2.9
+// Font size, color since 3.2.3.0
 // Meaning of the items in the order:
-// 1 = submenuname ; 2 = caption ; 3 = Type 0=info 1=custom 2=Warning 3=Confirm 4=Error
-// 4 Text color in RGB delphi mode (Example $00D77800), default 123 ; 5 Dialog box title
-// 6 Text of popup : only one line, #13 for line feed ; &#44; for comma
+// Indice 0 Submenu Name -+- Indice 1 Caption submenu
+// Indice 2 Type 0=info 1=custom 2=Warning 3=Confirm 4=Error
+// Indice 3 Font size -+- Indice 4 Font color RGB delphi mode (Example $00D77800)
+// Indice 5 Background color -+- Indice 6 Title
+// Indice 7 Text : only one line, #13 for line feed ; &#44; for comma
 //   End-of-line and comma conversions are done by refresh.php
-//   For a file : '#File:../relative path of txt file'
-// All items except Type and Text color can be variables.
+// Indice 8 number of characters per line max (wordwrap) 0 = no limit
+// Indice except Type, Font size, Font color, Background color and WordWrap may be variables.
 $AesTextMenus = array(
 	// Add Apache, PHP, MySQL, MariaDB, etc. versions.
-	array('AddingVersions','$w_addingVer',0,'$00000000','$w_addingVer','$w_addingVerTxt'),
+	array('AddingVersions','$w_addingVer',0,10,'$00000000','$00EEEEEE','$w_addingVer','$w_addingVerTxt',96),
+	array('mysql-mode','$w_mysql_mode',0,10,'$00000000','$00EEEEEE','$w_mysql_mode','$w_MySQLsqlmodeInfo',96),
+	array('phpmyadmin-help','$w_phpMyAdminHelp',0,10,'$00000000','$00EEEEEE','$w_phpMyAdminHelp','$w_PhpMyAdMinHelpTxt',112),
+);
+
+// PromptCustom -> Aestan Tray Menu Variable type prompt since 3.2.3.0
+// Section [PromptCustom] Name PromptKeyx=
+// Indices: 0 Prompt Name, 1 Font Size, 2 Background Color, 3 Font Color, 4 Value BackGround Color, 5 Value Text Color
+// Example : PromptKey1=Prompt1,12,$00D77800,$00FCFDFE,$00FFFFFF,$000000FF
+// PromptKey0 are default values for all Prompt
+// PromptKey0=Default,12,$00EEEEEE,$00000000
+$AesPromptCustom = array(
+	array('Default',10,'$00EEEEEE','$00000000','$00FFFFFF','$000000FF'),
+	array('MariaUser',10,'$00FFFFF0','$00890000','$00FFFFFF','$000000FF'),
+	array('MysqlUser',10,'$00FFFFF0','$00890000','$00FFFFFF','$000000FF'),
 );
 
 ?>

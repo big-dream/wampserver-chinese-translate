@@ -1,5 +1,5 @@
 <?php
-// 3.2.0 use write_file instead of fwrite, fclose
+// 3.2.3 - Support for service with windows command sc
 
 if(WAMPTRACE_PROCESS) {
 	$errorTxt = "script ".__FILE__;
@@ -47,6 +47,7 @@ Type: submenu; Caption: "${w_version}"; SubMenu: mariadbVersion; Glyph: 3
 Type: servicesubmenu; Caption: "${w_service} '${c_mariadbService}'"; Service: ${c_mariadbService}; SubMenu: mariadbService
 Type: submenu; Caption: "${w_mariaSettings}"; SubMenu: mariadb_params; Glyph: 25
 Type: item; Caption: "${w_mariadbConsole}"; Action: run; FileName: "${c_mariadbConsole}";Parameters: "-u %MariaUser% -p"; Glyph: 0
+Type: separator; Caption: "${w_helpFile}";
 Type: item; Caption: "my.ini"; Glyph: 6; Action: run; FileName: "${c_editor}"; parameters: "${c_mariadbConfFile}"
 Type: item; Caption: "${w_mariadbLog}	(${logFilesSize['mariadb.log']})"; Glyph: 6; Action: run; FileName: "${c_logviewer}"; parameters: "${c_installDir}/${logDir}mariadb.log"
 Type: item; Caption: "${w_mariadbDoc}"; Action: run; FileName: "${c_navigator}"; Parameters: "${c_edge}http://mariadb.com/kb/en/mariadb/documentation"; Glyph: 35
@@ -78,7 +79,8 @@ $myPattern = ';WAMPMARIADBSERVICEINSTALLSTART';
 $myreplace = <<< EOF
 ;WAMPMARIADBSERVICEINSTALLSTART
 [MariaDBServiceInstall]
-Action: run; FileName: "${c_mariadbExe}"; Parameters: "${c_mariadbServiceInstallParams}"; ShowCmd: hidden; Flags: ignoreerrors waituntilterminated
+{$mariaMysqlService}Action: run; FileName: "${c_mariadbExe}"; Parameters: "${c_mariadbServiceInstallParams}"; ShowCmd: hidden; Flags: ignoreerrors waituntilterminated
+{$mariaCmdScService}Action: run; FileName: "sc"; Parameters: "create ${c_mariadbService} binpath=""${c_mariadbExeAnti} --defaults-file=${c_mariadbConfFileAnti} ${c_mariadbService}"""; ShowCmd: hidden; Flags: ignoreerrors waituntilterminated
 Action: resetservices
 Action: readconfig
 EOF;
@@ -89,7 +91,8 @@ $myreplace = <<< EOF
 ;WAMPMARIADBSERVICEREMOVESTART
 [MariaDBServiceRemove]
 Action: service; Service: ${c_mariadbService}; ServiceAction: stop; Flags: ignoreerrors waituntilterminated
-Action: run; FileName: "${c_mariadbExe}"; Parameters: "${c_mariadbServiceRemoveParams}"; ShowCmd: hidden; Flags: waituntilterminated
+{$mariaMysqlService}Action: run; FileName: "${c_mariadbExe}"; Parameters: "${c_mariadbServiceRemoveParams}"; ShowCmd: hidden; Flags: waituntilterminated
+{$mariaCmdScService}Action: run; FileName: "sc"; Parameters: "delete ${c_mariadbService}"; ShowCmd: hidden; Flags: ignoreerrors waituntilterminated
 Action: resetservices
 Action: readconfig
 EOF;
@@ -144,25 +147,7 @@ $mareplacemenu = '';
 foreach ($mariadbVersionList as $oneMariaDBVersion) {
 	$count = 0;
   //File wamp/bin/mariadb/mariadbx.y.z/wampserver.conf
-  //Check service name if it is modified
   $maConfile = $c_mariadbVersionDir.'/mariadb'.$oneMariaDBVersion.'/'.$wampBinConfFiles;
-  $mariaConfContents = file_get_contents($maConfile);
-
-  if(preg_match("~^(.*'mariadbServiceInstallParams'.*--install-manual )(wampmariadb[0-9]*)(.*\r?)$~mi",$mariaConfContents,$matches) > 0) {
-  	if($matches[2] != $c_mariadbService)
-  		$mariaConfContents = str_ireplace($matches[0],$matches[1].$c_mariadbService.$matches[3],$mariaConfContents, $count);
-		$count += $count;
-	}
-  if(preg_match("~^(.*mariadbServiceRemoveParams.*--remove )(wampmariadb[0-9]*)(.*\r?)$~mi",$mariaConfContents,$matches) > 0) {
-  	if($matches[2] != $c_mariadbService)
-  		$mariaConfContents = str_ireplace($matches[0],$matches[1].$c_mariadbService.$matches[3],$mariaConfContents, $count);
-		$count += $count;
-	}
-
-		if(!is_null($mariaConfContents) && $count > 0) {
-			write_file($maConfile,$mariaConfContents);
-		}
-
   unset($mariadbConf);
   include $maConfile;
 
@@ -199,11 +184,29 @@ foreach ($mariadbVersionList as $oneMariaDBVersion) {
     $mareplacemenu .= <<< EOF
 [switchMariaDB${oneMariaDBVersion}]
 Action: service; Service: ${c_mariadbService}; ServiceAction: stop; Flags: ignoreerrors waituntilterminated
-Action: run; FileName: "${c_mariadbExe}"; Parameters: "${c_mariadbServiceRemoveParams}"; ShowCmd: hidden; Flags: ignoreerrors waituntilterminated
+Action: run; FileName: "net"; Parameters: "stop ${c_mariadbService}"; ShowCmd: hidden; Flags: ignoreerrors waituntilterminated
+{$mariaMysqlService}Action: run; FileName: "${c_mariadbExe}"; Parameters: "${c_mariadbServiceRemoveParams}"; ShowCmd: hidden; Flags: ignoreerrors waituntilterminated
+{$mariaCmdScService}Action: run; FileName: "sc"; Parameters: "delete ${c_mariadbService}"; ShowCmd: hidden; Flags: ignoreerrors waituntilterminated
 Action: closeservices;
 Action: run; FileName: "{$c_phpCli}";Parameters: "switchMariaDBVersion.php ${oneMariaDBVersion}";WorkingDir: "${c_installDir}/scripts"; Flags: waituntilterminated
 Action: run; FileName: "{$c_phpCli}";Parameters: "switchMariaPort.php ${c_UsedMariaPort}";WorkingDir: "${c_installDir}/scripts"; Flags: waituntilterminated
+
+EOF;
+		if(isset($mariadbConf['mariadbServiceCmd']) && $mariadbConf['mariadbServiceCmd'] == 'windows') {
+			$binpath = str_replace('/','\\',$c_mariadbVersionDir.'/mariadb'.$oneMariaDBVersion.'/'.$mariadbConf['mariadbExeDir'].'/'.$mariadbConf['mariadbExeFile']);
+			$default = str_replace('/','\\',$c_mariadbVersionDir.'/mariadb'.$oneMariaDBVersion.'/'.$mariadbConf['mariadbConfDir'].'/'.$mariadbConf['mariadbConfFile']);
+			$mareplacemenu .= <<< EOF
+Action: run; FileName: "sc"; parameters: "create ${c_mariadbService} binpath=""${binpath} --defaults-file=${default} ${c_mariadbService}"""; ShowCmd: hidden; Flags: waituntilterminated
+
+EOF;
+		}
+		else {
+			$mareplacemenu .= <<< EOF
 Action: run; FileName: "${c_mariadbVersionDir}/mariadb${oneMariaDBVersion}/${mariadbConf['mariadbExeDir']}/${mariadbConf['mariadbExeFile']}"; Parameters: "${mariadbConf['mariadbServiceInstallParams']}"; ShowCmd: hidden; Flags: waituntilterminated
+
+EOF;
+		}
+		$mareplacemenu .= <<< EOF
 Action: run; FileName: "net"; Parameters: "start ${c_mariadbService}"; ShowCmd: hidden; Flags: waituntilterminated
 Action: run; FileName: "{$c_phpCli}";Parameters: "refresh.php";WorkingDir: "${c_installDir}/scripts"; Flags: waituntilterminated
 Action: resetservices
@@ -373,7 +376,7 @@ foreach ($params_for_mariadb as $paramname=>$paramstatus)
 				$mariadbini['sql-mode'] = 'none';
       	$mariadbConfTextInfo .= 'Type: separator; Caption: "sql-mode: '.$w_mysql_none.'"
 ';
-      	$mariadbConfTextInfo .= 'Type: separator; Caption: "sql-mode="""" in my.ini"
+				$mariadbConfTextInfo .= 'Type: submenu; Caption: "'.$w_mysql_mode.'"; Submenu: mysql-mode; Glyph: 22
 ';
 				$mariadbConfTextMode = 'Type: submenu; Caption: "'.$paramname.'"; Submenu: '.$paramname.$typebase.'; Glyph: 9
 ';
@@ -382,7 +385,7 @@ foreach ($params_for_mariadb as $paramname=>$paramstatus)
 				$valeurs = $default_valeurs;
       	$mariadbConfTextInfo .= 'Type: separator; Caption: "sql-mode:  '.$w_mysql_default.'"
 ';
-      	$mariadbConfTextInfo .= 'Type: separator; Caption: ";sql-mode=""..."" commented in my.ini"
+				$mariadbConfTextInfo .= 'Type: submenu; Caption: "'.$w_mysql_mode.'"; Submenu: mysql-mode; Glyph: 22
 ';
 				foreach($valeurs as $val) {
 					$mariadbConfTextInfo .= 'Type: item; Caption: "'.$val.'"; Action: multi; Actions: none
@@ -396,6 +399,8 @@ foreach ($params_for_mariadb as $paramname=>$paramstatus)
 				$valeurs = explode(',',$mariadbini['sql-mode']);
 				$valeurs = array_map('trim',$valeurs);
      		$mariadbConfTextInfo .= 'Type: separator; Caption: "sql-mode: '.$w_mysql_user.'"
+';
+				$mariadbConfTextInfo .= 'Type: submenu; Caption: "'.$w_mysql_mode.'"; Submenu: mysql-mode; Glyph: 22
 ';
 				$MyUserError = false;
 				foreach($valeurs as $val) {
@@ -562,7 +567,7 @@ if(count($MenuSup) > 0) {
 
 $tpl = str_replace(';WAMPMARIADB_PARAMSSTART',$mariadbConfText,$tpl);
 $TestPort3306 = ';';
-unset($mariadbConfText);
+unset($mariadbConfText,$mariadbConfTextInfo,$mariadbConfForInfo,$mariadbConfTextMode);
 }
 
 ?>

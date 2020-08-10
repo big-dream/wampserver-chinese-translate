@@ -88,10 +88,10 @@ foreach ($languages as $i_langue) {
 }
 $langueswitcher .= '</select></form>';
 
-include('wamplangues/index_english.php');
+include 'wamplangues/index_english.php';
 if(file_exists('wamplangues/index_'.$langue.'.php')) {
 	$langue_temp = $langues;
-	include('wamplangues/index_'.$langue.'.php');
+	include 'wamplangues/index_'.$langue.'.php';
 	$langues = array_merge($langue_temp, $langues);
 }
 
