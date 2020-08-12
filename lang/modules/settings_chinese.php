@@ -16,6 +16,8 @@
 // 3.1.9 $w_settings 'BackupHosts'
 // 3.2.0 $w_verifySymlink  - $w_settings['NotVerifyHosts']
 // 3.2.1 $w_addingVer - $w_addingVerTxt - $w_goto - $w_FileRepository
+// 3.2.2 $w_MysqlMariaUser and $w_EnterSize modified -  - $w_MySQLsqlmodeInfo $w_mysql_mode $w_phpMyAdminHelp $w_PhpMyAdMinHelpTxt
+// 3.2.3 https for wampserver.aviatechno
 
 // Projects sub-menu
 $w_projectsSubMenu = 'ÏîÄ¿ÁÐ±í';
@@ -33,7 +35,6 @@ $w_portForMysql = 'MySQL¶Ë¿Ú';
 $w_testPortMysql = '²âÊÔ3306¶Ë¿Ú';
 $w_testPortMysqlUsed = '²âÊÔMySQLÊ¹ÓÃµÄ¶Ë¿Ú: ';
 $w_testPortMariaUsed = '²âÊÔMariaDBÊ¹ÓÃµÄ¶Ë¿Ú: ';
-$w_enterPort = 'ÊäÈëÒªÊ¹ÓÃµÄ¶Ë¿ÚºÅ';
 
 // Right-click Settings
 $w_wampSettings = 'WampÉèÖÃ';
@@ -112,13 +113,19 @@ $w_no_module = 'ÎÞÄ£¿éÎÄ¼þ';
 $w_no_moduleload = "ÎÞ 'LoadModule'";
 $w_mysql_none = "none";
 $w_mysql_user = "user mode";
-$w_mysql_default = "Ä¬ÈÏ";
+$w_mysql_default = "»Ö¸´Ä¬ÈÏ";
+$w_mysql_mode = "Explanations of sql-mode";
 $w_Size = "´óÐ¡";
-$w_EnterSize = "ÊäÈë´óÐ¡: **M »ò **G (**´ú±íÕûÊý)";
 $w_Time = "Ê±¼ä";
-$w_EnterTime = "ÊäÈëÃëÊý";
 $w_Integer = "ÕûÊýÊýÖµ";
+$w_phpMyAdminHelp = "Help PhpMyAdmin";
+
+// PromptText for Aestan Tray Menu type: prompt variables
+// May have \r\n for multilines
 $w_EnterInteger = "ÊäÈëÕûÊýÊýÖµ";
+$w_enterPort = 'ÊäÈëÒªÊ¹ÓÃµÄ¶Ë¿ÚºÅ';
+$w_EnterSize = "ÊäÈë´óÐ¡: **M »ò **G (**´ú±íÕûÊý)";
+$w_EnterTime = "ÊäÈëÃëÊý";
 $w_MysqlMariaUser = "Enter a valid username. If you don't know, keep 'root' by default.";
 
 // Long texts - Quotation marks " in texts must be escaped: \"
@@ -132,4 +139,6 @@ $w_addingVerTxt ="ËùÓÐ¡°¸½¼Ó×é¼þ¡±£¬¼´ Apache, PHP, MySQL »ò MariaDB ËùÓÐ°æ±¾µÄ°
 	"1. http://wampserver.aviatechno.net\r\n\r\n".
 	"2. http://wampserver.site\r\n\r\n".
 	"´¢´æ¿âÍøÕ¾µÄÁ´½Ó»¹¿ÉÒÔÔÚ ÓÒ¼ü²Ëµ¥ -> °ïÖú Àï´ò¿ª\r\n";
+$w_MySQLsqlmodeInfo = "MySQL/MariaDB sql-mode\r\nThe SQL server may run in different SQL modes depending on the value of the sql-mode directive.\r\nSetting one or more modes restricts certain possibilities and requires greater rigor in SQL syntax and data validation.\r\nThe operation of the sql-mode directive in the my.ini file is as follows.\r\n\r\n- sql-mode: by default\r\nThe sql-mode directive does not exist or is commented out (;sql-mode=\"...\")\r\nThe default modes of the MySQL/MariaDB version are applied\r\n\r\n- sql-mode: user mode\r\nThe sql-mode directive is populated with user-defined modes, for example :\r\nsql-mode=\"NO_ZERO_DATE,NO_ZERO_IN_DATE,NO_AUTO_CREATE_USER\"\r\n\r\n- sql-mode: none\r\nThe sql-mode directive is empty but must exist:\r\nsql-mode=\"\"\r\nno SQL mode is applied.";
+$w_PhpMyAdMinHelpTxt = "-- PhpMyAdmin\r\nWhen starting phpMyAdmin, you will be asked for a user name and password.\r\nAfter installing Wampserver 3, the default username is \"root\" (without quotes) and there is no password, which means that you must leave the form Password box empty.\r\n\r\nPhpMyAdmin is configured to allow you access to either MySQL or MariaDB depending on which ones are active.\r\nIf both DBMS's are activated, you will see a dropdown on the Login screen, called \"Server Choice\", the default server will be shown first in the dropdown list. Select the DBMS you want to use here as part of the login process.\r\nREMEMBER, if you have different user accounts you must use the correct one for the selected DBMS.\r\nALSO: If you have the same account i.e. `root` on both DBMS's, if you have set different passwords, you need to use the right password for the account and DBMS.\r\n";
 
