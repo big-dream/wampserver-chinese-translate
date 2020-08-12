@@ -48,6 +48,6 @@ $langues = array(
     'mysqlportUsed' => 'MySQL 端口：',
     'mariaportUsed' => 'MariaDB 端口：',
     'defaultDBMS' => '默认DBMS',
-    'HelpMySQLMariaDB' => 'How to use MySQL and/or MariaDB?<br>What is a default DBMS?<br>How to change the default DBMS?<br>Go to the related help: Left-click Wampmanager icon -> Help -> MariaDB - MySQL',
+    'HelpMySQLMariaDB' => '如何使用 MySQL 和 MariaDB?<br>什么是默认数据库管理系统?<br>如何更改默认数据库管理系统?<br>可以阅读我们的相关帮助信息: 右键单击 Wampmanager 图标 -> 帮助 -> MariaDB - MySQL',
     'nolocalhost' => '最好在' . WAMPSERVER_ROOT . '/bin/apache/apache%s/conf/extra/httpd-vhosts.conf 文件里定义虚拟主机而不是在网址中使用 localhost 目录',
 );

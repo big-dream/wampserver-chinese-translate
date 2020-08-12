@@ -16,6 +16,8 @@
 // 3.1.9 $w_settings 'BackupHosts'
 // 3.2.0 $w_verifySymlink  - $w_settings['NotVerifyHosts']
 // 3.2.1 $w_addingVer - $w_addingVerTxt - $w_goto - $w_FileRepository
+// 3.2.2 $w_MysqlMariaUser and $w_EnterSize modified -  - $w_MySQLsqlmodeInfo $w_mysql_mode $w_phpMyAdminHelp $w_PhpMyAdMinHelpTxt
+// 3.2.3 https for wampserver.aviatechno
 
 // Projects sub-menu
 $w_projectsSubMenu = 'ÏîÄ¿ÁÐ±í';
@@ -33,7 +35,6 @@ $w_portForMysql = 'MySQL¶Ë¿Ú';
 $w_testPortMysql = '²âÊÔ3306¶Ë¿Ú';
 $w_testPortMysqlUsed = '²âÊÔMySQLÊ¹ÓÃµÄ¶Ë¿Ú: ';
 $w_testPortMariaUsed = '²âÊÔMariaDBÊ¹ÓÃµÄ¶Ë¿Ú: ';
-$w_enterPort = 'ÊäÈëÒªÊ¹ÓÃµÄ¶Ë¿ÚºÅ';
 
 // Right-click Settings
 $w_wampSettings = 'WampÉèÖÃ';
@@ -44,7 +45,7 @@ $w_settings = array(
     'ProjectSubMenu' => 'ÏÔÊ¾ÏîÄ¿²Ëµ¥',
     'HomepageAtStartup' => 'Æô¶¯Wampserver×Ô¶¯´ò¿ªlocalhost',
     'MenuItemOnline' => 'ÏÔÊ¾ÇÐ»»ÔÚÏß/ÀëÏß²Ëµ¥',
-    'ItemServicesNames' => 'Tools menu item: Change services names',
+    'ItemServicesNames' => '¹¤¾ß²Ëµ¥Ïî: ¸ü¸Ä·þÎñÃû³Æ',
     'NotCheckVirtualHost' => '²»¼ì²éÐéÄâÖ÷»úÊÇ·ñÒÑ¶¨Òå',
     'NotCheckDuplicate' => '²»¼ì²éServerNameÊÇ·ñÖØ¸´',
     'VhostAllLocalIp' => 'ÔÊÐíÔÚÐéÄâÖ÷»úÖÐÊ¹ÓÃ±¾µØIP£¨·Ç127.*£©',
@@ -110,16 +111,22 @@ $w_ext_noline = "ÎÞ 'extension='";
 $w_mod_fixed = "²»¿ÉÓÃÄ£¿é";
 $w_no_module = 'ÎÞÄ£¿éÎÄ¼þ';
 $w_no_moduleload = "ÎÞ 'LoadModule'";
-$w_mysql_none = "none";
-$w_mysql_user = "user mode";
-$w_mysql_default = "Ä¬ÈÏ";
+$w_mysql_none = "²»ÅäÖÃ";
+$w_mysql_user = "ÓÃ»§ÅäÖÃ";
+$w_mysql_default = "Ä¬ÈÏÅäÖÃ";
+$w_mysql_mode = "sql-mode ËµÃ÷";
 $w_Size = "´óÐ¡";
-$w_EnterSize = "ÊäÈë´óÐ¡: **M »ò **G (**´ú±íÕûÊý)";
 $w_Time = "Ê±¼ä";
-$w_EnterTime = "ÊäÈëÃëÊý";
 $w_Integer = "ÕûÊýÊýÖµ";
+$w_phpMyAdminHelp = "PHPMyAdmin°ïÖú";
+
+// PromptText for Aestan Tray Menu type: prompt variables
+// May have \r\n for multilines
 $w_EnterInteger = "ÊäÈëÕûÊýÊýÖµ";
-$w_MysqlMariaUser = "Enter a valid username. If you don't know, keep 'root' by default.";
+$w_enterPort = 'ÊäÈëÒªÊ¹ÓÃµÄ¶Ë¿ÚºÅ';
+$w_EnterSize = "ÊäÈë´óÐ¡: **M »ò **G (**´ú±íÕûÊý)";
+$w_EnterTime = "ÊäÈëÃëÊý";
+$w_MysqlMariaUser = "ÇëÊäÈëÒ»¸öÓÐÐ§µÄÓÃ»§Ãû. Èç¹ûÄã²»ÖªµÀÓÃÍ¾, Çë±£ÁôÎªÄ¬ÈÏµÄ 'root'.";
 
 // Long texts - Quotation marks " in texts must be escaped: \"
 $w_addingVerTxt ="ËùÓÐ¡°¸½¼Ó×é¼þ¡±£¬¼´ Apache, PHP, MySQL »ò MariaDB ËùÓÐ°æ±¾µÄ°²×°³ÌÐò£¬ÒÔ¼°¸üÐÂ³ÌÐò (Wampserver, Aestan Tray Menu, xDebug µÈ) ºÍ WebÓ¦ÓÃ³ÌÐò (PhpMyAdmin, Adminer) ¶¼¿ÉÔÚ Sourceforge ÏÂÔØ.\r\n\r\n".
@@ -132,4 +139,25 @@ $w_addingVerTxt ="ËùÓÐ¡°¸½¼Ó×é¼þ¡±£¬¼´ Apache, PHP, MySQL »ò MariaDB ËùÓÐ°æ±¾µÄ°
 	"1. http://wampserver.aviatechno.net\r\n\r\n".
 	"2. http://wampserver.site\r\n\r\n".
 	"´¢´æ¿âÍøÕ¾µÄÁ´½Ó»¹¿ÉÒÔÔÚ ÓÒ¼ü²Ëµ¥ -> °ïÖú Àï´ò¿ª\r\n";
+$w_MySQLsqlmodeInfo = "MySQL/MariaDB sql-mode\r\n".
+	"SQL ·þÎñÆ÷»á¸ù¾Ý sql-mode ÅäÖÃÀ´ÒÔ²»Í¬µÄÄ£Ê½ÔËÐÐ.\r\n".
+	"ÉèÖÃÒ»¸ö»ò¶à¸öÄ£Ê½»áÏÞÖÆÒ»Ð©ÓÃ·¨£¬²¢ÇÒÐèÒªÄã¶ÔSQLÓï·¨ºÍÊý¾Ý½øÐÐÑÏ¸ñµÄÑéÖ¤ºÍ¼ì²é£¬·ñÔò¿ÉÄÜµ¼ÖÂSQLÓï¾äÎÞ·¨Ö´ÐÐ.\r\n".
+	"²»Í¬Ä£Ê½ÏÂ£¬¶ÔÓ¦ my.ini ÎÄ¼þµÄÅäÖÃÈçÏÂ.\r\n\r\n".
+	"- sql-mode: Ä¬ÈÏÄ£Ê½\r\n".
+	"sql-mode ÅäÖÃÏî²»´æÔÚ»òÒÑ±»×¢ÊÍ (;sql-mode=\"...\")\r\n".
+	"½«Ê¹ÓÃ MySQL/MariaDB µÄÄ¬ÈÏÅäÖÃ\r\n\r\n".
+	"- sql-mode: ×Ô¶¨ÒåÄ£Ê½\r\n".
+	"ÓÃÄãÑ¡ÔñµÄÄ£Ê½À´ÉèÖÃ sql-mode ÅäÖÃ£¬ÀýÈç£º\r\n".
+	"sql-mode=\"NO_ZERO_DATE,NO_ZERO_IN_DATE,NO_AUTO_CREATE_USER\"\r\n\r\n".
+	"- sql-mode: ¿ÕÄ£Ê½\r\n".
+	"sql-mode ÅäÖÃÎª¿Õ£¬µ«±ØÐë´æÔÚ:\r\n".
+	"sql-mode=\"\"\r\n".
+	"ÎÞ SQL Ä£Ê½.";
+$w_PhpMyAdMinHelpTxt = "-- PhpMyAdmin\r\n".
+	"Æô¶¯PhpMyAdminÊ±£¬½«ÒªÇóÄãÊäÈëÓÃ»§ÃûºÍÃÜÂë.\r\n".
+	"°²×° Wampserver 3 ºó, Êý¾Ý¿â¹ÜÀíÏµÍ³Ä¬ÈÏÓÃ»§ÃûÊÇ root £¬ÃÜÂëÎª¿Õ£¬¼´ÃÜÂë¿òÁô¿Õ²»ÓÃÌîÐ´.\r\n\r\n".
+	"Äã¿ÉÒÔÔÚ PhpMyAdmin ÀïÃæ¹ÜÀí MySQL »ò MariaDB £¬Ö»ÐèÒªÔÚµÇÂ¼½çÃæÑ¡Ôñ¼´¿É.\r\n".
+	"Èç¹ûÖ»ÆôÓÃÁËÒ»¸öÊý¾Ý¿â¹ÜÀíÏµÍ³£¬ÔòÃ»ÓÐÑ¡Ôñ¡£Èç¹ûÓÐÑ¡Ôñ£¬ÔòµÚÒ»¸öÎªÄ¬ÈÏÊý¾Ý¿â¹ÜÀíÏµÍ³.\r\n".
+	"¼Ç×¡£¬Èç¹ûÄúÓÐ²»Í¬µÄÓÃ»§ÕÊ»§£¬Ôò±ØÐëÎªËùÑ¡µÄÊý¾Ý¿â¹ÜÀíÏµÍ³Ê¹ÓÃÕýÈ·µÄÓÃ»§ÕÊ»§.\r\n".
+	"ÁíÍâ: Á½¸öÊý¾Ý¿â¹ÜÀíÏµÍ³Ö®¼äµÄÓÃ»§ºÍÊý¾Ý²»»¥Í¨.\r\n";
 

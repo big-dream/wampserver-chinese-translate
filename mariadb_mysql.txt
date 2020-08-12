@@ -1,0 +1,75 @@
+Contents:
+- 1 - MySQL and MariaDB
+- 2 - Database connection via MariaDB or MySQL
+- 3 - Replace the default DBMS MariaDB with MySQL and vice versa
+- 4 - Only one database manager - No DBMS manager
+- 5 - Default DBMS: none - /!\ No Default DBMS
+- 6 - PhpMyAdmin
++-----------------------+
++ 1 MySQL and MariaDB --+
++-----------------------+
+MySQL has been supported since the beginning of Wampserver and MariaDB has been supported since Wampserver 3.0.8.
+For SQL connections the default port is and always has been port 3306.
+Both MySQL and MariaDB are installed by the full installer.
+
+Depending on the versions of the full installer of Wampserver you used, either MySQL or MariaDB will be the default database manager.
+- If MySQL is the default DBMS, it uses port 3306 and therefore MariaDB will use port 3307.
+- If MariaDB is the default DBMS, it uses port 3306 and therefore MySQL will use port 3308.
+The default database manager is shown in the Left-Click menu of Wampmanager
+
++----------------------------------------------+
++ 2 Database connection via MariaDB or MySQL --+
++----------------------------------------------+
+The default Database manager port is 3306. Connections that do not specify the port number will always be on the default port.
+If the database manager (MySQL or MariaDB) you want to use is not the default one, it is therefore imperative to specify the port number in connection requests since it will not be using the default port 3306. We repeat, without specifying the port, it will be the default port that will be used, so 3306.
+Normally, connection scripts do not mention the port to use. For example:
+$mysqli = new mysqli('127.0.0.1', 'user', 'password', 'database');
+or, in procedural :
+$mysqli = mysqli_connect('127.0.0.0.1', 'user', 'password', 'database');
+
+So, to connect with a manager that doesn't use port 3306, you have to specify the port number on the connection request:
+$mysqli = new mysqli('127.0.0.1', 'user', 'password', 'database', '3307');
+or, procedurally:
+$mysqli = mysqli_connect('127.0.0.0.1', 'user', 'password', 'database', '3307');
+
+To check the connections on the MySQL or MariaDB database manager, use the script:
+wamp(64)\www\testmysql.php
+by putting 'http://localhost/testmysql.php' in the browser address bar having first modified the script according to your parameters.
+
++----------------------------------------------------------------+
++ 3 Replace the default DBMS MariaDB with MySQL and vice versa --+
++----------------------------------------------------------------+
+Important note : If you want to move a database from MySQL to MariaDB or visa versa, it is IMPERATIVE to BACKUP your databases (phpMyAdmin -> EXPORT) in format - SQL before switching DBMS.
+This is the only reliable way to transfer a database between MySQL and MariaDB.
+- There is a tool to reverse the default DBMS with one click if both are enabled (MySQL AND MariaDB):
+- If MySQL is the default DBMS
+Right-click Wampmanager icon -> Tools -> Invert default DBMS MySQL <-> MariaDB
+or
+- If MariaDB is the default DBMS
+Right-click Wampmanager icon -> Tools -> Invert default DBMS MariaDB <-> MySQL
+Of course, you still have to import your previously saved databases.
+
++-------------------------------+
++ 4 Only one database manager --+
++      No database manager    --+
++-------------------------------+
+You don't have to keep both MySQL and MariaDB managers active, you can deactivate the one that you do not require. You can even disable both database managers completely if you wish :
+Right-Click Wampmanager Icon -> Wamp Settings -> Allow MariaDB to deactivate - removes the green Tick
+Right-Click Wampmanager Icon -> Wamp Settings -> Allow MySQL to deactivate - removes the green Tick
+
+You can reactivate either of both at a leater date if you and when you want to. This does not uninstall the DBMS, it just unregisters the Windows Service for that DBMS.
+
++-------------------------+
++ 5 Default DBMS : none --+
++   /!\ No Default DBMS --+
++-------------------------+
+This means that none of the database managers (MariaDB and/or MySQL) use port 3306 and it is therefore imperative to specify the port number in connection requests since this is not the default port 3306.
+It is then essential that you choose which DBMS you want to use by default; to do this, use the built-in tools (Right-click -> Tools) to assign port 3306 (Use a port other than xxxx) to the DBMS (MariaDB or MySQL) you want to set as default.
+
++----------------+
++ 6 PhpMyAdmin --+
++----------------+
+PhpMyAdmin is configured to allow you access to either MySQL or MariaDB depending on which ones are active.
+If both DBMS's are activated, you will see a dropdown on the Login screen, called "Server Choice", the default server will be shown first in the dropdown list. Select the DBMS you want to use here as part of the login process.
+REMEMBER, if you have different user accounts you must use the correct one for the selected DBMS.
+ALSO: If you have the same account i.e. `root` on both DBMS's, if you have set different passwords, you need to use the right password for the account and DBMS.
