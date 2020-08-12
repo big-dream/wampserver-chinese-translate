@@ -45,7 +45,7 @@ $w_settings = array(
     'ProjectSubMenu' => 'ÏÔÊ¾ÏîÄ¿²Ëµ¥',
     'HomepageAtStartup' => 'Æô¶¯Wampserver×Ô¶¯´ò¿ªlocalhost',
     'MenuItemOnline' => 'ÏÔÊ¾ÇĞ»»ÔÚÏß/ÀëÏß²Ëµ¥',
-    'ItemServicesNames' => 'Tools menu item: Change services names',
+    'ItemServicesNames' => '¹¤¾ß²Ëµ¥Ïî: ¸ü¸Ä·şÎñÃû³Æ',
     'NotCheckVirtualHost' => '²»¼ì²éĞéÄâÖ÷»úÊÇ·ñÒÑ¶¨Òå',
     'NotCheckDuplicate' => '²»¼ì²éServerNameÊÇ·ñÖØ¸´',
     'VhostAllLocalIp' => 'ÔÊĞíÔÚĞéÄâÖ÷»úÖĞÊ¹ÓÃ±¾µØIP£¨·Ç127.*£©',
@@ -111,14 +111,14 @@ $w_ext_noline = "ÎŞ 'extension='";
 $w_mod_fixed = "²»¿ÉÓÃÄ£¿é";
 $w_no_module = 'ÎŞÄ£¿éÎÄ¼ş';
 $w_no_moduleload = "ÎŞ 'LoadModule'";
-$w_mysql_none = "none";
-$w_mysql_user = "user mode";
-$w_mysql_default = "»Ö¸´Ä¬ÈÏ";
-$w_mysql_mode = "Explanations of sql-mode";
+$w_mysql_none = "²»ÅäÖÃ";
+$w_mysql_user = "ÓÃ»§ÅäÖÃ";
+$w_mysql_default = "Ä¬ÈÏÅäÖÃ";
+$w_mysql_mode = "sql-mode ËµÃ÷";
 $w_Size = "´óĞ¡";
 $w_Time = "Ê±¼ä";
 $w_Integer = "ÕûÊıÊıÖµ";
-$w_phpMyAdminHelp = "Help PhpMyAdmin";
+$w_phpMyAdminHelp = "PHPMyAdmin°ïÖú";
 
 // PromptText for Aestan Tray Menu type: prompt variables
 // May have \r\n for multilines
@@ -126,7 +126,7 @@ $w_EnterInteger = "ÊäÈëÕûÊıÊıÖµ";
 $w_enterPort = 'ÊäÈëÒªÊ¹ÓÃµÄ¶Ë¿ÚºÅ';
 $w_EnterSize = "ÊäÈë´óĞ¡: **M »ò **G (**´ú±íÕûÊı)";
 $w_EnterTime = "ÊäÈëÃëÊı";
-$w_MysqlMariaUser = "Enter a valid username. If you don't know, keep 'root' by default.";
+$w_MysqlMariaUser = "ÇëÊäÈëÒ»¸öÓĞĞ§µÄÓÃ»§Ãû. Èç¹ûÄã²»ÖªµÀÓÃÍ¾, Çë±£ÁôÎªÄ¬ÈÏµÄ 'root'.";
 
 // Long texts - Quotation marks " in texts must be escaped: \"
 $w_addingVerTxt ="ËùÓĞ¡°¸½¼Ó×é¼ş¡±£¬¼´ Apache, PHP, MySQL »ò MariaDB ËùÓĞ°æ±¾µÄ°²×°³ÌĞò£¬ÒÔ¼°¸üĞÂ³ÌĞò (Wampserver, Aestan Tray Menu, xDebug µÈ) ºÍ WebÓ¦ÓÃ³ÌĞò (PhpMyAdmin, Adminer) ¶¼¿ÉÔÚ Sourceforge ÏÂÔØ.\r\n\r\n".
@@ -139,6 +139,25 @@ $w_addingVerTxt ="ËùÓĞ¡°¸½¼Ó×é¼ş¡±£¬¼´ Apache, PHP, MySQL »ò MariaDB ËùÓĞ°æ±¾µÄ°
 	"1. http://wampserver.aviatechno.net\r\n\r\n".
 	"2. http://wampserver.site\r\n\r\n".
 	"´¢´æ¿âÍøÕ¾µÄÁ´½Ó»¹¿ÉÒÔÔÚ ÓÒ¼ü²Ëµ¥ -> °ïÖú Àï´ò¿ª\r\n";
-$w_MySQLsqlmodeInfo = "MySQL/MariaDB sql-mode\r\nThe SQL server may run in different SQL modes depending on the value of the sql-mode directive.\r\nSetting one or more modes restricts certain possibilities and requires greater rigor in SQL syntax and data validation.\r\nThe operation of the sql-mode directive in the my.ini file is as follows.\r\n\r\n- sql-mode: by default\r\nThe sql-mode directive does not exist or is commented out (;sql-mode=\"...\")\r\nThe default modes of the MySQL/MariaDB version are applied\r\n\r\n- sql-mode: user mode\r\nThe sql-mode directive is populated with user-defined modes, for example :\r\nsql-mode=\"NO_ZERO_DATE,NO_ZERO_IN_DATE,NO_AUTO_CREATE_USER\"\r\n\r\n- sql-mode: none\r\nThe sql-mode directive is empty but must exist:\r\nsql-mode=\"\"\r\nno SQL mode is applied.";
-$w_PhpMyAdMinHelpTxt = "-- PhpMyAdmin\r\nWhen starting phpMyAdmin, you will be asked for a user name and password.\r\nAfter installing Wampserver 3, the default username is \"root\" (without quotes) and there is no password, which means that you must leave the form Password box empty.\r\n\r\nPhpMyAdmin is configured to allow you access to either MySQL or MariaDB depending on which ones are active.\r\nIf both DBMS's are activated, you will see a dropdown on the Login screen, called \"Server Choice\", the default server will be shown first in the dropdown list. Select the DBMS you want to use here as part of the login process.\r\nREMEMBER, if you have different user accounts you must use the correct one for the selected DBMS.\r\nALSO: If you have the same account i.e. `root` on both DBMS's, if you have set different passwords, you need to use the right password for the account and DBMS.\r\n";
+$w_MySQLsqlmodeInfo = "MySQL/MariaDB sql-mode\r\n".
+	"SQL ·şÎñÆ÷»á¸ù¾İ sql-mode ÅäÖÃÀ´ÒÔ²»Í¬µÄÄ£Ê½ÔËĞĞ.\r\n".
+	"ÉèÖÃÒ»¸ö»ò¶à¸öÄ£Ê½»áÏŞÖÆÒ»Ğ©ÓÃ·¨£¬²¢ÇÒĞèÒªÄã¶ÔSQLÓï·¨ºÍÊı¾İ½øĞĞÑÏ¸ñµÄÑéÖ¤ºÍ¼ì²é£¬·ñÔò¿ÉÄÜµ¼ÖÂSQLÓï¾äÎŞ·¨Ö´ĞĞ.\r\n".
+	"²»Í¬Ä£Ê½ÏÂ£¬¶ÔÓ¦ my.ini ÎÄ¼şµÄÅäÖÃÈçÏÂ.\r\n\r\n".
+	"- sql-mode: Ä¬ÈÏÄ£Ê½\r\n".
+	"sql-mode ÅäÖÃÏî²»´æÔÚ»òÒÑ±»×¢ÊÍ (;sql-mode=\"...\")\r\n".
+	"½«Ê¹ÓÃ MySQL/MariaDB µÄÄ¬ÈÏÅäÖÃ\r\n\r\n".
+	"- sql-mode: ×Ô¶¨ÒåÄ£Ê½\r\n".
+	"ÓÃÄãÑ¡ÔñµÄÄ£Ê½À´ÉèÖÃ sql-mode ÅäÖÃ£¬ÀıÈç£º\r\n".
+	"sql-mode=\"NO_ZERO_DATE,NO_ZERO_IN_DATE,NO_AUTO_CREATE_USER\"\r\n\r\n".
+	"- sql-mode: ¿ÕÄ£Ê½\r\n".
+	"sql-mode ÅäÖÃÎª¿Õ£¬µ«±ØĞë´æÔÚ:\r\n".
+	"sql-mode=\"\"\r\n".
+	"ÎŞ SQL Ä£Ê½.";
+$w_PhpMyAdMinHelpTxt = "-- PhpMyAdmin\r\n".
+	"Æô¶¯PhpMyAdminÊ±£¬½«ÒªÇóÄãÊäÈëÓÃ»§ÃûºÍÃÜÂë.\r\n".
+	"°²×° Wampserver 3 ºó, Êı¾İ¿â¹ÜÀíÏµÍ³Ä¬ÈÏÓÃ»§ÃûÊÇ root £¬ÃÜÂëÎª¿Õ£¬¼´ÃÜÂë¿òÁô¿Õ²»ÓÃÌîĞ´.\r\n\r\n".
+	"Äã¿ÉÒÔÔÚ PhpMyAdmin ÀïÃæ¹ÜÀí MySQL »ò MariaDB £¬Ö»ĞèÒªÔÚµÇÂ¼½çÃæÑ¡Ôñ¼´¿É.\r\n".
+	"Èç¹ûÖ»ÆôÓÃÁËÒ»¸öÊı¾İ¿â¹ÜÀíÏµÍ³£¬ÔòÃ»ÓĞÑ¡Ôñ¡£Èç¹ûÓĞÑ¡Ôñ£¬ÔòµÚÒ»¸öÎªÄ¬ÈÏÊı¾İ¿â¹ÜÀíÏµÍ³.\r\n".
+	"¼Ç×¡£¬Èç¹ûÄúÓĞ²»Í¬µÄÓÃ»§ÕÊ»§£¬Ôò±ØĞëÎªËùÑ¡µÄÊı¾İ¿â¹ÜÀíÏµÍ³Ê¹ÓÃÕıÈ·µÄÓÃ»§ÕÊ»§.\r\n".
+	"ÁíÍâ: Á½¸öÊı¾İ¿â¹ÜÀíÏµÍ³Ö®¼äµÄÓÃ»§ºÍÊı¾İ²»»¥Í¨.\r\n";
 
