@@ -449,9 +449,9 @@ Action: run; FileName: "'.$c_phpExe.'";Parameters: "msg.php 11 '.base64_encode($
 if($c_navigator != "Edge" && $c_navigator != "cmd.exe" && $c_navigator != "iexplore.exe") {
 	if(!file_exists($c_navigator)) {
 		$WarningsAtEnd = true;
-		$WarningMenu .= 'Type: item; Caption: "Default browser does not exist"; Glyph: 19; Action: multi; Actions: warning_nobrowser
+		$WarningMenu .= 'Type: item; Caption: "默认浏览器不存在"; Glyph: 19; Action: multi; Actions: warning_nobrowser
 ';
-		$message = "\r\n".$c_navigator." is defined as default browser\r\nThis browser exe file does not exist\r\n";
+		$message = "\r\n你将 ".$c_navigator." 设置为 Wampserver 的默认浏览器\r\n但该浏览器的程序文件并不存在\r\n";
 		if($doReport)
 			$wampReport['gen2'] .= $message;
 		$WarningText .= '[warning_nobrowser]
@@ -462,9 +462,9 @@ Action: run; FileName: "'.$c_phpExe.'";Parameters: "msg.php 11 '.base64_encode($
 // Verify that default editor exists
 if(!file_exists($c_editor)) {
 	$WarningsAtEnd = true;
-	$WarningMenu .= 'Type: item; Caption: "Default text editor does not exist"; Glyph: 19; Action: multi; Actions: warning_noeditor
+	$WarningMenu .= 'Type: item; Caption: "默认编辑器不存在"; Glyph: 19; Action: multi; Actions: warning_noeditor
 ';
-	$message = "\r\n".$c_editor." is defined as default text editor\r\nThis editor exe file does not exist\r\n";
+	$message = "\r\n你将 ".$c_editor." 设置为 Wampserver 的默认编辑器\r\n但该编辑器的程序文件并不存在\r\n";
 	if($doReport)
 		$wampReport['gen2'] .= $message;
 	$WarningText .= '[warning_noeditor]
