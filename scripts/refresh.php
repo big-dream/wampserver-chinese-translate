@@ -2061,33 +2061,33 @@ Action: run; FileName: "'.$c_phpExe.'";Parameters: "msg.php 9 '.base64_encode($n
 						}
 						else {
 							if($server_name[$name] == -2)
-								$message = "In the httpd-vhosts.conf file:\r\n\r\n\tThe number of\r\n\r\n\t\t<Directory ...>\r\n\t\tis not equal to the number of\r\n\r\n\t\t</Directory>\r\n\r\nThey should be identical.";
+								$message = "在 httpd-vhost.conf 文件中:\r\n\r\n\tThe number of\r\n\r\n\t\t<Directory ...>\r\n\t\tis not equal to the number of\r\n\r\n\t\t</Directory>\r\n\r\nThey should be identical.";
 							elseif($server_name[$name] == -3)
-								$message = "In the httpd-vhosts.conf file:\r\n\r\n\tThe number of\r\n\r\n\t\t<VirtualHost ...>\r\n\tis not equal to the number of\r\n\r\n\t\tServerName\r\n\r\nThey should be identical.\r\n\r\n\tCorrect syntax is: <VirtualHost *:80>\r\n";
+								$message = "在 httpd-vhost.conf 文件中:\r\n\r\n\tThe number of\r\n\r\n\t\t<VirtualHost ...>\r\n\tis not equal to the number of\r\n\r\n\t\tServerName\r\n\r\nThey should be identical.\r\n\r\n\tCorrect syntax is: <VirtualHost *:80>\r\n";
 							elseif($server_name[$name] == -4)
-								$message = "In the httpd-vhosts.conf file:\r\n\r\n\tPort number into <VirtualHost *:port>\r\n\tis not defined for all\r\n\r\n\t\t<VirtualHost...>\r\n\r\n\tCorrect syntax is: <VirtualHost *:xx>\r\n\r\n\t\twith xx = port number [80 by default]\r\n";
+								$message = "在 httpd-vhost.conf 文件中:\r\n\r\n\tPort number into <VirtualHost *:port>\r\n\tis not defined for all\r\n\r\n\t\t<VirtualHost...>\r\n\r\n\tCorrect syntax is: <VirtualHost *:xx>\r\n\r\n\t\twith xx = port number [80 by default]\r\n";
 							elseif($server_name[$name] == -5)
-								$message = "In the httpd-vhosts.conf file:\r\n\r\n\tPort number into <VirtualHost *:port>\r\n\thas not correct value\r\n\r\nValue are:".print_r($virtualHost['virtual_port'],true)."\r\n";
+								$message = "在 httpd-vhost.conf 文件中:\r\n\r\n\tPort number into <VirtualHost *:port>\r\n\thas not correct value\r\n\r\nValue are:".print_r($virtualHost['virtual_port'],true)."\r\n";
 							elseif($server_name[$name] == -6)
 								$message = "The httpd-vhosts.conf file has not been cleaned.\r\nThere remain VirtualHost examples like: dummy-host.example.com\r\n";
 							elseif($server_name[$name] == -7)
-								$message = "In the httpd-vhosts.conf file:\r\n\r\n\tThe number of\r\n\r\n\t\tDocumentRoot\r\n\tis not equal to the number of\r\n\r\n\t\tServerName\r\n\r\nThey should be identical.\r\n";
+								$message = "在 httpd-vhost.conf 文件中:\r\n\r\n\tThe number of\r\n\r\n\t\tDocumentRoot\r\n\tis not equal to the number of\r\n\r\n\t\tServerName\r\n\r\nThey should be identical.\r\n";
 							elseif($server_name[$name] == -8)
-								$message = "In the httpd-vhosts.conf file:\r\n\r\nThe DocumentRoot path\r\n\r\n\t".$documentPathError."\r\n\r\ndoes not exits\r\n";
+								$message = "在 httpd-vhost.conf 文件中:\r\n\r\nThe DocumentRoot path\r\n\r\n\t".$documentPathError."\r\n\r\ndoes not exits\r\n";
 							elseif($server_name[$name] == -9)
-								$message = "In the httpd-vhosts.conf file:\r\n\r\nThe Directory path\r\n\r\n\t".$directoryPathError."\r\n\r\ndoes not exits\r\n";
+								$message = "在 httpd-vhost.conf 文件中:\r\n\r\nThe Directory path\r\n\r\n\t".$directoryPathError."\r\n\r\ndoes not exits\r\n";
 							elseif($server_name[$name] == -10)
-								$message = "In the httpd-vhosts.conf file:\r\n\r\nThere is duplicate ServerName\r\n".$DuplicateNames."\r\n";
+								$message = "在 httpd-vhost.conf 文件中:\r\n\r\nThere is duplicate ServerName\r\n".$DuplicateNames."\r\n";
 							elseif($server_name[$name] == -11)
-								$message = "In the httpd-vhosts.conf file:\r\n\r\nThe IP used for the VirtualHost is not valid local IP\r\n";
+								$message = "在 httpd-vhost.conf 文件中:\r\n\r\nThe IP used for the VirtualHost is not valid local IP\r\n";
 							elseif($server_name[$name] == -12)
-								$message = "In the httpd-vhost.conf file:\r\n\r\nThe Port used (".$virtualHost['ServerNamePort'][$name].") for the VirtualHost ".$name." is not a Listen port\r\n";
+								$message = "在 httpd-vhost.conf 文件中:\r\n\r\n{$name}虚拟主机使用的端口({$virtualHost['ServerNamePort'][$name]})未在Apache中监听\r\n";
 							elseif($server_name[$name] == -13)
-								$message = "In the httpd-vhost.conf file:\r\n\r\nThe Port used (".$virtualHost['ServerNamePort'][$name].") for the VirtualHost ".$name." is not from a Define Apache variable\r\n";
+								$message = "在 httpd-vhost.conf 文件中:\r\n\r\nThe Port used (".$virtualHost['ServerNamePort'][$name].") for the VirtualHost ".$name." is not from a Define Apache variable\r\n";
 							elseif($server_name[$name] == -14)
-								$message = "In the httpd-vhosts.conf file:\r\n\r\nThe DocumentRoot path\r\n\r\n\t'".$wwwDir."'\r\n\r\nused with '".$name."' VirtualHost\r\n\r\nis reserved for 'localhost' and should not be used for another VirtualHost\r\n";
+								$message = "在 httpd-vhost.conf 文件中:\r\n\r\nThe DocumentRoot path\r\n\r\n\t'".$wwwDir."'\r\n\r\nused with '".$name."' VirtualHost\r\n\r\nis reserved for 'localhost' and should not be used for another VirtualHost\r\n";
 							elseif($server_name[$name] == -15)
-								$message = "In the httpd-vhosts.conf file:\r\n\r\nTLD '.dev' used with '".$name."' ServerName\r\n\r\nis monopolized by web browsers and should not be used locally.\r\nYou can use'.test' or'.prog' instead.\r\n";
+								$message = "在 httpd-vhost.conf 文件中:\r\n\r\nTLD '.dev' used with '".$name."' ServerName\r\n\r\nis monopolized by web browsers and should not be used locally.\r\nYou can use'.test' or'.prog' instead.\r\n";
     					$myreplacesubmenuVhosts .= '[server_'.$name.']
 Action: run; FileName: "'.$c_phpExe.'";Parameters: "msg.php 11 '.base64_encode($message).'";WorkingDir: "'.$c_installDir.'/scripts"; Flags: waituntilterminated
 ';

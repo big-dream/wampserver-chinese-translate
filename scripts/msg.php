@@ -47,9 +47,9 @@ but there is no 'LoadModule ".$msgExtName." modules/".$msgExplain."' line in htt
  . or - characters neither at the beginning nor at the end
  . or - characters not followed by . or -
  ServerName should be not quoted",
- 10 => "States of services:\n\n".$msgExtName,
- 11 => "There is an error.\n".$msgExtName,
- 12 => "The module ".$msgExtName." must not be disables.",
+ 10 => "服务状态:\n\n".$msgExtName,
+ 11 => "发生错误.\n".$msgExtName,
+ 12 => "不允许禁用 ".$msgExtName." 模块.",
  13 => "In ".$msgExtName." file,
  MySQL Server has not the same name as MySQL service: ".$msgExplain."
 
@@ -64,11 +64,11 @@ but there is no 'LoadModule ".$msgExtName." modules/".$msgExplain."' line in htt
 	);
 
 function message_add(&$array) {
-	$array = "Sorry,
+	$array = "抱歉,
 
 ".$array."
 
-Press ENTER to continue...
+按回车(ENTER)键继续...
 ";
 }
 array_walk($message, 'message_add');
