@@ -108,7 +108,7 @@ $w_ext_zend = 'Zend 扩展';
 $w_phpparam_info = '仅供参考';
 $w_ext_nodll = '无 dll 文件';
 $w_ext_noline = "无 'extension='";
-$w_mod_fixed = "不可用模块";
+$w_mod_fixed = "固定模块";
 $w_no_module = '无模块文件';
 $w_no_moduleload = "无 'LoadModule'";
 $w_mysql_none = "不配置";
