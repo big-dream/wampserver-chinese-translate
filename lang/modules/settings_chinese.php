@@ -1,8 +1,7 @@
 <?php
-// Default English language file for
-// Projects and VirtualHosts sub-menus
-// Settings and Tools right-click sub-menus
-// 3.0.7 add $w_listenForApache - $w_AddListenPort - $w_deleteListenPort - $w_settings['SupportMariaDB']
+// 简体中文语言文件
+// 项目/虚拟主机子菜单/设置/工具和wampmanger右键子菜单
+// 3.0.7 添加 $w_listenForApache - $w_AddListenPort - $w_deleteListenPort - $w_settings['SupportMariaDB']
 // $w_settings['DaredevilOptions']
 // $w_Size - $w_EnterSize - $w_Time - $w_EnterTime - $w_Integer - $w_EnterInteger - $w_add_VirtualHost
 // 3.0.8 $w_settings['SupportMySQL'] - $w_portUsedMaria - $w_testPortMariaUsed
@@ -19,9 +18,9 @@
 // 3.2.2 $w_MysqlMariaUser and $w_EnterSize modified -  - $w_MySQLsqlmodeInfo $w_mysql_mode $w_phpMyAdminHelp $w_PhpMyAdMinHelpTxt
 // 3.2.3 https for wampserver.aviatechno
 
-// Projects sub-menu
+// 项目子菜单
 $w_projectsSubMenu = '项目列表';
-// VirtualHosts sub-menu
+// 虚拟主机子菜单
 $w_virtualHostsSubMenu = '虚拟主机列表';
 $w_add_VirtualHost = '虚拟主机管理';
 $w_aliasSubMenu = '别名(Alias)列表';
@@ -36,7 +35,7 @@ $w_testPortMysql = '测试3306端口';
 $w_testPortMysqlUsed = '测试MySQL使用的端口: ';
 $w_testPortMariaUsed = '测试MariaDB使用的端口: ';
 
-// Right-click Settings
+// 右键子菜单-设置
 $w_wampSettings = 'Wamp设置';
 $w_settings = array(
     'urlAddLocalhost' => 'Add localhost in url',
@@ -70,7 +69,7 @@ $w_settings = array(
     'BackupHosts' => '备份hosts文件',
 );
 
-// Right-click Tools
+// 右键子菜单-工具
 $w_wampTools = '工具';
 $w_restartDNS = '重启DNS';
 $w_testConf = '检查httpd.conf语法';
@@ -102,7 +101,7 @@ $w_verifySymlink = '验证软链接(symbolic links)';
 $w_goto = '转到:';
 $w_FileRepository = 'Wampserver文件储存库网站';
 
-//miscellaneous
+// 杂项
 $w_ext_spec = '专用扩展';
 $w_ext_zend = 'Zend 扩展';
 $w_phpparam_info = '仅供参考';
@@ -120,15 +119,14 @@ $w_Time = "时间";
 $w_Integer = "整数数值";
 $w_phpMyAdminHelp = "PHPMyAdmin帮助";
 
-// PromptText for Aestan Tray Menu type: prompt variables
-// May have \r\n for multilines
+// 输入提示
 $w_EnterInteger = "输入整数数值";
 $w_enterPort = '输入要使用的端口号';
 $w_EnterSize = "输入大小: **M 或 **G (**代表整数)";
 $w_EnterTime = "输入秒数";
 $w_MysqlMariaUser = "请输入一个有效的用户名. 如果你不知道用途, 请保留为默认的 'root'.";
 
-// Long texts - Quotation marks " in texts must be escaped: \"
+// 长文本，必须转义双引号(\")
 $w_addingVerTxt ="所有“附加组件”，即 Apache, PHP, MySQL 或 MariaDB 所有版本的安装程序，以及更新程序 (Wampserver, Aestan Tray Menu, xDebug 等) 和 Web应用程序 (PhpMyAdmin, Adminer) 都可在 Sourceforge 下载.\r\n\r\n".
 	"'https://sourceforge.net/projects/wampserver/'\r\n\r\n".
 	"只需要下载所需的安装程序文件，右键单击下载的安装程序文件，然后选择“以管理员身份运行”，安装完之后，插件或应用就会添加到您的Wampserver中.\r\n\r\n".

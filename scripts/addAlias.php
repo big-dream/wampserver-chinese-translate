@@ -69,14 +69,14 @@ Alias /${newAliasDir} "${newAliasDest}"
 
 <Directory "${newAliasDest}">
 	Options Indexes FollowSymLinks MultiViews
-  AllowOverride all
-  <ifDefine APACHE24>
+    AllowOverride all
+    <ifDefine APACHE24>
 		Require local
 	</ifDefine>
 	<ifDefine !APACHE24>
 		Order Deny,Allow
-    Deny from all
-    Allow from localhost ::1 127.0.0.1
+        Deny from all
+        Allow from localhost ::1 127.0.0.1
 	</ifDefine>
 </Directory>
 

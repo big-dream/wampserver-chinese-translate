@@ -142,24 +142,24 @@ $c_hostsFile_writable = true;
 $WarningMsg = '';
 if(file_exists($c_hostsFile)) {
 	if(!is_file($c_hostsFile)) {
-		$WarningMsg .= $c_hostsFile." is not a file\r\n";
+		$WarningMsg .= $c_hostsFile." 不是一个文件\r\n";
 	}
 	elseif(!is_writable($c_hostsFile)) {
 		if(@chmod($c_hostsFile, 0644) === false) {
-			$WarningMsg .= "Impossible to modify the file ".$c_hostsFile." to be writable\r\n";
+			$WarningMsg .= "未能将 ".$c_hostsFile." 文件修改为可写\r\n";
 		}
 		if(!is_writable($c_hostsFile)) {
-			$WarningMsg .= "The file ".$c_hostsFile." is not writable";
+			$WarningMsg .= $c_hostsFile." 文件不可写";
 		}
 	}
 }
 else {
-	$WarningMsg .= "The file ".$c_hostsFile." does not exists\r\n";
+	$WarningMsg .= $c_hostsFile." 文件不存在\r\n";
 }
 if(!empty($WarningMsg)) {
 	$c_hostsFile_writable = false;
 	error_log($WarningMsg);
-	if(WAMPTRACE_PROCESS) error_log("script ".__FILE__."\n*** ".$WarningMsg."\n",3,WAMPTRACE_FILE);
+	if(WAMPTRACE_PROCESS) error_log("脚本 ".__FILE__."\n*** ".$WarningMsg."\n",3,WAMPTRACE_FILE);
 }
 //Check last number of wampsave hosts
 $next_hosts_save = 0;
@@ -195,8 +195,10 @@ $phpDllToCopy = array_merge(
 	'libpq.dll',
 	'libssh2.dll', //For php 5.5.17
 	'libsodium.dll', //For php 7.2.0
-	'libsqlite3.dll', //For php 7.4.0
-	'php5isapi.dll',
+
+	'libsqlite3.dll', //For php 7.4.0
+
+	'php5isapi.dll',
 	'php5nsapi.dll',
 	'php5ts.dll',
 	'php7ts.dll', //For PHP 7
@@ -373,11 +375,11 @@ $mysqlParams = array (
 $mysqlParamsNotOnOff = array(
 	'basedir' => array(
 		'change' => false,
-		'msg' => "\nThis setting should not be changed, otherwise you risk losing your existing databases.\n",
+		'msg' => "\n请勿更改此设置，否则可能会丢失现有数据库.\n",
 		),
 	'datadir' => array(
 		'change' => false,
-		'msg' => "\nThis setting should not be changed, otherwise you risk losing your existing databases.\n",
+		'msg' => "\n请勿更改此设置，否则可能会丢失现有数据库.\n",
 		),
 	'key_buffer_size' => array(
 		'change' => true,
@@ -387,14 +389,14 @@ $mysqlParamsNotOnOff = array(
 		),
 	'lc-messages' => array(
 		'change' => false,
-		'msg' => "\nTo set the Error Message Language see:\n\nhttp://dev.mysql.com/doc/refman/5.7/en/error-message-language.html\n",
+		'msg' => "\n要设置错误消息语言，请参阅:\n\nhttp://dev.mysql.com/doc/refman/5.7/en/error-message-language.html\n",
 		),
 	'log_error_verbosity' => array(
 		'change' => true,
 		'title' => 'Number',
 		'quoted' => false,
 		'values' => array('1', '2', '3'),
-		'text' => array('1' => 'Errors only', '2' => 'Errors and warnings', '3' => 'Errors, warnings, and notes'),
+		'text' => array('1' => '仅错误', '2' => '错误和警告', '3' => '错误和警告和提示'),
 		),
 	'max_allowed_packet' => array(
 		'change' => true,
@@ -451,15 +453,15 @@ $mysqlParamsNotOnOff = array(
 		),
 	'prompt' => array(
 		'change' => false,
-		'msg' => "\nTo set the console prompt see:\n\nhttps://dev.mysql.com/doc/refman/5.7/en/mysql-commands.html\n",
+		'msg' => "\n要设置控制台提示，请参见:\n\nhttps://dev.mysql.com/doc/refman/5.7/en/mysql-commands.html\n",
 		),
 	'table_definition_cache' => array(
 		'change' => false,
-		'msg' => "\nTo set the table_definition_cache see:\n\nhttps://dev.mysql.com/doc/refman/8.0/en/server-system-variables.html#sysvar_table_definition_cache\n",
+		'msg' => "\n要设置 table_definition_cache ，请参见:\n\nhttps://dev.mysql.com/doc/refman/8.0/en/server-system-variables.html#sysvar_table_definition_cache\n",
 		),
 	'skip-grant-tables' => array(
 		'change' => false,
-		'msg' => "\n\nWARNING!! WARNING!!\nThis option causes the server to start without using the privilege system at all, WHICH GIVES ANYONE WITH ACCESS TO THE SERVER UNRESTRICTED ACCESS TO ALL DATABASES.\nThis option also causes the server to suppress during its startup sequence the loading of user-defined functions (UDFs), scheduled events, and plugins that were installed.\n\nYou should leave this option 'uncommented' ONLY for the time required to perform certain operations such as the replacement of a lost password for 'root'.\n",
+		'msg' => "\n\n警告!! 警告!!\nThis option causes the server to start without using the privilege system at all, WHICH GIVES ANYONE WITH ACCESS TO THE SERVER UNRESTRICTED ACCESS TO ALL DATABASES.\nThis option also causes the server to suppress during its startup sequence the loading of user-defined functions (UDFs), scheduled events, and plugins that were installed.\n\nYou should leave this option 'uncommented' ONLY for the time required to perform certain operations such as the replacement of a lost password for 'root'.\n",
 		),
 	'default_authentication_plugin' => array('change' => false,),
 );
@@ -717,4 +719,3 @@ $AesPromptCustom = array(
 	array('MysqlUser',10,'$00FFFFF0','$00890000','$00FFFFFF','$000000FF'),
 );
 
-?>

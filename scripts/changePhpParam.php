@@ -68,7 +68,7 @@ if($count > 0) {
 // Check if we need to modify also CLI php.ini and $c_phpConfFileIni
 if(in_array($parameter,$phpCLIparams)) {
 	//error_log("aussi dans CLI=".$c_phpCliConfFile);
-	$phpIniCLIFileContents = @file_get_contents($c_phpCliConfFile) or die ("php.ini file not found");
+	$phpIniCLIFileContents = @file_get_contents($c_phpCliConfFile) or die ("php.ini 文件未找到");
 	$phpIniCLIFileContents = preg_replace('|^'.$parameter.'[ \t]*=.*|m',$parameter.' = '.$newvalue,$phpIniCLIFileContents, -1, $count);
 
 	if($count > 0) {
@@ -76,7 +76,7 @@ if(in_array($parameter,$phpCLIparams)) {
 	}
 	if($c_phpConfFileIni <> $c_phpCliConfFile) {
 		//error_log("aussi dans CLI=".$c_phpConfFileIni);
-		$phpIniFileContentsIni = @file_get_contents($c_phpConfFileIni) or die ("php.ini file not found");
+		$phpIniFileContentsIni = @file_get_contents($c_phpConfFileIni) or die ("php.ini 文件未找到");
 		$phpIniFileContentsIni = preg_replace('|^'.$parameter.'[ \t]*=.*|m',$parameter.' = '.$newvalue,$phpIniFileContentsIni, -1, $count);
 
 		if($count > 0) {

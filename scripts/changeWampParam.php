@@ -11,7 +11,7 @@ require 'config.inc.php';
 require 'wampserver.lib.php';
 
 $wampConfFile = $c_installDir."/wampmanager.conf";
-$wampConfFileContents = @file_get_contents($wampConfFile) or die ("wampmanager.conf file not found");
+$wampConfFileContents = @file_get_contents($wampConfFile) or die ("wampmanager.conf ÎÄ¼þÎ´ÕÒµ½");
 
 $quoted = false;
 if($_SERVER['argv'][1] == 'quotes')
