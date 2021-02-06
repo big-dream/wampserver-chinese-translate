@@ -195,9 +195,7 @@ $phpDllToCopy = array_merge(
 	'libpq.dll',
 	'libssh2.dll', //For php 5.5.17
 	'libsodium.dll', //For php 7.2.0
-
 	'libsqlite3.dll', //For php 7.4.0
-
 	'php5isapi.dll',
 	'php5nsapi.dll',
 	'php5ts.dll',

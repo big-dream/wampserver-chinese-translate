@@ -172,7 +172,7 @@ if(isset($_POST['vhostdelete'])
 				}
 			}
 			else {
-				$message[] = '<p class="warning">ServerName '.$value.' doesn\'t exist</p>';
+				$message[] = '<p class="warning">ServerName '.$value.' 不存在</p>';
 				$errors = true;
 			}
 
@@ -200,7 +200,7 @@ if(isset($_POST['vhostdelete'])
     		flock($fp, LOCK_UN);    // release the lock
 			}
 			else {
-				$message[] = '<p class="warning">Unable to write to '.$c_hostsFile.' file</p>';
+				$message[] = '<p class="warning">无法写入 '.$c_hostsFile.' 文件</p>';
 				$errors = true;
 			}
 			fclose($fp);
@@ -220,7 +220,7 @@ if($virtualHost['nb_Server'] > 0) {
 		$value_url = ((strpos($value, ':') !== false) ? strstr($value,':',true) : $value);
 		$value_aff = ($virtualHost['ServerNameIDNA'][$value] === true) ? $value." <span style='color:green;'><small>IDNA-> ".$virtualHost['ServerNameUTF8'][$value].'</small></span>' : $value_url;
 		if($virtualHost['ServerNameValid'][$value] === false)
-			$VhostDefine .= "<li><i>ServerName : </i><span style='color:red;'>".$value_aff." - ServerName syntax error</span></li>\n";
+			$VhostDefine .= "<li><i>ServerName : </i><span style='color:red;'>".$value_aff." - ServerName 语法错误</span></li>\n";
 		else
 			$VhostDefine .= "<li><i>ServerName : </i><span style='color:blue;'>".$value_aff."</span>".$UrlPortVH." - <i>Directory : </i>".$virtualHost['documentPath'][$i].$ip."</li>\n";
 		if($value != 'localhost')

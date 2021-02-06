@@ -22,14 +22,14 @@ if(is_numeric($msgId) && $msgId > 0 && $msgId < 17) {
 		$msgExplain = base64_decode($_SERVER['argv'][3]);
 
 	$message = array(
-	1 => "This PHP version ".$msgExtName." doesn't seem to be compatible with your actual Apache Version.
+	1 => "该 PHP 版本 ".$msgExtName." 可能与当前 Apache 的版本不兼容.
 
 ".$msgExplain,
-	2 => "This Apache version ".$msgExtName." doesn't seem to be compatible with your actual PHP Version.
+	2 => "该 Apache 版本 ".$msgExtName." 可能与现有 PHP 的版本不兼容.
 
 ".$msgExplain,
-	3 => "The '".$msgExtName.".dll' extension file exists but there is no 'extension=".$msgExtName.".dll' line in php.ini.",
-	4 => "The line 'extension=".$msgExtName.".dll' exists in php.ini file but there is no ".$msgExtName.".dll' file in ext/ directory.",
+	3 => "检测到 '".$msgExtName.".dll' 扩展文件的存在，但 php.ini 配置文件中没有找到 'extension=".$msgExtName.".dll' 配置项.",
+	4 => "检测到 php.ini 配置文件中存在 'extension=".$msgExtName.".dll' 配置项，但 ext/ 扩展目录中没有找到 ".$msgExtName.".dll' 文件.",
 	5 => "The '".$msgExtName."' extension cannot be loaded by 'extension=".$msgExtName.".dll' in php.ini. Must be loaded by 'zend_extension='.",
 	6 => $msgExtName."
 
@@ -80,7 +80,7 @@ elseif(is_string($msgId)) {
 	if($msgId == "stateservices") {
 		$services_OK = $service_PATH = true;
 		$message['stateservices'] = ($doReport ? "--------------------------------------------------\n" : '');
-		$message['stateservices'] .= "State of services:\n\n";
+		$message['stateservices'] .= "服务状态:\n\n";
 		$message['binarypath'] = '';
 		//echo $message['stateservices'];
 		require 'config.inc.php';
@@ -96,11 +96,11 @@ elseif(is_string($msgId)) {
 			$service_path_correct[$c_mariadbService] = $c_installDir.'/bin/mariadb/mariadb'.$c_mariadbVersion.'/bin/mysqld.exe';
 		}
 		foreach($services as $value) {
-			$message['stateservices'] .= " The service '".$value."'";
+			$message['stateservices'] .= " 服务 '".$value."'";
 			$command = 'sc query '.$value.' | FINDSTR "STOPPED RUNNING"';
 			$output = `$command`;
 			if(stripos($output, "RUNNING") !== false) {
-				$message['stateservices'] .= " is started\n";
+				$message['stateservices'] .= " 已启动\n";
 				// Checks if the service matches the Apache, MySQL or MariaDB version used.
 				// Command is: sc qc service | findstr "BINARY_PATH_NAME"
 				// For Apache :        BINARY_PATH_NAME   : "J:\wamp\bin\apache\apache2.4.39\bin\httpd.exe"
@@ -121,19 +121,19 @@ elseif(is_string($msgId)) {
 				// Checks service session : LocalSystem by default
 				//Command is: sc qc service | findstr "SERVICE_START_NAME" (done before, see upper)
 				if(preg_match("/[ \t]+SERVICE_START_NAME[ \t]+:[ \t]+(.+)$/m", $output, $matches) > 0) {
-					$message['stateservices'] .= " Service Session : ".$matches[1]."\n";
+					$message['stateservices'] .= " 服务会话 : ".$matches[1]."\n";
 				}
 				else {
-					$message['stateservices'] .= " Service Session : not found\n";
+					$message['stateservices'] .= " 服务会话 : 未找到\n";
 				}
 			}
 			elseif(stripos($output, "STOPPED") !== false) {
-				$message['stateservices'] .= " is NOT started\n";
+				$message['stateservices'] .= " 未启动\n";
 				$services_OK = false;
 				$command = 'sc queryex '.$value.' | FINDSTR "WIN32_EXIT_CODE"';
 				$output = `$command`;
 				if(preg_match("/[ \t]*WIN32_EXIT_CODE[ \t]*: ([0-9]{1,5}).*$/m", $output, $matches) > 0 ) {
-					$message['stateservices'] .= " EXIT error code:".$matches[1]."\n";
+					$message['stateservices'] .= " EXIT 错误码:".$matches[1]."\n";
 					$command = 'net helpmsg '.$matches[1];
 					$output = `$command`;
 					$message['stateservices'] .= " Help message for error code ".$matches[1]." is:".str_replace(array("\r","\n"),"",$output)."\n";
@@ -151,14 +151,14 @@ elseif(is_string($msgId)) {
 				}
 			}
 			else {
-				$message['stateservices'] .= " is not RUNNING nor STOPPED.\n";
+				$message['stateservices'] .= " 未运行或已停止.\n";
 				$services_OK = false;
 				$command = 'sc queryex '.$value;
 				$output = `$command`;
 				if(stripos($output, "1060")) {
 					$message['stateservices'] .= " [SC] EnumQueryServicesStatus:OpenService failure(s) 1060 :\n The specified service does not exist as an installed service.\n";
 				}
-				$message['stateservices'] .= " ********* The service '".$value."' does not exist ********\n";
+				$message['stateservices'] .= " ********* 该服务 '".$value."' 不存在 ********\n";
 			}
 			$message['stateservices'] .= "\n";
 		}
@@ -167,7 +167,7 @@ elseif(is_string($msgId)) {
 			foreach($services as $value) {
 				$message['stateservices'] .= "'".$value."'\n";
 			}
-			$message['stateservices'] .= " is not started.\n\n";
+			$message['stateservices'] .= " 未启动.\n\n";
 		}
 		else
 			$message['stateservices'] .= "\tall services are started - it is OK\n\n";
@@ -238,8 +238,8 @@ elseif(is_string($msgId)) {
 	$complete_result = $message['dnscheckorder'];
 	}
 	elseif($msgId == "compilerversions") {
-		echo "Check compiler's versions...\n";
-		echo "It may take a while ...\n";
+		echo "检测编译器的版本...\n";
+		echo "可能需要一些时间...\n";
 		$phpCompiler = array();
 		$phpVer = $phpVC = $phpTS = array();
 		$apacheCompiler = array();
@@ -296,7 +296,7 @@ elseif(is_string($msgId)) {
 			}
 			$apacheCompiler[$oneApacheVersion] = $output_1."\n\t".$output_2;
 			$nb_v++;
-			echo " done\n";
+			echo " 完成\n";
 			//echo ".";
     }
 
@@ -366,7 +366,7 @@ elseif(is_string($msgId)) {
 				}
 			}
 			$nb_v++;
-			echo " done\n";
+			echo " 完成\n";
 			//echo ".";
 		}
 
@@ -385,7 +385,7 @@ elseif(is_string($msgId)) {
 				$v64[] = $oneMysql;
 			$mysqlVersion[$oneMysqlVersion] = $output;
 			$nb_v++;
-			echo " done\n";
+			echo " 完成\n";
 			//echo ".";
 		}
 
@@ -404,7 +404,7 @@ elseif(is_string($msgId)) {
 				$v64[] = $oneMaria;
 			$mariaVersion[$oneMariaVersion] = $output;
 			$nb_v++;
-			echo " done\n";
+			echo " 完成\n";
 			//echo ".";
 		}
 
@@ -462,11 +462,11 @@ elseif(is_string($msgId)) {
     }
     //Are all PHP versions TS ?
     if($NTSversion) {
-    	$message['compilerversions'] .= "\n\t\tWARNING - WARNING - WARNING\nIt is IMPERATIVE that all PHP versions are the SAME TYPE 'Thread Safe'\nThere is at least one PHP version Non Thread Safe (NTS)\n";
+    	$message['compilerversions'] .= "\n\t\t警告 - 警告 - 警告\nIt is IMPERATIVE that all PHP versions are the SAME TYPE 'Thread Safe'\nThere is at least one PHP version Non Thread Safe (NTS)\n";
     }
     //Are all PHP folder == PHP version ?
     if($DIRversion) {
-    	$message['compilerversions'] .= "\n\t\tWARNING - WARNING - WARNING\nOne or more PHP folder name is not equal PHP version\n";
+    	$message['compilerversions'] .= "\n\t\t警告 - 警告 - 警告\nOne or more PHP folder name is not equal PHP version\n";
     }
   	//What is the php.ini file loaded?
   	$message['inifiles'] = '';
@@ -478,13 +478,13 @@ elseif(is_string($msgId)) {
 		preg_match('/^Loaded Configuration File => (.*)$/m', $output, $matches);
 		$matches[1] = str_replace("\\","/",$matches[1]);
 		if(strtolower($matches[1]) != strtolower($c_phpCliConfFile))
-			$message['inifiles'] .= "*** ERROR *** The PHP configuration loaded file is:\n\t".$matches[1]."\nshould be for PHP CLI\n\t".$c_phpCliConfFile."\n";
+			$message['inifiles'] .= "*** 错误 *** The PHP configuration loaded file is:\n\t".$matches[1]."\nshould be for PHP CLI\n\t".$c_phpCliConfFile."\n";
 		preg_match('/^Scan this dir for additional .ini files => (.*)$/m', $output, $matches);
 		if($matches[1] != "(none)")
-			$message['inifiles'] .= "*** ERROR *** There are too much php.ini files\n".$matches[0]."\n";
+			$message['inifiles'] .= "*** 错误 *** There are too much php.ini files\n".$matches[0]."\n";
 		preg_match('/^Additional .ini files parsed => (.*)$/m', $output, $matches);
 		if($matches[1] != "(none)")
-			$message['inifiles'] .= "*** ERROR *** There are other php.ini files\n".$matches[0]."\n";
+			$message['inifiles'] .= "*** 错误 *** There are other php.ini files\n".$matches[0]."\n";
 		if(!empty($message['inifiles']))
 			$message['compilerversions'] .= "\n----- Verify what php.ini file is loaded for PHP CLI -----\n\n".$message['inifiles'];
 		if($doReport){
@@ -498,18 +498,18 @@ elseif(is_string($msgId)) {
 	}
 	elseif($msgId == "vhostconfig") {
 		$message['apachevhosts'] = ($doReport ? "--------------------------------------------------\n" : '');
-		$message['apachevhosts'] .= "VirtualHost configuration:\n\n";
+		$message['apachevhosts'] .= "虚拟主机(VirtualHost) 配置:\n\n";
 		echo $message['apachevhosts'];
 		require_once 'config.inc.php';
 		require_once 'wampserver.lib.php';
 		$myhttpd_contents = file_get_contents($c_apacheConfFile);
 		if(preg_match("~^[ \t]*#[ \t]*Include[ \t]*conf/extra/httpd-vhosts.conf.*$~m",$myhttpd_contents) > 0) {
-			$message['apachevhosts'] .= "*** WARNING: It is impossible to get VirtualHost\n#Include conf/extra/httpd-vhosts.conf\nline is commented in httpd.conf\n";
+			$message['apachevhosts'] .= "*** 警告: It is impossible to get VirtualHost\n#Include conf/extra/httpd-vhosts.conf\nline is commented in httpd.conf\n";
 		}
 		else {
 			$c_vhostConfFile = $c_apacheVersionDir.'/apache'.$wampConf['apacheVersion'].'/'.$wampConf['apacheConfDir'].'/extra/httpd-vhosts.conf';
 			if(!file_exists($c_vhostConfFile)) {
-				$message['apachevhosts'] .= "*** WARNING: The file\n".$c_vhostConfFile."\ndoes not exist\n";
+				$message['apachevhosts'] .= "*** 警告: The file\n".$c_vhostConfFile."\ndoes not exist\n";
 			}
 			else {
 				$default_server = false;
@@ -598,7 +598,7 @@ elseif(is_string($msgId)) {
 		$output = ob_get_contents();
 		ob_end_clean();
 		if(!empty($output)) {
-			$message['apachemodules'] = "Apache loaded modules\n";
+			$message['apachemodules'] = "Apache 已加载模块\n";
 			$nb_static = preg_match_all("~^[ \t]*(.*) \(static\).*$~m",$output, $matches);
 			if($nb_static > 0) {
 				$message['apachemodules'] .= "Core:\n";
@@ -608,7 +608,7 @@ elseif(is_string($msgId)) {
 				$message['apachemodules'] .= "\n";
 			$nb_shared = preg_match_all("~^[ \t]*(.*) \(shared\).*$~m",$output, $matches);
 			if($nb_shared > 0) {
-				$message['apachemodules'] .= "Shared modules:\n";
+				$message['apachemodules'] .= "共享模块:\n";
 				foreach($matches[1] as $value)
 					$message['apachemodules'] .= $value."\n";
 				$message['apachemodules'] .= "\n";
@@ -657,7 +657,7 @@ elseif(is_string($msgId)) {
 		}
 		exit(0);
  	}
-	echo "\nPress ENTER to continue...";
+	echo "\n按回车键(Enter)继续...";
 }
 
 trim(fgets(STDIN));
