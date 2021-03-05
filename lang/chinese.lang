@@ -28,7 +28,7 @@ $w_services_msc = '服务控制面板';
 $w_doc = '文档';
 $w_cmdWindows = '命令行窗口（CMD）';
 
-$w_localhost = 'Localhost';
+$w_localhost = 'localhost';
 $w_phpmyadmin = 'phpMyAdmin';
 $w_sqlitemanager = 'SQLiteManager';
 $w_wwwDirectory = 'www 目录';

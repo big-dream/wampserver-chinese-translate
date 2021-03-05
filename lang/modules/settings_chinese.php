@@ -70,7 +70,7 @@ $w_settings = array(
     'ForTestOnly' => '仅适用于测试环境（开发调试）',
     'iniCommented' => '已注释 php.ini 配置',
     'BackupHosts' => '备份 hosts 文件',
-    'ShowWWWdirMenu' => 'Show www folder in Menu',
+    'ShowWWWdirMenu' => '在菜单显示 www 文件夹',
 );
 
 // 右键子菜单-工具
@@ -86,21 +86,21 @@ $w_compilerVersions = '检查 VC 运行库依赖、兼容性和 ini 文件';
 $w_UseAlternatePort = '使用 %s 以外的端口';
 $w_AddListenPort = '新增 Apache 监听端口';
 $w_vhostConfig = '显示 Apache 中有效的虚拟主机';
-$w_apacheLoadedModules = '显示 Apache 已加载模块';
-$w_apacheLoadedIncludes = 'Show Apache loaded Includes';
-$w_testAliasDir = 'Check relationships Alias  <-> Directory';
-$w_verifyxDebugdll = 'Check for unused xDebug dlls';
+$w_apacheLoadedModules = '显示 Apache 已加载的模块';
+$w_apacheLoadedIncludes = '显示 Apache 已加载的额外配置文件';
+$w_testAliasDir = '检查别名（Alias）与目录的关联';
+$w_verifyxDebugdll = '检查未使用的 xDebug 扩展 dll';
 $w_empty = '清空';
 $w_misc = '杂项';
 $w_emptyAll = '清空所有';
 
-$w_emptyLogs = 'Empty logs';
-$w_emptyPHPlog = 'Empty PHP error log';
-$w_emptyApaErrLog = 'Empty Apache error log';
-$w_emptyApaAccLog = 'Empty Apache access log';
-$w_emptyMySQLog = 'Empty MySQL log';
-$w_emptyMariaLog = 'Empty MariaDB log';
-$w_emptyAllLog ='Empty all log files';
+$w_emptyLogs = '清空日志';
+$w_emptyPHPlog = '清空 PHP 错误日志';
+$w_emptyApaErrLog = '清空 Apache 错误日志';
+$w_emptyApaAccLog = '清空 Apache 错误日志';
+$w_emptyMySQLog = '清空 MySQL 日志';
+$w_emptyMariaLog = '清空 MariaDB 日志';
+$w_emptyAllLog ='清空所有日志文件';
 
 $w_dnsorder = '检查 DNS 搜索顺序';
 $w_deleteVer = '删除未使用版本';
