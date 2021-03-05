@@ -1,6 +1,8 @@
 <?php
+// - 3.2.5 add CMD /D /C to Command Windows to avoid
+//         automatic autorun of registry keys
+
 //Script to rebuild symbolic links
-//
 if(!defined('WAMPTRACE_PROCESS')) require 'config.trace.php';
 if(WAMPTRACE_PROCESS) {
 	$errorTxt = "script ".__FILE__;

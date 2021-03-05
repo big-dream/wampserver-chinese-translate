@@ -1,5 +1,6 @@
 <?php
-// 3.2.3 - Support for service with windows command sc
+// - 3.2.5 add CMD /D /C to Command Windows to avoid
+//         automatic autorun of registry keys
 
 if(WAMPTRACE_PROCESS) {
 	$errorTxt = "script ".__FILE__;
@@ -80,7 +81,7 @@ $myreplace = <<< EOF
 ;WAMPMARIADBSERVICEINSTALLSTART
 [MariaDBServiceInstall]
 {$mariaMysqlService}Action: run; FileName: "${c_mariadbExe}"; Parameters: "${c_mariadbServiceInstallParams}"; ShowCmd: hidden; Flags: ignoreerrors waituntilterminated
-{$mariaCmdScService}Action: run; FileName: "sc"; Parameters: "create ${c_mariadbService} binpath=""${c_mariadbExeAnti} --defaults-file=${c_mariadbConfFileAnti} ${c_mariadbService}"""; ShowCmd: hidden; Flags: ignoreerrors waituntilterminated
+{$mariaCmdScService}Action: run; FileName: "CMD"; Parameters: "/D /C sc create ${c_mariadbService} binpath=""${c_mariadbExeAnti} --defaults-file=${c_mariadbConfFileAnti} ${c_mariadbService}"""; ShowCmd: hidden; Flags: ignoreerrors waituntilterminated
 Action: resetservices
 Action: readconfig
 EOF;
@@ -92,7 +93,7 @@ $myreplace = <<< EOF
 [MariaDBServiceRemove]
 Action: service; Service: ${c_mariadbService}; ServiceAction: stop; Flags: ignoreerrors waituntilterminated
 {$mariaMysqlService}Action: run; FileName: "${c_mariadbExe}"; Parameters: "${c_mariadbServiceRemoveParams}"; ShowCmd: hidden; Flags: waituntilterminated
-{$mariaCmdScService}Action: run; FileName: "sc"; Parameters: "delete ${c_mariadbService}"; ShowCmd: hidden; Flags: ignoreerrors waituntilterminated
+{$mariaCmdScService}Action: run; FileName: "CMD"; Parameters: "/D /C sc delete ${c_mariadbService}"; ShowCmd: hidden; Flags: ignoreerrors waituntilterminated
 Action: resetservices
 Action: readconfig
 EOF;
@@ -121,7 +122,7 @@ $myreplace = <<< EOF
 Action: service; Service: ${c_apacheService}; ServiceAction: stop; Flags: waituntilterminated
 Action: run; FileName: "${c_phpExe}";Parameters: "switchWampParam.php mariadbUseConsolePrompt ${mariadbConsolePromptChange}"; WorkingDir: "$c_installDir/scripts"; Flags: waituntilterminated
 Action: run; FileName: "${c_phpExe}";Parameters: "refresh.php"; WorkingDir: "$c_installDir/scripts"; Flags: waituntilterminated
-Action: run; FileName: "net"; Parameters: "start ${c_apacheService}"; ShowCmd: hidden; Flags: waituntilterminated
+Action: run; FileName: "CMD"; Parameters: "/D /C net start ${c_apacheService}"; ShowCmd: hidden; Flags: waituntilterminated
 Action: resetservices
 Action: readconfig
 EOF;
@@ -184,9 +185,9 @@ foreach ($mariadbVersionList as $oneMariaDBVersion) {
     $mareplacemenu .= <<< EOF
 [switchMariaDB${oneMariaDBVersion}]
 Action: service; Service: ${c_mariadbService}; ServiceAction: stop; Flags: ignoreerrors waituntilterminated
-Action: run; FileName: "net"; Parameters: "stop ${c_mariadbService}"; ShowCmd: hidden; Flags: ignoreerrors waituntilterminated
+Action: run; FileName: "CMD"; Parameters: "/D /C net stop ${c_mariadbService}"; ShowCmd: hidden; Flags: ignoreerrors waituntilterminated
 {$mariaMysqlService}Action: run; FileName: "${c_mariadbExe}"; Parameters: "${c_mariadbServiceRemoveParams}"; ShowCmd: hidden; Flags: ignoreerrors waituntilterminated
-{$mariaCmdScService}Action: run; FileName: "sc"; Parameters: "delete ${c_mariadbService}"; ShowCmd: hidden; Flags: ignoreerrors waituntilterminated
+{$mariaCmdScService}Action: run; FileName: "CMD"; Parameters: "/D /C sc delete ${c_mariadbService}"; ShowCmd: hidden; Flags: ignoreerrors waituntilterminated
 Action: closeservices;
 Action: run; FileName: "{$c_phpCli}";Parameters: "switchMariaDBVersion.php ${oneMariaDBVersion}";WorkingDir: "${c_installDir}/scripts"; Flags: waituntilterminated
 Action: run; FileName: "{$c_phpCli}";Parameters: "switchMariaPort.php ${c_UsedMariaPort}";WorkingDir: "${c_installDir}/scripts"; Flags: waituntilterminated
@@ -196,7 +197,7 @@ EOF;
 			$binpath = str_replace('/','\\',$c_mariadbVersionDir.'/mariadb'.$oneMariaDBVersion.'/'.$mariadbConf['mariadbExeDir'].'/'.$mariadbConf['mariadbExeFile']);
 			$default = str_replace('/','\\',$c_mariadbVersionDir.'/mariadb'.$oneMariaDBVersion.'/'.$mariadbConf['mariadbConfDir'].'/'.$mariadbConf['mariadbConfFile']);
 			$mareplacemenu .= <<< EOF
-Action: run; FileName: "sc"; parameters: "create ${c_mariadbService} binpath=""${binpath} --defaults-file=${default} ${c_mariadbService}"""; ShowCmd: hidden; Flags: waituntilterminated
+Action: run; FileName: "CMD"; parameters: "/D /C sc create ${c_mariadbService} binpath=""${binpath} --defaults-file=${default} ${c_mariadbService}"""; ShowCmd: hidden; Flags: waituntilterminated
 
 EOF;
 		}
@@ -207,7 +208,7 @@ Action: run; FileName: "${c_mariadbVersionDir}/mariadb${oneMariaDBVersion}/${mar
 EOF;
 		}
 		$mareplacemenu .= <<< EOF
-Action: run; FileName: "net"; Parameters: "start ${c_mariadbService}"; ShowCmd: hidden; Flags: waituntilterminated
+Action: run; FileName: "CMD"; Parameters: "/D /C net start ${c_mariadbService}"; ShowCmd: hidden; Flags: waituntilterminated
 Action: run; FileName: "{$c_phpCli}";Parameters: "refresh.php";WorkingDir: "${c_installDir}/scripts"; Flags: waituntilterminated
 Action: resetservices
 Action: readconfig
@@ -492,7 +493,7 @@ EOF;
 Action: service; Service: ${c_mariadbService}; ServiceAction: stop; Flags: waituntilterminated
 Action: run; FileName: "${c_phpExe}";Parameters: "changeMariadbParam.php noquotes ${action} ${param_value[$j]}";WorkingDir: "${c_installDir}/scripts"; Flags: waituntilterminated
 Action: run; FileName: "${c_phpCli}";Parameters: "refresh.php";WorkingDir: "${c_installDir}/scripts"; Flags: waituntilterminated
-Action: run; FileName: "net"; Parameters: "start ${c_mariadbService}"; ShowCmd: hidden; Flags: waituntilterminated
+Action: run; FileName: "CMD"; Parameters: "/D /C net start ${c_mariadbService}"; ShowCmd: hidden; Flags: waituntilterminated
 Action: resetservices
 Action: readconfig
 
@@ -528,7 +529,7 @@ Type: separator; Caption: "'.$mariadbParamsNotOnOff[$action]['title'].'"
 Action: service; Service: ${c_mariadbService}; ServiceAction: stop; Flags: waituntilterminated
 Action: run; FileName: "${c_phpRun}";Parameters: "changeMariadbParam.php ${quoted} ${action} ${param_value}${param_third}";WorkingDir: "${c_installDir}/scripts"; Flags: waituntilterminated
 Action: run; FileName: "${c_phpCli}";Parameters: "refresh.php";WorkingDir: "${c_installDir}/scripts"; Flags: waituntilterminated
-Action: run; FileName: "net"; Parameters: "start ${c_mariadbService}"; ShowCmd: hidden; Flags: waituntilterminated
+Action: run; FileName: "CMD"; Parameters: "/D /C net start ${c_mariadbService}"; ShowCmd: hidden; Flags: waituntilterminated
 Action: resetservices
 Action: readconfig
 
@@ -548,7 +549,7 @@ foreach ($params_for_mariadb as $paramname=>$paramstatus) {
 Action: service; Service: ${c_mariadbService}; ServiceAction: stop; Flags: waituntilterminated
 Action: run; FileName: "${c_phpCli}";Parameters: "switchMariadbParam.php ${mariadbParams[$paramname]} ${SwitchAction}";WorkingDir: "${c_installDir}/scripts"; Flags: waituntilterminated
 Action: run; FileName: "${c_phpCli}";Parameters: "refresh.php";WorkingDir: "${c_installDir}/scripts"; Flags: waituntilterminated
-Action: run; FileName: "net"; Parameters: "start ${c_mariadbService}"; ShowCmd: hidden; Flags: waituntilterminated
+Action: run; FileName: "CMD"; Parameters: "/D /C net start ${c_mariadbService}"; ShowCmd: hidden; Flags: waituntilterminated
 Action: resetservices
 Action: readconfig
 

@@ -1,7 +1,7 @@
 <?php
 // 3.2.0 - Use write_file function instead of fopen, fwrite, fclose
 //         Improvement of process and PID research
-if(!defined('WAMPTRACE_PROCESS')) require 'config.trace.php';
+if(!defined('WAMPTRACE_PROCESS')) require('config.trace.php');
 if(WAMPTRACE_PROCESS) {
 	$errorTxt = "script ".__FILE__;
 	$iw = 1; while(!empty($_SERVER['argv'][$iw])) {$errorTxt .= " ".$_SERVER['argv'][$iw];$iw++;}
@@ -32,19 +32,19 @@ $message .=  "===== ".$port." 端口测试结果来自 netstat 命令返回的内容  =====\n\n
 //Port tested by netstat for TCP and TCPv6
 $tcp = array('TCP', 'TCPv6');
 foreach($tcp as $value) {
-$command = 'netstat -anop '.$value.' | FINDSTR /C:":'.$port.'"';
+$command = 'CMD /D /C netstat -anop '.$value.' | FINDSTR /C:":'.$port.'"';
 $output = `$command`;
 //error_log("output=".$output);
 if(!empty($output)) {
 	$message .=  "\n测试 ".$value."\n";
 	if(preg_match("~^[ \t]*TCP.*:".$port." .*LISTENING[ \t]*([0-9]{1,5}).*$~m", $output, $pid) > 0) {
 		$message .=  $port." 端口已被 PID = ".$pid[1]." 的进程使用\n";
-		$command = 'tasklist /FI "PID eq '.$pid[1].'" /FO TABLE /NH';
+		$command = 'CMD /D /C tasklist /FI "PID eq '.$pid[1].'" /FO TABLE /NH';
 		$output = `$command`;
 		if(!empty($output)) {
 			if(preg_match("~^(.+[^ \t])[ \t]+".$pid[1]." ([a-zA-Z]+[^ \t]*).+$~m", $output, $matches) > 0) {
 				$message .=  "进程PID ".$pid[1]." 程序 '".$matches[1]."' 会话 ".$matches[2]."\n";
-				$command = 'tasklist /SVC | FINDSTR /C:"'.$pid[1].'"';
+				$command = 'CMD /D /C tasklist /SVC | FINDSTR /C:"'.$pid[1].'"';
 				$output = `$command`;
 				if(!empty($output)) {
 					if(preg_match("~^(.+[^ \t])[ \t]+".$pid[1]." ([a-zA-Z]+[^ \t]*).+$~m", $output, $matches) > 0) {
@@ -64,7 +64,7 @@ if(!empty($output)) {
 									else {
 										$message .= $matches[2]." 没有与 PID ".$pid[1]." 相关的服务\n";
 										if($wampConf['SupportMySQL'] == 'on' && version_compare($c_mysqlVersion,'8.0.0', '>=')) {
-											$command = 'tasklist /SVC /FI "IMAGENAME eq mysqld.exe" | FINDSTR /C:"'.$c_mysqlService.'"';
+											$command = 'CMD /D /C tasklist /SVC /FI "IMAGENAME eq mysqld.exe" | FINDSTR /C:"'.$c_mysqlService.'"';
 											$output = `$command`;
 											if(!empty($output)) {
 												if(preg_match("~^(mysqld\.exe)[ \t]+([0-9]+)[ \t]+(".$c_mysqlService.").*$~m",$output, $matches) > 0) {

@@ -1,6 +1,7 @@
 <?php
-// Update 3.2.3
+// Update 3.2.4
 // PHP 8.0.0 support
+// xDebug 3 support
 
 if(!defined('WAMPTRACE_PROCESS')) require 'config.trace.php';
 if(WAMPTRACE_PROCESS) {
@@ -36,7 +37,7 @@ $c_navigator = $wampConf['navigator'];
 // See Message For information items in configuration submenus
 $seeInfoMessage = true;
 
-//For Windows 10 and Edge it is not the same as for other browsers
+//For Windows 10?and Edge it is not the same as for other browsers
 //It is not complete path to browser with parameter http://website/
 //but by 'cmd.exe /c "start /b Microsoft-Edge:http://website/"'
 $c_edge = "";
@@ -195,7 +196,9 @@ $phpDllToCopy = array_merge(
 	'libpq.dll',
 	'libssh2.dll', //For php 5.5.17
 	'libsodium.dll', //For php 7.2.0
+
 	'libsqlite3.dll', //For php 7.4.0
+
 	'php5isapi.dll',
 	'php5nsapi.dll',
 	'php5ts.dll',
@@ -233,7 +236,9 @@ $phpParams = array (
 	'max_input_time',
 	'max_input_vars',
 	'memory_limit',
+	'mysqli.allow_local_infile',
 	'opcache.enable',
+	'opcache.jit',
 	'output_buffering',
 	'post_max_size',
 	'realpath_cache_size',
@@ -250,6 +255,7 @@ $phpParams = array (
 	'zlib.output_compression',
 	'zlib.output_compression_level',
 	'error_reporting',
+	'xdebug.mode',
 	'xdebug.remote_enable',
 	'xdebug.profiler_enable',
 	'xdebug.profiler_enable_trigger',
@@ -325,8 +331,15 @@ $phpParamsNotOnOff = array(
 	'auto_append_file' => array('change' => false),
 	'upload_tmp_dir' => array('change' => false),
 	'error_reporting' => array('change' => false),
+	'opcache.jit' => array('change' => false),
 	'zend.enable_gc' => array('change' => false),
 	'zlib.output_compression_level' => array('change' => false),
+	'xdebug.mode' => array(
+		'change' => true,
+		'title' => 'xDebug Mode',
+		'quoted' => false,
+		'values' => array('off', 'develop', 'coverage', 'debug', 'gcstats', 'profile', 'trace'),
+		),
 	'xdebug.overload_var_dump' => array('change' => false),
 );
 //Parameters to be changed into php.ini CLI the same way as for php.ini
@@ -365,6 +378,8 @@ $mysqlParams = array (
 	'skip-grant-tables',
 	'table_definition_cache',
 	'default_authentication_plugin',
+	'local_infile',
+	'secure_file_priv',
 );
 //MySQL parameters with values not On or Off cannot be switched on or off
 //Can be changed if 'change' = true && 'title' && 'values'
@@ -462,6 +477,10 @@ $mysqlParamsNotOnOff = array(
 		'msg' => "\n\n¾¯¸æ!! ¾¯¸æ!!\nThis option causes the server to start without using the privilege system at all, WHICH GIVES ANYONE WITH ACCESS TO THE SERVER UNRESTRICTED ACCESS TO ALL DATABASES.\nThis option also causes the server to suppress during its startup sequence the loading of user-defined functions (UDFs), scheduled events, and plugins that were installed.\n\nYou should leave this option 'uncommented' ONLY for the time required to perform certain operations such as the replacement of a lost password for 'root'.\n",
 		),
 	'default_authentication_plugin' => array('change' => false,),
+	'local_infile' => array('change' => false,
+	'msg' => "\nlocal_infile: If set to 1, LOCAL is supported for LOAD DATA INFILE statements.\nIf set to 0, usually for security reasons, attempts to perform a LOAD DATA LOCAL will fail with an error message."),
+	'secure_file_priv' => array('change' => false,
+	'msg' => "\nsecure_file_priv: LOAD DATA, SELECT ... INTO and LOAD FILE() will only work with files in the specified path.\nIf not set, the default, or set to empty string, the statements will work with any files that can be accessed."),
 );
 
 //MariaDB parameters
@@ -481,6 +500,7 @@ $mariadbParams = array (
 	'sort_buffer_size',
 	'prompt',
 	'skip-grant-tables',
+	'secure_file_priv',
 );
 //MariaDB parameters with values not On or Off cannot be switched on or off
 //Can be changed if 'change' = true && 'title' && 'values'
@@ -568,8 +588,10 @@ $mariadbParamsNotOnOff = array(
 		),
 	'skip-grant-tables' => array(
 		'change' => false,
-		'msg' => "\n\nWARNING!! WARNING!!\nThis option causes the server to start without using the privilege system at all, WHICH GIVES ANYONE WITH ACCESS TO THE SERVER UNRESTRICTED ACCESS TO ALL DATABASES.\nThis option also causes the server to suppress during its startup sequence the loading of user-defined functions (UDFs), scheduled events, and plugins that were installed.\n\nYou should leave this option 'uncommented' ONLY for the time required to perform certain operations such as the replacement of a lost password for 'root'.\n",
-		),
+		'msg' => "\n\nWARNING!! WARNING!!\nThis option causes the server to start without using the privilege system at all, WHICH GIVES ANYONE WITH ACCESS TO THE SERVER UNRESTRICTED ACCESS TO ALL DATABASES.\nThis option also causes the server to suppress during its startup sequence the loading of user-defined functions (UDFs), scheduled events, and plugins that were installed.\n\nYou should leave this option 'uncommented' ONLY for the time required to perform certain operations such as the replacement of a lost password for 'root'.\n"),
+	'secure_file_priv' => array(
+		'change' => false,
+		'msg' => "\nsecure_file_priv: LOAD DATA, SELECT ... INTO and LOAD FILE() will only work with files in the specified path.\nIf not set, the default, or set to empty string, the statements will work with any files that can be accessed."),
 );
 
 // Adding parameters to WampServer modifiable
@@ -588,6 +610,7 @@ $wamp_Param = array(
 	'HomepageAtStartup',
 	'ShowphmyadMenu',
 	'ShowadminerMenu',
+	'ShowWWWdirMenu',
 	'BackupHosts',
 	'##Cleaning',
 	'AutoCleanLogs',
@@ -717,3 +740,4 @@ $AesPromptCustom = array(
 	array('MysqlUser',10,'$00FFFFF0','$00890000','$00FFFFFF','$000000FF'),
 );
 
+?>

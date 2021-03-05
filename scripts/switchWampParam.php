@@ -1,5 +1,7 @@
 <?php
-//3.2.0 use write_file instead of fwrite, fclose
+// - 3.2.5 add CMD /D /C to Command Windows to avoid
+//         automatic autorun of registry keys
+
 if(!defined('WAMPTRACE_PROCESS')) require 'config.trace.php';
 if(WAMPTRACE_PROCESS) {
 	$errorMessageTxt = "script ".__FILE__;
@@ -36,11 +38,11 @@ else {
   					$c_mariadbConfFile = str_replace($wampConf['mariadbVersion'],$versionsMariadb[0],$c_mariadbConfFile);
   				}
   				//Check if mariadb service is installed and create it if not
-					$command = 'sc query state= all | FINDSTR /C:"SERVICE_NAME: wamp"';
+					$command = 'CMD /D /C sc query state= all | FINDSTR /C:"SERVICE_NAME: wamp"';
 					$output = `$command`;
 					if(preg_match("~.*".$c_mariadbService."\s?$~m",$output) === 0) {
 						//Service does not exists
-							$command = $c_mariadbExe." ".$c_mariadbServiceInstallParams;
+							$command = 'CMD /D /C '.$c_mariadbExe." ".$c_mariadbServiceInstallParams;
 							$output = `$command`;
 							if(strpos($output, 'successfully installed') === false) {
 								$goodParam = false;
@@ -84,14 +86,14 @@ else {
 		if($goodParam) {
 			if($_SERVER['argv'][2] == 'on') {
 				//Start mariadb service in case of not started
-				$command = 'net start '.$c_mariadbService;
+				$command = 'CMD /D /C net start '.$c_mariadbService;
 				`$command`;
 			}
 			elseif($_SERVER['argv'][2] == 'off') {
 				//Stop mariadb service in case of started
-				$command = 'net stop '.$c_mariadbService;
+				$command = 'CMD /D /C net stop '.$c_mariadbService;
 				`$command`;
-				$command = 'sc delete '.$c_mariadbService;
+				$command = 'CMD /C /D sc delete '.$c_mariadbService;
 				`$command`;
 			}
 		}
@@ -117,11 +119,11 @@ else {
   				}
 
   				//Check if mysql service is installed and create it if not
-					$command = 'sc query state= all | FINDSTR /C:"SERVICE_NAME: wamp"';
+					$command = 'CMD /D /C sc query state= all | FINDSTR /C:"SERVICE_NAME: wamp"';
 					$output = `$command`;
 					if(preg_match("~.*".$c_mysqlService."\s?$~m",$output) === 0) {
 						//Service does not exists
-							$command = $c_mysqlExe." ".$c_mysqlServiceInstallParams;
+							$command = 'CMD /D /C '.$c_mysqlExe." ".$c_mysqlServiceInstallParams;
 							$output = `$command`;
 							if(strpos($output, 'successfully installed') === false) {
 								$goodParam = false;
@@ -165,14 +167,14 @@ else {
 		if($goodParam) {
 			if($_SERVER['argv'][2] == 'on') {
 				//Start mysql service in case of not started
-				$command = 'net start '.$c_mysqlService;
+				$command = 'CMD /D /C net start '.$c_mysqlService;
 				`$command`;
 			}
 			elseif($_SERVER['argv'][2] == 'off') {
 				//Stop mysql service in case of started
-				$command = 'net stop '.$c_mysqlService;
+				$command = 'CMD /D /C net stop '.$c_mysqlService;
 				`$command`;
-				$command = 'sc delete '.$c_mysqlService;
+				$command = 'CMD /D /C sc delete '.$c_mysqlService;
 				`$command`;
 			}
 		}

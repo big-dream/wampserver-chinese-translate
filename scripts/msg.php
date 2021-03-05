@@ -1,6 +1,6 @@
 <?php
-//3.2.3 - Improve check state of services BINARY PATH NAME
-//
+// - 3.2.5 add CMD /D /C to Command Windows to avoid
+//         automatic autorun of registry keys
 
 $msgId = $_SERVER['argv'][1];
 $doReport = false;
@@ -83,7 +83,7 @@ elseif(is_string($msgId)) {
 		$message['stateservices'] .= "服务状态:\n\n";
 		$message['binarypath'] = '';
 		//echo $message['stateservices'];
-		require 'config.inc.php';
+		require_once 'config.inc.php';
 		require_once 'wampserver.lib.php';
 		$services = array($c_apacheService);
 		$service_path_correct[$c_apacheService] = $c_installDir.'/bin/apache/apache'.$c_apacheVersion.'/bin/httpd.exe';
@@ -97,7 +97,7 @@ elseif(is_string($msgId)) {
 		}
 		foreach($services as $value) {
 			$message['stateservices'] .= " 服务 '".$value."'";
-			$command = 'sc query '.$value.' | FINDSTR "STOPPED RUNNING"';
+			$command = 'CMD /D /C sc query '.$value.' | FINDSTR "STOPPED RUNNING"';
 			$output = `$command`;
 			if(stripos($output, "RUNNING") !== false) {
 				$message['stateservices'] .= " 已启动\n";
@@ -106,7 +106,7 @@ elseif(is_string($msgId)) {
 				// For Apache :        BINARY_PATH_NAME   : "J:\wamp\bin\apache\apache2.4.39\bin\httpd.exe"
 				// For MySQL  :        BINARY_PATH_NAME   : J:\wamp\bin\mysql\mysql5.7.27\bin\mysqld.exe
 				// For MariaDB:        BINARY_PATH_NAME   : J:\wamp\bin\mariadb\mariadb10.4.6\bin\mysqld.exe
-				$command = 'sc qc '.$value.' | FINDSTR "BINARY_PATH_NAME SERVICE_START_NAME"';
+				$command = 'CMD /D /C sc qc '.$value.' | FINDSTR "BINARY_PATH_NAME SERVICE_START_NAME"';
 				$output = `$command`;
 				if(preg_match("/[ \t]+BINARY_PATH_NAME[ \t]+:[ \t]+(.+\.exe).*$/m", $output, $matches) > 0) {
 					//error_log(print_r($matches,true));
@@ -130,17 +130,17 @@ elseif(is_string($msgId)) {
 			elseif(stripos($output, "STOPPED") !== false) {
 				$message['stateservices'] .= " 未启动\n";
 				$services_OK = false;
-				$command = 'sc queryex '.$value.' | FINDSTR "WIN32_EXIT_CODE"';
+				$command = 'CMD /D /C sc queryex '.$value.' | FINDSTR "WIN32_EXIT_CODE"';
 				$output = `$command`;
 				if(preg_match("/[ \t]*WIN32_EXIT_CODE[ \t]*: ([0-9]{1,5}).*$/m", $output, $matches) > 0 ) {
 					$message['stateservices'] .= " EXIT 错误码:".$matches[1]."\n";
-					$command = 'net helpmsg '.$matches[1];
+					$command = 'CMD /D /C net helpmsg '.$matches[1];
 					$output = `$command`;
 					$message['stateservices'] .= " Help message for error code ".$matches[1]." is:".str_replace(array("\r","\n"),"",$output)."\n";
 				}
 				//Specific check for STOPPED Apache Service in Event Viewer
 				if($value == $c_apacheService) {
-					$command = "wevtutil qe Application /c:2 /rd:true /f:text /q:\"*[System[Provider[@Name='Apache Service'] and (Level=2)]]\"";
+					$command = "CMD /D /C wevtutil qe Application /c:2 /rd:true /f:text /q:\"*[System[Provider[@Name='Apache Service'] and (Level=2)]]\"";
 					$output = `$command`;
 					//Check if there is 'Apache Service' in the result
 					if(stripos($output,"Apache Service") !== false) {
@@ -153,7 +153,7 @@ elseif(is_string($msgId)) {
 			else {
 				$message['stateservices'] .= " 未运行或已停止.\n";
 				$services_OK = false;
-				$command = 'sc queryex '.$value;
+				$command = 'CMD /D /C sc queryex '.$value;
 				$output = `$command`;
 				if(stripos($output, "1060")) {
 					$message['stateservices'] .= " [SC] EnumQueryServicesStatus:OpenService failure(s) 1060 :\n The specified service does not exist as an installed service.\n";
@@ -188,13 +188,13 @@ elseif(is_string($msgId)) {
 	$complete_result = $message['stateservices'];
 	}
 	elseif($msgId == "dnsorder") {
-	require 'config.inc.php';
+	require_once 'config.inc.php';
 	require_once 'wampserver.lib.php';
 	//Check values of DNS priorities
 	$message['dnscheckorder'] = ($doReport ? "--------------------------------------------------\n" : '');
 	$message['dnscheckorder'] .= "*** Checking the DNS search order ***\n";
 	echo $message['dnscheckorder'];
-	$command = 'reg query HKLM\SYSTEM\CurrentControlSet\Services\Tcpip\ServiceProvider';
+	$command = 'CMD /D /C reg query HKLM\SYSTEM\CurrentControlSet\Services\Tcpip\ServiceProvider';
 	$output = `$command`;
 	$dns = array(
 		'DnsPriority'=>'none',
@@ -271,7 +271,7 @@ elseif(is_string($msgId)) {
     	$apacheVersion[] = substr($oneApacheVersion,0,$pos);
     	$apacheVersionTot[] = $oneApacheVersion;
 			unset($result);
-			$command = 'start /b /wait '.$c_apacheVersionDir.'/apache'.$oneApacheVersion.'/'.$wampConf['apacheExeDir'].'/'.$wampConf['apacheExeFile'].' -V';
+			$command = 'CMD /D /C '.$c_apacheVersionDir.'/apache'.$oneApacheVersion.'/'.$wampConf['apacheExeDir'].'/'.$wampConf['apacheExeFile'].' -V';
 			exec($command, $result);
 			$built = $archi = false;
 			foreach($result as $value) {
@@ -305,7 +305,7 @@ elseif(is_string($msgId)) {
 		foreach($phpVersionList as $onePhp) {
 			$onePhpVersion = str_ireplace('php','',$onePhp);
 			echo "PHP ".$onePhpVersion." to check ";
-			$command = 'start /b /wait '.$c_phpVersionDir.'/php'.$onePhpVersion.'/'.$wampConf['phpExeFile'].' -i | FINDSTR ';
+			$command = 'CMD /D /C '.$c_phpVersionDir.'/php'.$onePhpVersion.'/'.$wampConf['phpExeFile'].' -i | FINDSTR ';
 			$commandAdd = array('/C:"PHP Version"','"Compiler Architecture"','/C:"Thread Safety"');
 			unset($result);
 			foreach($commandAdd as $value) {
@@ -374,7 +374,7 @@ elseif(is_string($msgId)) {
 		foreach($mysqlVersionList as $oneMysql) {
 			$oneMysqlVersion = str_ireplace('mysql','',$oneMysql);
 			echo "MySQL ".$oneMysqlVersion." to check";
-    	$command = 'start /b /wait '.$c_mysqlVersionDir.'/mysql'.$oneMysqlVersion.'/'.$wampConf['mysqlExeDir'].'/'.$wampConf['mysqlExeFile'].' -V';
+    	$command = 'CMD /D /C '.$c_mysqlVersionDir.'/mysql'.$oneMysqlVersion.'/'.$wampConf['mysqlExeDir'].'/'.$wampConf['mysqlExeFile'].' -V';
 			unset($result);
 			$output = exec($command, $result);
 			$pos = strrpos($output,'Ver ');
@@ -394,7 +394,7 @@ elseif(is_string($msgId)) {
 			$oneMariaVersion = str_ireplace('mariadb','',$oneMaria);
 			echo "MariaDB ".$oneMariaVersion." to check";
 			unset($result);
-    	$command = 'start /b /wait '.$c_mariadbVersionDir.'/mariadb'.$oneMariaVersion.'/'.$wampConf['mariadbExeDir'].'/'.$wampConf['mariadbExeFile'].' -V';
+    	$command = 'CMD /D /C '.$c_mariadbVersionDir.'/mariadb'.$oneMariaVersion.'/'.$wampConf['mariadbExeDir'].'/'.$wampConf['mariadbExeFile'].' -V';
 			$output = exec($command, $result);
 			$pos = strrpos($output,'Ver ');
 			$output = substr($output,$pos);
@@ -516,7 +516,7 @@ elseif(is_string($msgId)) {
 				$virtual_host = false;
 				$default_localhost = false;
 
-				$command = 'start /b /wait '.$c_apacheExe.'  -t -D DUMP_VHOSTS';
+				$command = 'CMD /D /C '.$c_apacheExe.'  -t -D DUMP_VHOSTS';
 				ob_start();
 				passthru($command);
 				$output = ob_get_contents();
@@ -592,7 +592,7 @@ elseif(is_string($msgId)) {
 	elseif($msgId == "apachemodules") {
 		require_once 'config.inc.php';
 		require_once 'wampserver.lib.php';
-		$command = 'start /b /wait '.$c_apacheExe.'  -t -D DUMP_MODULES';
+		$command = 'CMD /D /C '.$c_apacheExe.'  -t -D DUMP_MODULES';
 		ob_start();
 		passthru($command);
 		$output = ob_get_contents();
@@ -618,8 +618,24 @@ elseif(is_string($msgId)) {
 			$complete_result = $message['apachemodules'];
 		}
 	}
+	elseif($msgId == "apacheincludes") {
+		require_once 'config.inc.php';
+		require_once 'wampserver.lib.php';
+		$command = 'CMD /D /C '.$c_apacheExe.'  -t -D DUMP_INCLUDES';
+		ob_start();
+		passthru($command);
+		$output = ob_get_contents();
+		ob_end_clean();
+		if(!empty($output)) {
+			$message['apacheincludes'] = "Apache includes\n";
+			$message['apacheincludes'] .= $output;
+			echo $message['apacheincludes'];
+			$msg_index = 'apacheincludes';
+			$complete_result = $message['apacheincludes'];
+		}
+	}
 	elseif($msgId == "refreshLogs") {
-		require 'config.inc.php';
+		require_once 'config.inc.php';
 		$logToClean = array();
 		echo "\nLog file(s) to be cleaned:\n\n";
 		if(trim($_SERVER['argv'][2]) ==  'alllogs') {
@@ -646,7 +662,38 @@ elseif(is_string($msgId)) {
 		}
 		exit;
 	}
-
+	elseif($msgId == "checkXdebug") {
+		require_once 'config.inc.php';
+		require_once 'wampserver.lib.php';
+		$Nbfiles = 0;
+		echo "\nCheck unused PHP xDebug dll's\n\n";
+		// Delete unused xdebug dll's following successive updates of xDebug
+		// Get all php versions
+		$phpVersionList = listDir($c_phpVersionDir,'checkPhpConf','php');
+		foreach($phpVersionList as $phpVersion) {
+			if(($files = glob($c_phpVersionDir.'/'.$phpVersion.'/zend_ext/php_xdebug-*.dll')) !== false) {
+				if(count($files) > 1) {
+					// Get php_xdebug...dll used by php version
+					$phpIni = parse_ini_file($c_phpVersionDir.'/'.$phpVersion.'/phpForApache.ini',true);
+					if(!empty($phpIni['xdebug']['zend_extension'])) {
+						// Get files to delete
+						foreach($files as $value) {
+							if($value != $phpIni['xdebug']['zend_extension']) {
+								// Delete file
+								if(unlink($value) !== false) {
+									echo $value." deleted\n";
+									$Nbfiles++;
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+		if($Nbfiles == 0) {
+			echo "No unused xDebug dll file was found.\n";
+		}
+	}
 	if(!empty($complete_result)) {
 		echo "\n--- Do you want to copy the results into Clipboard?
 --- Press the Y key to confirm - Press ENTER to continue... ";

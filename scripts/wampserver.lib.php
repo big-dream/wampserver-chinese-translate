@@ -53,10 +53,10 @@ function write_file($file, $string, $clipboard = false, $delete = true, $mode = 
 		$writeFileOK = false;
 	}
 	if($clipboard) {
-		$command = 'type '.$file.' | clip';
+		$command = 'CMD /D /C type '.$file.' | clip';
 		`$command`;
 		if($delete) {
-			$command = 'del '.$file;
+			$command = 'CMD /D /C del '.$file;
 			`$command`;
 		}
 	}
@@ -747,7 +747,6 @@ function ListAllVersions() {
 	}
 	//PHP versions
 	if(!isset($phpVersionList)) {
-		//error_log("phpVersionList was not set");
 		$phpVersionList = listDir($c_phpVersionDir,'checkPhpConf','php');
 		array_walk($phpVersionList,function(&$value, $key){$value = str_replace('php','',$value);});
 	}
@@ -972,6 +971,72 @@ function ReplaceAestan($value,$What = 'all') {
 		$replace = array('','','',' ',' ');
 	}
 	return str_replace($search,$replace,$value);
+}
+
+// Function to get PhpMyAdmin version's
+// Retrieving the different aliases and versions for PhpMyAdmin
+// $phpMyAdminAlias[x]['alias'] = alias for example phpmyadmin or phpmyadmin4.9.7
+// $phpMyAdminAlias[x]['version'] = version for example 5.0.4 or 4.9.7 or 5.1.0rc1
+// $phpMyAdminAlias[x]['compat'] = true Compatible with PHP version used
+//   if false $phpMyAdminAlias[x]['notcompat'] = incompatibily text
+// $phmyadOK = true if at least one version of PhpMyAdmin
+// $phpmyadminCount Number of PhpMyAdmin versions
+function GetPhpMyAdminVersions(){
+	global $phpMyAdminAlias, $c_installDir, $aliasDir, $phmyadOK, $phpmyadminCount, $c_phpVersion, $c_phpExe,
+	$WarningsAtEnd, $WarningMenu, $WarningText, $WarningPMA, $WarningMenuPMA, $WarningTextPMA, $WarningsPMA;
+	$phpMyAdminAlias = $temp = array();
+	$phmyadOK = false;
+	$phpmyadminCount = 0;
+	$temp = glob($aliasDir.'phpmyadmin*.conf');
+	if(!empty($temp)) {
+		$phmyadOK = true;
+		foreach($temp as $key => $value) {
+			$alias_contents = @file_get_contents($value);
+	  	preg_match('~^Alias\s+/(phpmyadmin[0-9abrc\.]*)\s+".*apps/phpmyadmin([0-9abrc\.]+)/".*\r?$~m',$alias_contents,$matches);
+			$phpMyAdminAlias[$key]['alias'] = $matches[1];
+			$phpMyAdminAlias[$key]['version'] = $matches[2];
+			$phpMyAdminAlias[$key]['compat'] = true;
+		}
+		$phpmyadminCount = count($phpMyAdminAlias);
+
+		//Check if PhpMyAdmin version is compatible with PHP version
+		if(file_exists($c_installDir.'/scripts/appsversusphp.ini')) {
+			$WarningS = 'WarningsAtEnd';
+			$WarningM = 'WarningMenu';
+			$WarningT = 'WarningText';
+			if($phpmyadminCount > 1) {
+				$WarningsPMA = false;
+				$WarningMenuPMA = ';WAMPMULTIPLEPHPMYADMINEND
+	';
+				$WarningTextPMA = '';
+				$WarningS = 'WarningsPMA';
+				$WarningM = 'WarningMenuPMA';
+				$WarningT = 'WarningTextPMA';
+			}
+			$temp = @parse_ini_file($c_installDir.'/scripts/appsversusphp.ini',true);
+			$phpVerPhpMyAdmin = $temp['phpphpmyadmin'];
+			foreach($phpMyAdminAlias as $cle => $version) {
+				$VersionPhpMyAdmin = $version['version'];
+				foreach($phpVerPhpMyAdmin as $key => $value) {
+					if(version_compare($c_phpVersion,$key,'>=')) {
+						if(!(version_compare($VersionPhpMyAdmin,$value[0],'>=') && version_compare($VersionPhpMyAdmin,$value[1],'<='))) {
+							$phpMyAdminAlias[$cle]['compat'] = false;
+							$phpMyAdminAlias[$cle]['notcompat'] = 'PhpMyAdmin '.$VersionPhpMyAdmin.' not compatible with PHP '.$c_phpVersion;
+							$$WarningS = true;
+							$$WarningM .= 'Type: item; Caption: "'.$phpMyAdminAlias[$cle]['notcompat'].'"; Glyph: 22; Action: multi; Actions: warning_phpmyadmin'.$VersionPhpMyAdmin.'
+	';
+							$temp = "\r\n".$phpMyAdminAlias[$cle]['notcompat']."\r\nYou must use a version of PhpMyAdmin from ".$value[0]." to ".$value[1];
+							$temp .= "\r\n----------------------------------------\r\n";
+							$$WarningT .= '[warning_phpmyadmin'.$VersionPhpMyAdmin.']
+	Action: run; FileName: "'.$c_phpExe.'";Parameters: "msg.php 11 '.base64_encode($temp).'";WorkingDir: "'.$c_installDir.'/scripts"; Flags: waituntilterminated
+	';
+						}
+						break;
+					}
+				}
+			}
+		}
+	}
 }
 
 // Function test of IPv6 support

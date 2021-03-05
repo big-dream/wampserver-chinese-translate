@@ -1,5 +1,6 @@
 <?php
-// 3.2.0 use write_file instead of fwrite, fclose
+// - 3.2.5 add CMD /D /C to Command Windows to avoid
+//         automatic autorun of registry keys
 
 if(WAMPTRACE_PROCESS) {
 	$errorTxt = "script ".__FILE__;
@@ -81,7 +82,7 @@ $myreplace = <<< EOF
 ;WAMPMYSQLSERVICEINSTALLSTART
 [MySQLServiceInstall]
 {$mysqlMysqlService}Action: run; FileName: "${c_mysqlExe}"; Parameters: "${c_mysqlServiceInstallParams}"; ShowCmd: hidden; Flags: ignoreerrors waituntilterminated
-{$mysqlCmdScService}Action: run; FileName: "sc"; Parameters: "create ${c_mysqlService} binpath=""${c_mysqlExeAnti} --defaults-file=${c_mysqlConfFileAnti} ${c_mysqlService}"""; ShowCmd: hidden; Flags: ignoreerrors waituntilterminated
+{$mysqlCmdScService}Action: run; FileName: "CMD"; Parameters: "/D /C sc create ${c_mysqlService} binpath=""${c_mysqlExeAnti} --defaults-file=${c_mysqlConfFileAnti} ${c_mysqlService}"""; ShowCmd: hidden; Flags: ignoreerrors waituntilterminated
 Action: resetservices
 Action: readconfig
 EOF;
@@ -93,7 +94,7 @@ $myreplace = <<< EOF
 [MySQLServiceRemove]
 Action: service; Service: ${c_mysqlService}; ServiceAction: stop; Flags: ignoreerrors waituntilterminated
 {$mysqlMysqlService}Action: run; FileName: "${c_mysqlExe}"; Parameters: "${c_mysqlServiceRemoveParams}"; ShowCmd: hidden; Flags: waituntilterminated
-{$mysqlCmdScService}Action: run; FileName: "sc"; Parameters: "delete ${c_mysqlService}"; ShowCmd: hidden; Flags: ignoreerrors waituntilterminated
+{$mysqlCmdScService}Action: run; FileName: "CMD"; Parameters: "/D /C sc delete ${c_mysqlService}"; ShowCmd: hidden; Flags: ignoreerrors waituntilterminated
 Action: resetservices
 Action: readconfig
 EOF;
@@ -122,7 +123,7 @@ $myreplace = <<< EOF
 Action: service; Service: ${c_apacheService}; ServiceAction: stop; Flags: waituntilterminated
 Action: run; FileName: "${c_phpExe}";Parameters: "switchWampParam.php mysqlUseConsolePrompt ${mysqlConsolePromptChange}"; WorkingDir: "$c_installDir/scripts"; Flags: waituntilterminated
 Action: run; FileName: "${c_phpExe}";Parameters: "refresh.php"; WorkingDir: "$c_installDir/scripts"; Flags: waituntilterminated
-Action: run; FileName: "net"; Parameters: "start ${c_apacheService}"; ShowCmd: hidden; Flags: waituntilterminated
+Action: run; FileName: "CMD"; Parameters: "/D /C net start ${c_apacheService}"; ShowCmd: hidden; Flags: waituntilterminated
 Action: resetservices
 Action: readconfig
 EOF;
@@ -190,9 +191,9 @@ foreach ($mysqlVersionList as $oneMysqlVersion) {
   	$myreplacemenu .= <<< EOF
 [switchMysql${oneMysqlVersion}]
 Action: service; Service: ${c_mysqlService}; ServiceAction: stop; Flags: ignoreerrors waituntilterminated
-Action: run; FileName: "net"; Parameters: "stop ${c_mysqlService}"; ShowCmd: hidden; Flags: ignoreerrors waituntilterminated
+Action: run; FileName: "CMD"; Parameters: "/D /C net stop ${c_mysqlService}"; ShowCmd: hidden; Flags: ignoreerrors waituntilterminated
 {$mysqlMysqlService}Action: run; FileName: "${c_mysqlExe}"; Parameters: "${c_mysqlServiceRemoveParams}"; ShowCmd: hidden; Flags: ignoreerrors waituntilterminated
-{$mysqlCmdScService}Action: run; FileName: "sc"; Parameters: "delete ${c_mysqlService}"; ShowCmd: hidden; Flags: ignoreerrors waituntilterminated
+{$mysqlCmdScService}Action: run; FileName: "CMD"; Parameters: "/D /C sc delete ${c_mysqlService}"; ShowCmd: hidden; Flags: ignoreerrors waituntilterminated
 Action: closeservices;
 Action: run; FileName: "${c_phpCli}";Parameters: "switchMysqlVersion.php ${oneMysqlVersion}";WorkingDir: "${c_installDir}/scripts"; Flags: waituntilterminated
 Action: run; FileName: "${c_phpExe}";Parameters: "switchMysqlPort.php ${c_UsedMysqlPort}";WorkingDir: "${c_installDir}/scripts"; Flags: waituntilterminated
@@ -202,7 +203,7 @@ EOF;
 			$binpath = str_replace('/','\\',$c_mysqlVersionDir.'/mysql'.$oneMysqlVersion.'/'.$mysqlConf['mysqlExeDir'].'/'.$mysqlConf['mysqlExeFile']);
 			$default = str_replace('/','\\',$c_mysqlVersionDir.'/mysql'.$oneMysqlVersion.'/'.$mysqlConf['mysqlConfDir'].'/'.$mysqlConf['mysqlConfFile']);
 			$myreplacemenu .= <<< EOF
-Action: run; FileName: "sc"; parameters: "create ${c_mysqlService} binpath=""${binpath} --defaults-file=${default} ${c_mysqlService}"""; ShowCmd: hidden; Flags: waituntilterminated
+Action: run; FileName: "CMD"; parameters: "/D /C sc create ${c_mysqlService} binpath=""${binpath} --defaults-file=${default} ${c_mysqlService}"""; ShowCmd: hidden; Flags: waituntilterminated
 
 EOF;
 		}
@@ -213,7 +214,7 @@ Action: run; FileName: "${c_mysqlVersionDir}/mysql${oneMysqlVersion}/${mysqlConf
 EOF;
 		}
 		$myreplacemenu .= <<< EOF
-Action: run; FileName: "net"; Parameters: "start ${c_mysqlService}"; ShowCmd: hidden; Flags: waituntilterminated
+Action: run; FileName: "CMD"; Parameters: "/D /C net start ${c_mysqlService}"; ShowCmd: hidden; Flags: waituntilterminated
 Action: run; FileName: "${c_phpCli}";Parameters: "refresh.php";WorkingDir: "${c_installDir}/scripts"; Flags: waituntilterminated
 Action: resetservices
 Action: readconfig
@@ -514,7 +515,7 @@ EOF;
 Action: service; Service: ${c_mysqlService}; ServiceAction: stop; Flags: waituntilterminated
 Action: run; FileName: "${c_phpExe}";Parameters: "changeMysqlParam.php noquotes ${action} ${param_value[$j]}";WorkingDir: "${c_installDir}/scripts"; Flags: waituntilterminated
 Action: run; FileName: "${c_phpCli}";Parameters: "refresh.php";WorkingDir: "${c_installDir}/scripts"; Flags: waituntilterminated
-Action: run; FileName: "net"; Parameters: "start ${c_mysqlService}"; ShowCmd: hidden; Flags: waituntilterminated
+Action: run; FileName: "CMD"; Parameters: "/D /C net start ${c_mysqlService}"; ShowCmd: hidden; Flags: waituntilterminated
 Action: resetservices
 Action: readconfig
 
@@ -550,7 +551,7 @@ Type: separator; Caption: "'.$mysqlParamsNotOnOff[$action]['title'].'"
 Action: service; Service: ${c_mysqlService}; ServiceAction: stop; Flags: waituntilterminated
 Action: run; FileName: "${c_phpRun}";Parameters: "changeMysqlParam.php ${quoted} ${action} ${param_value}${param_third}";WorkingDir: "${c_installDir}/scripts"; Flags: waituntilterminated
 Action: run; FileName: "${c_phpCli}";Parameters: "refresh.php";WorkingDir: "${c_installDir}/scripts"; Flags: waituntilterminated
-Action: run; FileName: "net"; Parameters: "start ${c_mysqlService}"; ShowCmd: hidden; Flags: waituntilterminated
+Action: run; FileName: "CMD"; Parameters: "/D /C net start ${c_mysqlService}"; ShowCmd: hidden; Flags: waituntilterminated
 Action: resetservices
 Action: readconfig
 
@@ -570,7 +571,7 @@ foreach ($params_for_mysqlini as $paramname=>$paramstatus) {
 Action: service; Service: ${c_mysqlService}; ServiceAction: stop; Flags: waituntilterminated
 Action: run; FileName: "${c_phpCli}";Parameters: "switchMysqlParam.php ${mysqlParams[$paramname]} ${SwitchAction}";WorkingDir: "${c_installDir}/scripts"; Flags: waituntilterminated
 Action: run; FileName: "${c_phpCli}";Parameters: "refresh.php";WorkingDir: "${c_installDir}/scripts"; Flags: waituntilterminated
-Action: run; FileName: "net"; Parameters: "start ${c_mysqlService}"; ShowCmd: hidden; Flags: waituntilterminated
+Action: run; FileName: "CMD"; Parameters: "/D /C net start ${c_mysqlService}"; ShowCmd: hidden; Flags: waituntilterminated
 Action: resetservices
 Action: readconfig
 
