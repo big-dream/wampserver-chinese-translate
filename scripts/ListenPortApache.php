@@ -54,7 +54,7 @@ elseif($action == 'delete') {
 		echo "您输入的端口: ".$portToTreat."\n\n";
 		echo "禁止在 httpd-vhosts.conf 文件使用Apache变量用作端口号\n";
 		echo "变量 \${MYPORT".$portToTreat."}\n";
-		echo "\n按回车键(Enter)继续...";
+		echo "\n按回车键（ENTER）继续...";
   	trim(fgets(STDIN));
   	exit;
 	}
@@ -85,7 +85,7 @@ elseif($action == 'delete') {
 if(!$goodPort) {
 	echo "您输入的端口: ".$portToTreat."\n\n";
 	echo "无效/已使用或是默认端口\n";
-	echo "\n按回车键(Enter)继续...";
+	echo "\n按回车键（ENTER）继续...";
   trim(fgets(STDIN));
 }
 

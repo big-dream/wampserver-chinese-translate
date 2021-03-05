@@ -186,7 +186,7 @@ else {
 		echo "参数 '".$_SERVER['argv'][1]."' 不能切换到 '".$_SERVER['argv'][2]."'\n\n";
 		echo $errorMessage."\n\n";
 		echo "----- 操作取消 -----\n\n";
-		echo "\n按回车键(Enter)继续...";
+		echo "\n按回车键（ENTER）继续...";
  		trim(fgets(STDIN));
 	}
 }

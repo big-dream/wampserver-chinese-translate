@@ -62,7 +62,7 @@ if($goodPort) {
 else {
 	echo "您输入的端口: ".$portToUse."\n\n";
 	echo "无效或不允许.\n";
-	echo "\n按回车键(Enter)继续...";
+	echo "\n按回车键（ENTER）继续...";
   trim(fgets(STDIN));
 }
 

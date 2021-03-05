@@ -62,7 +62,7 @@ if(substr($wampConf['apacheVersion'],0,3) == '2.4' && substr($newApacheVersion,0
 			$touche = strtoupper(trim(fgets(STDIN)));
 			if($touche === "Y") {
 				if(copy($oldVhost,$newVhost) === false) {
-					echo "\n\n**** 复制错误 ****\n\n按回车键(Enter)继续...\n";
+					echo "\n\n**** 复制错误 ****\n\n按回车键（ENTER）继续...\n";
 					trim(fgets(STDIN));
 				}
 				else
@@ -91,7 +91,7 @@ if(substr($wampConf['apacheVersion'],0,3) == '2.4' && substr($newApacheVersion,0
 		echo "\n\n**********************************************************\n";
 		echo "** Apache ".$c_apacheVersion." 已监听这些端口：".$portList."\n";
 		echo "** \n** 你可能需要手动将它们添加到 Apache ".$newApacheVersion."\n";
-		echo "**\n**\n** 按回车键(Enter)继续...\n";
+		echo "**\n**\n** 按回车键（ENTER）继续...\n";
 		trim(fgets(STDIN));
 	}
 }

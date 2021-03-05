@@ -33,14 +33,14 @@ if ($confirm == 'yes')
 
 
 
-别名删除成功！按回车键(Enter)退出...';
+别名删除成功！按回车键（ENTER）退出...';
     trim(fgets(STDIN));
     exit();
 }
 else
 {
     echo'
-别名未能删除！按回车键(Enter)退出...';
+别名未能删除！按回车键（ENTER）退出...';
     trim(fgets(STDIN));
     exit();
 }

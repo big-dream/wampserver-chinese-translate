@@ -39,7 +39,7 @@ if ($fp)
     echo '
 无法安装Apache服务，请先停止该程序后再试.
 
-按回车键(Enter)退出...';
+按回车键（ENTER）退出...';
 trim(fgets(STDIN));
 }
 else
@@ -47,7 +47,7 @@ else
     echo $port_to_check.' 端口可用，安装可继续进行.';
     echo '
 
-按回车键(Enter)继续...';
+按回车键（ENTER）继续...';
     trim(fgets(STDIN));
   }
 }

@@ -36,7 +36,7 @@ if(!$doReport) {
 		echo "***** 警告 *****\n\n";
 		echo $checkSymlinkResult;
 		echo "\n--- 是否要将结果复制到剪贴板?
-	--- 输入 'y' 确认复制 - 按回车键(Enter)继续... ";
+	--- 输入 'y' 确认复制 - 按回车键（ENTER）继续... ";
 	  $confirm = trim(fgetc(STDIN));
 		$confirm = strtolower(trim($confirm ,'\''));
 		if ($confirm == 'y') {
@@ -47,7 +47,7 @@ if(!$doReport) {
 	elseif($verify) {
 		$symTxt = ($wampConf['CreateSymlink'] == 'copy') ? '复制的文件' : '建立的符号链接';
 		echo "所有 ".$symTxt." 已完成\n\n";
-		echo "按回车键(Enter)继续... ";
+		echo "按回车键（ENTER）继续... ";
 		fgetc(STDIN);
 		exit(0);
 	}

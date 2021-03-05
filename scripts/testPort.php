@@ -137,7 +137,7 @@ if($doReport){
 echo $message;
 	if(!empty($message)) {
 		echo "\n--- 是否要将结果复制到剪贴板?\n
---- 输入 'y' 确认复制 - 按回车键(Enter)继续...";
+--- 输入 'y' 确认复制 - 按回车键（ENTER）继续...";
     $confirm = trim(fgetc(STDIN));
 		$confirm = strtolower(trim($confirm ,'\''));
 		if ($confirm == 'y') {
@@ -148,7 +148,7 @@ echo $message;
 
 echo '
 
-按回车键(Enter)退出...';
+按回车键（ENTER）退出...';
 trim(fgets(STDIN));
 
 ?>

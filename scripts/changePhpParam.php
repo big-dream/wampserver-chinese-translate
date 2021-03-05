@@ -25,8 +25,8 @@ if(!empty($_SERVER['argv'][4])) {
 		if(preg_match('/^[1-9][0-9]{1,3}$/m',$newvalue) != 1) {
 		$changeError = <<< EOFERROR
 您输入的值({$newvalue})超出范围.
-输入的值必须是整数，范围在10至9999之间。
-已将值设为默认的 60 秒.
+输入的值必须是整数，范围在 10 至 9999 之间。
+已将值设为默认的 60 秒。
 EOFERROR;
 		$newvalue = '300';
 		}
@@ -36,9 +36,9 @@ EOFERROR;
 		if(preg_match('/^[1-9][0-9]{1,3}(M|G)$/m',$newvalue) != 1) {
 		$changeError = <<< EOF1ERROR
 您输入的值({$newvalue})超出范围.
-输入的值必须是整数，范围在10至9999之间.
-数字后面必须跟着单位，M或G.
-已将值设为默认的 128M.
+输入的值必须是整数，范围在 10 至 9999 之间。
+数字后面必须跟着单位，M 或 G。
+已将值设为默认的 128M。
 EOF1ERROR;
 		$newvalue = '128M';
 		}
@@ -49,8 +49,8 @@ EOF1ERROR;
 		if($newvalue < $min || $newvalue > $max) {
 		$changeError = <<< EOF2ERROR
 您输入的值({$newvalue})超出范围.
-输入的值必须是整数，范围在 {$min} 至 {$max} 之间.
-已将值设为默认的 {$default}.
+输入的值必须是整数，范围在 {$min} 至 {$max} 之间。
+已将值设为默认的 {$default}。
 EOF2ERROR;
 		$newvalue = $default;
 		}
@@ -86,9 +86,9 @@ if(in_array($parameter,$phpCLIparams)) {
 }
 
 if(!empty($changeError)) {
-	echo "********************* WARNING ********************\n\n";
+	echo "********************* 警告 ********************\n\n";
 	echo $changeError;
-	echo "\n按回车键(ENTER)继续...";
+	echo "\n按回车键（ENTER）继续...";
   trim(fgets(STDIN));
 }
 

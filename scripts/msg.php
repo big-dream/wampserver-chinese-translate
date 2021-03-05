@@ -68,7 +68,7 @@ function message_add(&$array) {
 
 ".$array."
 
-按回车(ENTER)键继续...
+按回车（ENTER）键继续...
 ";
 }
 array_walk($message, 'message_add');
@@ -657,7 +657,7 @@ elseif(is_string($msgId)) {
 		}
 		exit(0);
  	}
-	echo "\n按回车键(Enter)继续...";
+	echo "\n按回车键（ENTER）继续...";
 }
 
 trim(fgets(STDIN));
