@@ -1,6 +1,6 @@
 <?php
-// 3.2.0 - txtProjects
-// 3.2.1 - defaultDBMS - HelpMySQLMariaDB
+// 3.2.5 - documentation-of added for languages requiring it
+// for English is identical to documentation
 
 defined('WAMPSERVER_ROOT') or define('WAMPSERVER_ROOT', str_replace('\\', '/', dirname(dirname(__DIR__))));
 
@@ -15,6 +15,7 @@ $langues = array(
     'versp' => 'PHP 版本：',
     'server' => '服务器软件：',
     'documentation' => '文档',
+    'documentation-of' => 'Documentation',
     'docp' => 'www.php.net/manual/zh/',
     'versm' => 'MySQL 版本：',
     'docm' => 'dev.mysql.com/doc/index.html',

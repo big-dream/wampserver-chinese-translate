@@ -1,7 +1,7 @@
 <?php
 // 3.1.9 - Check session variables
 //   Support VirtualHost IDNA ServerName
-// 3.2.3 - Improve IDNA ServerName check
+// 3.2.5 - Improved layout
 
 $server_dir = "../";
 session_start();
@@ -476,26 +476,14 @@ EOFHOSTS;
 			   	net stop wampapache
 			   	net start wampapache
 			   et c'est impossible car alors plus de PHP.
-			   La commande ci-dessous fonctionne parfaitement dans un script comme wamp/script/msg.php
-			   $command = 'start /b /wait '.$c_apacheExe.' -n wampapache -k restart';
-			   mais pas si elle est lancée via http
-			   et il n'existe pas de "graceful restart" Apache sous Windows*/
-
-			/*$command = array(
-				'net stop wampapache',
-				'ipconfig /flushdns',
-				'net stop Dnscache',
-				'net start Dnscache',
-				'net start wampapache',
-			);
-			ob_start();
-			foreach($command as $value) {
-				echo "Command-> ".$value."\n";
-				passthru($value);
-			}
-			$output = iconv("CP850","UTF-8//TRANSLIT", ob_get_contents());
-			ob_end_clean();
-			$dns_refresh_message = '<pre><code>'.$output.'</code></pre>';*/
+			   Les commandes ci-dessous fonctionnent parfaitement dans un script comme wamp/script/msg.php*/
+			   /*$command = 'CMD /D /C ipconfig /flushdns';
+			   $output = `$command`;
+			   $command = 'CMD /D /C '.$c_apacheExe.' -n '.$c_apacheService.' -k restart';
+			   error_log("cmd=".$command);
+			   $output .= `$command`;
+			   $dns_refresh_message = '<pre><code>'.$output.'</code></pre>';*/
+			   /*mais pas si elles sont lancées via http*/
 
 			$dns_refresh_message = "";
 
@@ -516,7 +504,7 @@ $pageContents = <<< EOPAGE
 <!DOCTYPE html>
 <html lang="fr">
 	<head>
-		<title>Ajouter un "Virtual Host"</title>
+		<title>${langues['addVirtual']}</title>
 		<meta charset="UTF-8">
 		<style>
 			* {

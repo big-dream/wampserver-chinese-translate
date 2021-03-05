@@ -6,8 +6,8 @@
 // and Hervé Leclerc <herve.leclerc@alterway.fr>
 // Icons by Mark James <http://www.famfamfam.com/lab/icons/silk/>
 // Version 2.5 -> 3.0.0 by Dominique Ottello aka Otomatic
-// 3.1.9 - Support VirtualHost IDNA ServerName
-//
+// 3.2.5 - Improved layout and css classic
+//       - All PhpMyAdmin versions with warning if not compatible with PHP
 //
 //
 
@@ -105,7 +105,7 @@ if(isset($wampConf['SupportMySQL']) && $wampConf['SupportMySQL'] =='on') {
 	$defaultDBMSMySQL = ($wampConf['mysqlPortUsed'] == '3306') ? "&nbsp;-&nbsp;".$langues['defaultDBMS'] : "";
 	$MySQLdb = <<< EOF
 <dt>{$langues['versm']}</dt>
-	<dd>${mysqlVersion}&nbsp;-&nbsp;{$langues['mysqlportUsed']}{$Mysqlport}{$defaultDBMSMySQL}&nbsp;-&nbsp; <a href='http://{$langues['docm']}'>{$langues['documentation']} MySQL</a></dd>
+	<dd>${mysqlVersion}&nbsp;-&nbsp;{$langues['mysqlportUsed']}{$Mysqlport}{$defaultDBMSMySQL}&nbsp;-&nbsp; <a href='http://{$langues['docm']}'>{$langues['documentation-of']} MySQL</a></dd>
 EOF;
 }
 
@@ -116,7 +116,7 @@ if(isset($wampConf['SupportMariaDB']) && $wampConf['SupportMariaDB'] =='on') {
 	$defaultDBMSMaria = ($wampConf['mariaPortUsed'] == '3306') ? "&nbsp;-&nbsp;".$langues['defaultDBMS'] : "";
 	$MariaDB = <<< EOF
 <dt>{$langues['versmaria']}</dt>
-  <dd>${c_mariadbVersion}&nbsp;-&nbsp;{$langues['mariaportUsed']}{$wampConf['mariaPortUsed']}{$defaultDBMSMaria}&nbsp;-&nbsp; <a href='http://{$langues['docmaria']}'>{$langues['documentation']} MariaDB</a></dd>
+  <dd>${c_mariadbVersion}&nbsp;-&nbsp;{$langues['mariaportUsed']}{$wampConf['mariaPortUsed']}{$defaultDBMSMaria}&nbsp;-&nbsp; <a href='http://{$langues['docmaria']}'>{$langues['documentation-of']} MariaDB</a></dd>
 EOF;
 }
 
@@ -135,29 +135,47 @@ else
 
 // No Database Mysql System
 $noDBMS = (empty($MySQLdb) && empty($MariaDB)) ? true : false;
-$phpmyadminTool = $noDBMS ? '' : '<li><a href="phpmyadmin/">phpmyadmin</a></li>';
 
 $aliasContents = '';
 
 // récupération des alias
-if (is_dir($aliasDir))
-{
-    $handle=opendir($aliasDir);
-    while (($file = readdir($handle))!==false)
-    {
-	    if (is_file($aliasDir.$file) && strstr($file, '.conf'))
-	    {
-	    	if(!($noDBMS && ($file == 'phpmyadmin.conf' || $file == 'adminer.conf'))) {
-		    	$msg = '';
-		    	$aliasContents .= '<li><a href="'.str_replace('.conf','',$file).'/">'.str_replace('.conf','',$file).'</a></li>';
-		  	}
-	    }
-    }
-    closedir($handle);
+GetPhpMyAdminVersions();
+if (is_dir($aliasDir)) {
+	$handle=opendir($aliasDir);
+	while (false !== ($file = readdir($handle))) {
+	  if (is_file($aliasDir.$file) && strstr($file, '.conf')) {
+			$href = $file = str_replace('.conf','',$file);
+	  	if(stripos($file,'phpmyadmin') !== false || stripos($file,'adminer') !== false) {
+	  		if(!$noDBMS) {
+					if(stripos($file,'phpmyadmin') !== false) {
+						foreach($phpMyAdminAlias as $key => $value) {
+							if($phpMyAdminAlias[$key]['alias'] == $file) {
+								$href = $phpMyAdminAlias[$key]['alias'];
+								$file = 'PhpMyAdmin '.$phpMyAdminAlias[$key]['version'];
+								$aliasContents .= '<li><a href="'.$href.'/">'.$file.'</a></li>';
+								if($phpMyAdminAlias[$key]['compat'] !== true) {
+									$aliasContents .= '<li class="phpmynot">'.$phpMyAdminAlias[$key]['notcompat'].'</li>';
+								}
+							}
+						}
+					}
+					else {
+	    			$aliasContents .= '<li><a href="'.$href.'/">'.$file.'</a></li>';
+					}
+				}
+			}
+			elseif(stripos($file,'phpsysinfo') === false){
+	    	$aliasContents .= '<li><a href="'.$href.'/">'.$file.'</a></li>';
+	  	}
+	  }
+	}
+	closedir($handle);
 }
-if (empty($aliasContents))
-	$aliasContents = "<li>".$langues['txtNoAlias']."</li>\n";
 
+if (empty($aliasContents))
+	$aliasContents = "<li class='phpmynot'>".$langues['txtNoAlias']."</li>\n";
+
+$phpsysinfo = file_exists($aliasDir.'phpsysinfo.conf') ? '<li><a href="phpsysinfo">PhpSysInfo</a></li>' : '';
 
 //Récupération des ServerName de httpd-vhosts.conf
 $addVhost = "<li><a href='add_vhost.php?lang=".$langue."'>".$langues['txtAddVhost']."</a></li>";
@@ -352,10 +370,8 @@ else {
 // récupération des projets
 $handle=opendir(".");
 $projectContents = '';
-while (($file = readdir($handle))!==false)
-{
-	if (is_dir($file) && !in_array($file,$projectsListIgnore))
-	{
+while (false !== ($file = readdir($handle))) {
+	if (is_dir($file) && !in_array($file,$projectsListIgnore)){
 		$projectContents .= '<li>'.$file.'</li>';
 	}
 }
@@ -394,12 +410,12 @@ if($phpini != strtolower($c_phpConfFile) && $phpini != $c_phpConfFileOri) {
 	$error_content .= "<p style='color:red;'>*** ERROR *** The PHP configuration loaded file is: ".$phpini." - should be: ".$c_phpConfFile." or ".$c_phpConfFileOri;
 	$error_content .= "<br>You must perform: <span style='color:green;'>Right-click icon Wampmanager -> Refresh</span><br>";
 	if($phpini == $c_phpCliConf || $phpini == $c_phpCliConfFile)
-		$error_content .= " - This file is only for PHP in Command Line - Maybe you've added 'PHPIniDir' in the 'httpd.conf' file. Delete or comment this line.";
+		$error_content .= " - This file is only for PHP in Command Line.";
 	$error_content .= "</p>";
 }
 if($filelist = php_ini_scanned_files()) {
 	if (strlen($filelist) > 0) {
-		$error_content .= "<p style='color:red;'>*** ERROR *** There are too much php.ini files</p>";
+		$error_content .= "<p style='color:red;'>*** ERROR *** There are too many php.ini files</p>";
 		$files = explode(',', $filelist);
 		foreach ($files as $file) {
 			$error_content .= "<p style='color:red;'>*** ERROR *** There are other php.ini files: ".trim(str_replace("\\","/",$file))."</p>";
@@ -413,8 +429,8 @@ $pageContents = <<< EOPAGE
 <head>
 	<title>{$langues['titreHtml']}</title>
 	<meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
-    <meta name="viewport" content="width=device-width">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <meta name="viewport" content="width=device-width">
 	<link id="stylecall" rel="stylesheet" href="wampthemes/classic/style.css" />
 	<link rel="shortcut icon" href="favicon.ico" type="image/ico" />
 </head>
@@ -424,7 +440,7 @@ $pageContents = <<< EOPAGE
     <div class="innerhead">
 	    <h1><abbr title="Windows">W</abbr><abbr title="Apache">a</abbr><abbr title="MySQL/MariaDB">m</abbr><abbr title="PHP">p</abbr><abbr title="server WEB local">server</abbr></h1>
 		   <ul>
-			   <li>Apache 2.4</li><li>-</li><li>MySQL 5 &amp; 8</li><li>-</li><li>MariaDB 10</li><li>-</li><li>PHP 5 &amp; 7</li>
+			   <li>Apache 2.4</li><li>-</li><li>MySQL 5 &amp; 8</li><li>-</li><li>MariaDB 10</li><li>-</li><li>PHP 5, 7 &amp; 8</li>
 		   </ul>
      </div>
 		<ul class="utility">
@@ -435,26 +451,24 @@ $pageContents = <<< EOPAGE
 
 	<div class="config">
 	    <div class="innerconfig">
-
-	        <h2> {$langues['titreConf']} </h2>
-
+        <h2> {$langues['titreConf']} </h2>
 	        <dl class="content">
 		        <dt>{$langues['versa']}</dt>
-		            <dd>${apacheVersion}&nbsp;&nbsp;-&nbsp;<a href='http://{$langues[$doca_version]}'>{$langues['documentation']}</a></dd>
+		            <dd>${apacheVersion}&nbsp;&nbsp;-&nbsp;<a href='http://{$langues[$doca_version]}'>{$langues['documentation-of']} Apache</a></dd>
 		        <dt>{$langues['server']}</dt>
 		            <dd>${server_software}&nbsp;-&nbsp;{$langues['portUsed']}{$ListenPorts}</dd>
 		        <dt>{$langues['versp']}</dt>
-		            <dd>${phpVersion}&nbsp;&nbsp;-&nbsp;<a href='http://{$langues['docp']}'>{$langues['documentation']}</a></dd>
+		            <dd>${phpVersion}&nbsp;&nbsp;-&nbsp;<a href='http://{$langues['docp']}'>{$langues['documentation-of']} PHP</a></dd>
 		        <dt>{$langues['phpExt']}</dt>
-		            <dd>
-			            <ul>
+		            <dd class='ddphpext'>
+			            <ul class='phpext'>
 			                ${phpExtContents}
 			            </ul>
 		            </dd>
 						${DBMSTypes}
 	        </dl>
-        </div>
-    </div>
+      </div>
+  </div>
 
     <div class="divider1">&nbsp;</div>
 
@@ -464,7 +478,7 @@ $pageContents = <<< EOPAGE
 	            <h2>{$langues['titrePage']}</h2>
 	            <ul class="tools">
 		            <li><a href="?phpinfo=-1">phpinfo()</a></li>
-		            {$phpmyadminTool}
+		            {$phpsysinfo}
 		            {$addVhost}
 	            </ul>
 	        </div>

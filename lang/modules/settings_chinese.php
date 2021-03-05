@@ -18,6 +18,8 @@
 // 3.2.1 $w_addingVer - $w_addingVerTxt - $w_goto - $w_FileRepository
 // 3.2.2 已修改 $w_MysqlMariaUser 和 $w_EnterSize -  - $w_MySQLsqlmodeInfo $w_mysql_mode $w_phpMyAdminHelp $w_PhpMyAdMinHelpTxt
 // 3.2.3 wampserver.aviatechno 调整为 https
+// 3.2.5 $w_emptyLogs - $w_emptyPHPlog - $w_emptyApaErrLog - $w_emptyApaAccLog - $w_emptyMySQLog - $w_emptyMariaLog - $w_emptyAllLog
+//       $w_testAliasDir - $w_verifyxDebugdll - $w_apacheLoadedIncludes - $w_settings 'ShowWWWdirMenu'
 
 // 项目子菜单
 $w_projectsSubMenu = '项目列表';
@@ -68,6 +70,7 @@ $w_settings = array(
     'ForTestOnly' => '仅适用于测试环境（开发调试）',
     'iniCommented' => '已注释 php.ini 配置',
     'BackupHosts' => '备份 hosts 文件',
+    'ShowWWWdirMenu' => 'Show www folder in Menu',
 );
 
 // 右键子菜单-工具
@@ -84,9 +87,21 @@ $w_UseAlternatePort = '使用 %s 以外的端口';
 $w_AddListenPort = '新增 Apache 监听端口';
 $w_vhostConfig = '显示 Apache 中有效的虚拟主机';
 $w_apacheLoadedModules = '显示 Apache 已加载模块';
+$w_apacheLoadedIncludes = 'Show Apache loaded Includes';
+$w_testAliasDir = 'Check relationships Alias  <-> Directory';
+$w_verifyxDebugdll = 'Check for unused xDebug dlls';
 $w_empty = '清空';
 $w_misc = '杂项';
 $w_emptyAll = '清空所有';
+
+$w_emptyLogs = 'Empty logs';
+$w_emptyPHPlog = 'Empty PHP error log';
+$w_emptyApaErrLog = 'Empty Apache error log';
+$w_emptyApaAccLog = 'Empty Apache access log';
+$w_emptyMySQLog = 'Empty MySQL log';
+$w_emptyMariaLog = 'Empty MariaDB log';
+$w_emptyAllLog ='Empty all log files';
+
 $w_dnsorder = '检查 DNS 搜索顺序';
 $w_deleteVer = '删除未使用版本';
 $w_addingVer = '添加 Apache, PHP, MySQL, MariaDB 等版本.';
@@ -120,7 +135,8 @@ $w_Time = "时间";
 $w_Integer = "整数数值";
 $w_phpMyAdminHelp = "PHPMyAdmin 帮助";
 
-// 输入提示
+// Aestan Tray 菜单 PromptText 的 输入提示
+// 换行符请使用 \r\n
 $w_EnterInteger = "输入整数数值";
 $w_enterPort = '输入要使用的端口号';
 $w_EnterSize = "输入大小： **M 或 **G （**代表整数）。\r\n例如：64M ; 256M ; 1G";
