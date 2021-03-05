@@ -76,9 +76,9 @@ $w_testPort80 = '测试 80 端口';
 $w_installService = '安装服务';
 $w_removeService = '卸载服务';
 $w_mysqlConsole = $w_mysql . ' 控制台';
-$w_mysqlCommand =  '在' . $w_cmdWindows . '打开' . $w_mysql . '/bin 目录';
+$w_mysqlCommand =  '在 ' . $w_cmdWindows . ' 打开 ' . $w_mysql . '/bin 目录';
 $w_mariadbConsole = 'MariaDB ' . $w_cmdWindows;
-$w_mariadbCommand = '在' . $w_cmdWindows . '打开 MariaDB/bin目录';
+$w_mariadbCommand = '在 ' . $w_cmdWindows . ' 打开 MariaDB/bin 目录';
 
 $w_noDBMS = '无数据库管理系统（DBMS）';
 

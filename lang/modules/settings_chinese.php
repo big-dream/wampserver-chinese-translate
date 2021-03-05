@@ -54,7 +54,7 @@ $w_settings = array(
     'SupportMySQL' => '启用 MySQL',
     'SupportMariaDB' => '启用 MariaDB',
     'DaredevilOptions' => '更改下列值有风险，不熟悉者勿改！',
-    'ShowphmyadMenu' => '显示PHPMyAdmin 菜单',
+    'ShowphmyadMenu' => '显示 PHPMyAdmin 菜单',
     'ShowadminerMenu' => '显示 Adminer 菜单',
     'mariadbUseConsolePrompt' => '修改默认的 MariaDB 控制台提示',
     'mysqlUseConsolePrompt' => '修改默认的 MySQL 控制台提示',
@@ -70,7 +70,7 @@ $w_settings = array(
     'ForTestOnly' => '仅适用于测试环境（开发调试）',
     'iniCommented' => '已注释 php.ini 配置',
     'BackupHosts' => '备份 hosts 文件',
-    'ShowWWWdirMenu' => '在菜单显示 www 文件夹',
+    'ShowWWWdirMenu' => '显示 www 文件夹菜单',
 );
 
 // 右键子菜单-工具
