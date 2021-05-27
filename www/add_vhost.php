@@ -86,7 +86,7 @@ if(count($listenPort) > 1) {
 			<input style='width:20px;height:20px;margin:2px 0 5px 45px;' type='checkbox' name='vh_port_on' value='on'><select style='margin:5px 0 5px 10px;' name='vh_port'>
 EOF;
 	for($i=0;$i < count($authorizedPorts);$i++) {
-  	$w_VirtualPortForm .= "<option value='".$authorizedPorts[$i]."'>Listen Port&nbsp;:&nbsp;".$authorizedPorts[$i]."&nbsp;&nbsp;</option>";
+  	$w_VirtualPortForm .= "<option value='".$authorizedPorts[$i]."'>监听端口&nbsp;:&nbsp;".$authorizedPorts[$i]."&nbsp;&nbsp;</option>";
 	}
 	$w_VirtualPortForm .= "</select><br>";
 
@@ -222,7 +222,7 @@ if($virtualHost['nb_Server'] > 0) {
 		if($virtualHost['ServerNameValid'][$value] === false)
 			$VhostDefine .= "<li><i>ServerName : </i><span style='color:red;'>".$value_aff." - ServerName 语法错误</span></li>\n";
 		else
-			$VhostDefine .= "<li><i>ServerName : </i><span style='color:blue;'>".$value_aff."</span>".$UrlPortVH." - <i>Directory : </i>".$virtualHost['documentPath'][$i].$ip."</li>\n";
+			$VhostDefine .= "<li><i>ServerName : </i><span style='color:blue;'>".$value_aff."</span>".$UrlPortVH." - <i>目录 : </i>".$virtualHost['documentPath'][$i].$ip."</li>\n";
 		if($value != 'localhost')
 			$VhostDelete .= "<li><i>ServerName : </i><input type='checkbox' name='virtual_del[]' value='".$value."'/> <span style='color:blue;'>".$value."</span></li>";
 		$i++;
@@ -502,7 +502,7 @@ EOFHOSTS;
 
 $pageContents = <<< EOPAGE
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="zh-cn">
 	<head>
 		<title>${langues['addVirtual']}</title>
 		<meta charset="UTF-8">
@@ -617,6 +617,10 @@ $pageContents = <<< EOPAGE
 				text-decoration: none;
 			}
 
+			i, code {
+				font-style: normal;
+            }
+
 			code, code.option, code.requis {
 				color: #FFF;
 				text-shadow: 1px 1px 0 #000;
@@ -643,7 +647,7 @@ $pageContents = <<< EOPAGE
 	<header>
 		<h1><a href="add_vhost.php?lang={$langue}">{$langues['addVirtual']}</a> - <a href="index.php?lang={$langue}">{$langues['backHome']}</a></h1>
 		<ul class="utility">
-		  <li>Version ${c_wampVersion} - ${c_wampMode}${langueswitcher}</li>
+		  <li>版本： ${c_wampVersion} - ${c_wampMode}${langueswitcher}</li>
 	  </ul>
 	</header>
 EOPAGE;
@@ -657,7 +661,7 @@ else {
 		}
 	if($sub_menu_on === true) {
 	$pageContents .= <<< EOPAGEB
-		<p>Apache Virtual Hosts <code>{$c_apacheVhostConfFile}</code></p>
+		<p>Apache 虚拟主机配置文件 <code>{$c_apacheVhostConfFile}</code></p>
 EOPAGEB;
 	if(!empty($VhostDefine)) {
 	$pageContents .= <<< EOPAGEB
@@ -691,7 +695,7 @@ EOPAGEB;
 	$pageContents .= <<< EOPAGEB
 		</div>
 		<div style='clear:both;'></div>
-		<p>Windows hosts <code>{$c_hostsFile}</code></p>
+		<p>Windows hosts 文件 <code>{$c_hostsFile}</code></p>
 EOPAGEB;
 	$pageContents .= '<form method="post">';
 	if($errors_auto) {
