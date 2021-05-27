@@ -444,7 +444,7 @@ $pageContents = <<< EOPAGE
 		   </ul>
      </div>
 		<ul class="utility">
-		  <li>Version ${c_wampVersion} - ${c_wampMode}</li>
+		  <li>版本： ${c_wampVersion} - ${c_wampMode}</li>
       <li>${langueswitcher}${styleswitcher}</li>
 	  </ul>
 	</div>
