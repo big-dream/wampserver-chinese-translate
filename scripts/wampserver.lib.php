@@ -888,30 +888,30 @@ function errorLevel($error_number) {
 	$error_description = $error_comment = array();
 	//The ampersand "&" are doubled into strings to be displayed and not to be considered as a key prefix by Aestran Tray Menu.
 	$error_codes = array(
-	E_ALL => array('str' => "E_ALL", 'comment' => "Development value^Show all errors, warnings and notices including coding standards."),	//32767 - Development value
-	(E_ALL & ~E_ERROR) => array('str' => "E_ALL && ~E_ERROR", 'comment' =>'Show all errors, except for fatal run-time errors'), //32766
-	(E_ALL & ~E_WARNING)	=> array('str' => "E_ALL && ~E_WARNING", 'comment' => 'Show all errors, except for warnings'), //32765
-	(E_ALL & ~E_NOTICE) => array('str' => "E_ALL && ~E_NOTICE",	'comment' => 'Show all errors, except for notices'), //32759
-	(E_ALL & ~E_NOTICE & ~E_STRICT)	=> array('str' => "E_ALL && ~E_NOTICE && ~E_STRICT", 'comment' =>'Show all errors, except for notices and coding standards warnings'), //30711
-	(E_ALL & ~E_DEPRECATED & ~E_STRICT)	=> array('str' => "E_ALL && ~E_DEPRECATED && ~E_STRICT", 'comment' =>'Production value^Show all errors, except for notices .'), // 22527
-	(E_ALL & ~E_NOTICE & ~E_STRICT & ~E_DEPRECATED) => array('str' => "E_ALL && ~E_NOTICE && ~E_STRICT && ~E_DEPRECATED", 'comment' => 'Default value^Show all errors, except for notices and coding standards warnings and code that will not work in future versions of PHP'), // 22519 Default value
-	E_USER_DEPRECATED => array('str' => "E_USER_DEPRECATED", 'comment' => 'user-generated deprecation warnings'), //16384
-	E_DEPRECATED => array('str' => "E_DEPRECATED", 'comment' => 'warn about code that will not work in future versions of PHP'), // 8192
-	(E_COMPILE_ERROR | E_RECOVERABLE_ERROR | E_ERROR | E_CORE_ERROR) => array('str' => 'E_COMPILE_ERROR | E_RECOVERABLE_ERROR | E_ERROR | E_CORE_ERROR', 'comment' => 'Show only errors'), //4177
-	E_RECOVERABLE_ERROR => array('str' => "E_RECOVERABLE_ERROR", 'comment' => 'almost fatal run-time errors'),// 4096
-	E_STRICT => array('str' => "E_STRICT", 'comment' => 'run-time notices, enable to have PHP suggest changes to your code which will ensure the best interoperability and forward compatibility of your code'), // 2048
-	E_USER_NOTICE => array('str' => "E_USER_NOTICE", 'comment' => 'user-generated notice message'), // 1024
-	E_USER_WARNING => array('str' => "E_USER_WARNING", 'comment' => 'user-generated warning message'), // 512
-	E_USER_ERROR => array('str' => "E_USER_ERROR", 'comment' => 'user-generated error message'), // 256
-	E_COMPILE_WARNING => array('str' => "E_COMPILE_WARNING", 'comment' => 'compile-time warnings (non-fatal errors)'), // 128
-	E_COMPILE_ERROR => array('str' => "E_COMPILE_ERROR", 'comment' => 'fatal compile-time errors'), // 64
-	E_CORE_WARNING => array('str' => "E_CORE_WARNING", 'comment' => 'warnings (non-fatal errors) that occur during PHP\'s initial startup'), // 32
-	E_CORE_ERROR => array('str' => "E_CORE_ERROR", 'comment' => 'fatal errors that occur during PHP\'s initial startup'), // 16
-	E_NOTICE => array('str' => "E_NOTICE", 'comment' => 'run-time notices (these are warnings which often result from a bug in your code, but it\'s possible that it was intentional (e.g., using an uninitialized variable and relying on the fact it is automatically initialized to an empty string)'), // 8
-	(E_PARSE | E_ERROR) => array('str' => "E_PARSE | E_ERROR", 'comment' => 'compile-time parse errors - fatal run-time errors'), // 5
-	E_PARSE => array('str' => "E_PARSE", 'comment' => 'compile-time parse errors'), // 4
-	E_WARNING => array('str' => "E_WARNING", 'comment' => 'run-time warnings (non-fatal errors)'), // 2
-	E_ERROR => array('str' => "E_ERROR", 'comment' => 'fatal run-time errors'), // 1
+	E_ALL => array('str' => "E_ALL", 'comment' => "开发模式^显示所有异常。"),	//32767 - Development value
+	(E_ALL & ~E_ERROR) => array('str' => "E_ALL && ~E_ERROR", 'comment' =>'显示所有异常，除了 Error'), //32766
+	(E_ALL & ~E_WARNING)	=> array('str' => "E_ALL && ~E_WARNING", 'comment' => '显示所有异常，除了 Warning'), //32765
+	(E_ALL & ~E_NOTICE) => array('str' => "E_ALL && ~E_NOTICE",	'comment' => '显示所有异常，除了 Notice'), //32759
+	(E_ALL & ~E_NOTICE & ~E_STRICT)	=> array('str' => "E_ALL && ~E_NOTICE && ~E_STRICT", 'comment' =>'显示所有异常，除了 Notice 和 Strict'), //30711
+	(E_ALL & ~E_DEPRECATED & ~E_STRICT)	=> array('str' => "E_ALL && ~E_DEPRECATED && ~E_STRICT", 'comment' =>'生产模式^显示所有异常，除了 Deprecated 和 Strict。'), // 22527
+	(E_ALL & ~E_NOTICE & ~E_STRICT & ~E_DEPRECATED) => array('str' => "E_ALL && ~E_NOTICE && ~E_STRICT && ~E_DEPRECATED", 'comment' => '默认模式^显示所有异常，除了 Notice、Strict 和 Deprecated'), // 22519 Default value
+	E_USER_DEPRECATED => array('str' => "E_USER_DEPRECATED", 'comment' => '只显示用户级别的 Deprecated 异常'), //16384
+	E_DEPRECATED => array('str' => "E_DEPRECATED", 'comment' => '只显示 Deprecated 异常'), // 8192
+	(E_COMPILE_ERROR | E_RECOVERABLE_ERROR | E_ERROR | E_CORE_ERROR) => array('str' => 'E_COMPILE_ERROR | E_RECOVERABLE_ERROR | E_ERROR | E_CORE_ERROR', 'comment' => '只显示错误异常'), //4177
+	E_RECOVERABLE_ERROR => array('str' => "E_RECOVERABLE_ERROR", 'comment' => '只显示运行时的致命异常'),// 4096
+	E_STRICT => array('str' => "E_STRICT", 'comment' => '只显示 Strict 异常'), // 2048
+	E_USER_NOTICE => array('str' => "E_USER_NOTICE", 'comment' => '只显示用户级别的 Notice 异常'), // 1024
+	E_USER_WARNING => array('str' => "E_USER_WARNING", 'comment' => '只显示用户级别的 Warning 异常'), // 512
+	E_USER_ERROR => array('str' => "E_USER_ERROR", 'comment' => '只显示用户级别的 Error 异常'), // 256
+	E_COMPILE_WARNING => array('str' => "E_COMPILE_WARNING", 'comment' => '只显示编译时警告（非致命错误）'), // 128
+	E_COMPILE_ERROR => array('str' => "E_COMPILE_ERROR", 'comment' => '只显示编译时的致命错误'), // 64
+	E_CORE_WARNING => array('str' => "E_CORE_WARNING", 'comment' => '只显示PHP启动时出现的警告（非致命错误）'), // 32
+	E_CORE_ERROR => array('str' => "E_CORE_ERROR", 'comment' => '只显示PHP启动时出现的致命错误'), // 16
+	E_NOTICE => array('str' => "E_NOTICE", 'comment' => '只显示 Notice 异常'), // 8
+	(E_PARSE | E_ERROR) => array('str' => "E_PARSE | E_ERROR", 'comment' => '只显示 Parse 和 Error 异常'), // 5
+	E_PARSE => array('str' => "E_PARSE", 'comment' => '只显示 Parse 异常'), // 4
+	E_WARNING => array('str' => "E_WARNING", 'comment' => '只显示 Warning 异常（非致命错误）'), // 2
+	E_ERROR => array('str' => "E_ERROR", 'comment' => '只显示 Error 异常'), // 1
 	);
 	$i = 0;
 	foreach( $error_codes as $number => $description ) {

@@ -25,7 +25,7 @@ if(!empty($_SERVER['argv'][4])) {
 	if($choose == 'Seconds') {
 		if(preg_match('/^[1-9][0-9]{1,3}$/m',$newvalue) != 1) {
 		$changeError = <<< EOFERROR
-您输入的值({$newvalue})超出范围.
+您输入的值（{$newvalue}）超出范围。
 输入的值必须是整数，范围在 10 至 9999 之间。
 已将值设为默认的 300 秒。
 EOFERROR;
@@ -36,7 +36,7 @@ EOFERROR;
 		$newvalue = strtoupper($newvalue);
 		if(preg_match('/^[1-9][0-9]{1,3}(M|G)$/m',$newvalue) != 1) {
 		$changeError = <<< EOF1ERROR
-您输入的值({$newvalue})超出范围.
+您输入的值（{$newvalue}）超出范围。
 输入的值必须是整数，范围在 10 至 9999 之间。
 数字后面必须跟着单位，M 或 G。
 已将值设为默认的 128M。
@@ -49,9 +49,9 @@ EOF1ERROR;
 		list($min, $max, $default) = explode("^",$_SERVER['argv'][5]);
 		if($newvalue < $min || $newvalue > $max) {
 		$changeError = <<< EOF2ERROR
-您输入的值({$newvalue})超出范围.
+您输入的值（{$newvalue}）超出范围。
 输入的值必须是整数，范围在 {$min} 至 {$max} 之间。
-已将值设为默认的 {$default}.
+已将值设为默认的 {$default}。
 EOF2ERROR;
 		$newvalue = $default;
 		}

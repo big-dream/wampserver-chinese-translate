@@ -58,7 +58,7 @@ if(substr($wampConf['apacheVersion'],0,3) == '2.4' && substr($newApacheVersion,0
 			echo "\n\n*************************************************************\n";
 			echo "** 要复制 Apache ".$c_apacheVersion." 已配置的虚拟主机\n";
 			echo "** 到 Apache ".$newApacheVersion." 吗?\n\n";
-			echo "输入 'YES' 或 'NO'\n\n";
+			echo "输入 Y 然后按回车键（Enter）代表“是”\n直接按回车键（Enter）代表“否”\n\n";
 			$touche = strtoupper(trim(fgets(STDIN)));
 			if($touche === "Y") {
 				if(copy($oldVhost,$newVhost) === false) {

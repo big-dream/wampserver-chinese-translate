@@ -388,11 +388,11 @@ $mysqlParams = array (
 $mysqlParamsNotOnOff = array(
 	'basedir' => array(
 		'change' => false,
-		'msg' => "\n请勿更改此设置，否则可能会丢失现有数据库.\n",
+		'msg' => "\n请勿更改此设置，否则可能会丢失现有数据。\n",
 		),
 	'datadir' => array(
 		'change' => false,
-		'msg' => "\n请勿更改此设置，否则可能会丢失现有数据库.\n",
+		'msg' => "\n请勿更改此设置，否则可能会丢失现有数据库。\n",
 		),
 	'key_buffer_size' => array(
 		'change' => true,
@@ -402,7 +402,7 @@ $mysqlParamsNotOnOff = array(
 		),
 	'lc-messages' => array(
 		'change' => false,
-		'msg' => "\n要设置错误消息语言，请参阅:\n\nhttp://dev.mysql.com/doc/refman/5.7/en/error-message-language.html\n",
+		'msg' => "\n要设置错误消息语言，请参阅：\n\nhttp://dev.mysql.com/doc/refman/5.7/en/error-message-language.html\n",
 		),
 	'log_error_verbosity' => array(
 		'change' => true,
@@ -466,15 +466,15 @@ $mysqlParamsNotOnOff = array(
 		),
 	'prompt' => array(
 		'change' => false,
-		'msg' => "\n要设置控制台提示，请参见:\n\nhttps://dev.mysql.com/doc/refman/5.7/en/mysql-commands.html\n",
+		'msg' => "\n要设置控制台提示，请参见：\n\nhttps://dev.mysql.com/doc/refman/5.7/en/mysql-commands.html\n",
 		),
 	'table_definition_cache' => array(
 		'change' => false,
-		'msg' => "\n要设置 table_definition_cache ，请参见:\n\nhttps://dev.mysql.com/doc/refman/8.0/en/server-system-variables.html#sysvar_table_definition_cache\n",
+		'msg' => "\n要设置 table_definition_cache 请参见:\n\nhttps://dev.mysql.com/doc/refman/8.0/en/server-system-variables.html#sysvar_table_definition_cache\n",
 		),
 	'skip-grant-tables' => array(
 		'change' => false,
-		'msg' => "\n\n警告!! 警告!!\nThis option causes the server to start without using the privilege system at all, WHICH GIVES ANYONE WITH ACCESS TO THE SERVER UNRESTRICTED ACCESS TO ALL DATABASES.\nThis option also causes the server to suppress during its startup sequence the loading of user-defined functions (UDFs), scheduled events, and plugins that were installed.\n\nYou should leave this option 'uncommented' ONLY for the time required to perform certain operations such as the replacement of a lost password for 'root'.\n",
+		'msg' => "\n\n警告!! 警告！！\nThis option causes the server to start without using the privilege system at all, WHICH GIVES ANYONE WITH ACCESS TO THE SERVER UNRESTRICTED ACCESS TO ALL DATABASES.\nThis option also causes the server to suppress during its startup sequence the loading of user-defined functions (UDFs), scheduled events, and plugins that were installed.\n\nYou should leave this option 'uncommented' ONLY for the time required to perform certain operations such as the replacement of a lost password for 'root'.\n",
 		),
 	'default_authentication_plugin' => array('change' => false,),
 	'local_infile' => array('change' => false,

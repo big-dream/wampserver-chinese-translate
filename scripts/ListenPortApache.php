@@ -51,8 +51,8 @@ elseif($action == 'delete') {
 	//Check if variable to delete is used in httpd-vhosts.conf
 	$httpdVhostFileContents = file_get_contents($c_apacheVhostConfFile);
 	if(strpos($httpdVhostFileContents,'MYPORT'.$portToTreat) !== false) {
-		echo "您输入的端口: ".$portToTreat."\n\n";
-		echo "禁止在 httpd-vhosts.conf 文件使用Apache变量用作端口号\n";
+		echo "您输入的端口： ".$portToTreat."\n\n";
+		echo "禁止在 httpd-vhosts.conf 文件使用 Apache 变量用作端口号\n";
 		echo "变量 \${MYPORT".$portToTreat."}\n";
 		echo "\n按回车键（ENTER）继续...";
   	trim(fgets(STDIN));

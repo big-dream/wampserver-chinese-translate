@@ -1131,7 +1131,7 @@ foreach ($params_for_wampini as $paramname=>$paramstatus) {
 		$NBparamPHPxdebug++;
 		if(!$xDebugSep) {
 			$xDebugSep = true;
-			$phpConfText .= 'Type: Separator; Caption: "Extension Zend php_xdebug '.$zend_extensions['php_xdebug']['version'].'"
+			$phpConfText .= 'Type: Separator; Caption: "Zend 扩展 php_xdebug '.$zend_extensions['php_xdebug']['version'].'"
 ';
 		}
 	}
@@ -1579,7 +1579,7 @@ Action: run; FileName: "'.$c_phpExe.'";Parameters: "msg.php '.$msgNum.' '.base64
 }
 // Apache Compiled in modules
 $ApacheCompiledModules = '';
-$ApacheCompiledModules .= 'Type: separator; Caption: "Compiled in modules:"
+$ApacheCompiledModules .= 'Type: separator; Caption: "已编译模块："
 ';
 $command = 'CMD /D /C '.$c_apacheExe." -l";
 $output = `$command`;
@@ -1634,7 +1634,7 @@ foreach($httpdConfParams as $key => $value) {
 }
 // Apache Compiled in modules
 $ApacheCompiledModules = '';
-$ApacheCompiledModules .= 'Type: separator; Caption: "Compiled in modules:"
+$ApacheCompiledModules .= 'Type: separator; Caption: "已编译模块："
 ';
 $command = 'CMD /D /C '.$c_apacheExe." -l";
 $output = `$command`;

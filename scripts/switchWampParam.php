@@ -24,7 +24,7 @@ else {
   			$mariadbVersionList = listDir($c_mariadbVersionDir,'checkMariaDBConf','mariadb');
   			if(count($mariadbVersionList) == 0) {
   				$goodParam = false;
-  				$errorMessage .= "未安装 MariaDB.\nWampserver中至少安装一个MariaDB版本.\n";
+  				$errorMessage .= "未安装可用 MariaDB 版本.\n需要在 Wampserver 中安装一个可以用的 MariaDB 版本.\n";
   			}
   			else {
   				//Check if mariadb version installed is that in wampmanager.conf
@@ -46,7 +46,7 @@ else {
 							$output = `$command`;
 							if(strpos($output, 'successfully installed') === false) {
 								$goodParam = false;
-  							$errorMessage .= "'".$c_mariadbService."' 似乎未成功安装\n";
+  							$errorMessage .= "'".$c_mariadbService."' 服务似乎未成功安装\n";
 							}
 					}
   			}
@@ -127,7 +127,7 @@ else {
 							$output = `$command`;
 							if(strpos($output, 'successfully installed') === false) {
 								$goodParam = false;
-  							$errorMessage .= "'".$c_mysqlService."' 似乎未成功安装\n";
+  							$errorMessage .= "'".$c_mysqlService."' 服务似乎未成功安装\n";
 							}
 					}
   			}

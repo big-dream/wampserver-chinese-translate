@@ -10,7 +10,7 @@ if(WAMPTRACE_PROCESS) {
 require 'config.inc.php';
 require 'wampserver.lib.php';
 
-$myIniFileContents = @file_get_contents($c_mysqlConfFile) or die ("my.ini file not found");
+$myIniFileContents = @file_get_contents($c_mysqlConfFile) or die ("my.ini ÎÄ¼þÎ´ÕÒµ½");
 
 $quoted = false;
 if($_SERVER['argv'][1] == 'quotes')
