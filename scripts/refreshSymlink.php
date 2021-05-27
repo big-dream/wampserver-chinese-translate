@@ -19,7 +19,7 @@ $doReport = (!empty($_SERVER['argv'][3]) && $_SERVER['argv'][3] == 'doreport') ?
 
 if($wampConf['CreateSymlink'] == 'copy') {
 	echo "停止 Apache 服务\n";
-	$command = "net stop ".$c_apacheService;
+	$command = "CMD /D /C net stop ".$c_apacheService;
 	`$command`;
 }
 
@@ -29,7 +29,7 @@ $checkSymlinkResult = CheckSymlink($newPhpVersion);
 
 if($wampConf['CreateSymlink'] == 'copy') {
 	echo "启动 Apache 服务\n";
-	$command = "net start ".$c_apacheService;
+	$command = "CMD /D /C net start ".$c_apacheService;
 	`$command`;
 }
 

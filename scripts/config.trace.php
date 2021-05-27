@@ -2,7 +2,7 @@
 // Update 3.2.0
 // Possibility to trace Wampmanager processes
 
-define('WAMPTRACE_PROCESS',FALSE);
+define('WAMPTRACE_PROCESS',	FALSE);
 
 if(WAMPTRACE_PROCESS) {
 	if(!defined('WAMPTRACE_FILE')) {

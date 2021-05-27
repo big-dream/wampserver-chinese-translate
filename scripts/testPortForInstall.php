@@ -36,8 +36,8 @@ Cannot install the Apache service, please stop this application and try again.
 按回车键（ENTER）退出...';
 trim(fgets(STDIN));
 }
-else
-{ if(!$reinstall) {
+else{
+	if(!$reinstall) {
     echo $port_to_check.' 端口可用，安装可继续进行.';
     echo '
 
@@ -45,6 +45,5 @@ else
     trim(fgets(STDIN));
   }
 }
-
 
 ?>

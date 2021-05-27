@@ -18,7 +18,7 @@ if(empty($newAliasDir)) {
 }
 echo "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n
 请输入别名对应的文件夹路径。\n例如：\n\n'c:/test/'\n\n
-会将 http://localhost/".$newAliasDir."/ 指向
+会将 http://localhost/".$newAliasDir."/ 指向\n\n
 c:/test/\n:";
 $newAliasDest = trim(fgets(STDIN));
 $newAliasDest = trim($newAliasDest,'\'');

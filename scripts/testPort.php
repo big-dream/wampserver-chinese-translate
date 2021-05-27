@@ -111,7 +111,7 @@ if(!$only_process) {
 	}
 	else {
 		$message .=   $port." 端口已被它使用 :\n\n";
-		$gotInfo = false;
+		$gotinfo = false;
 		fwrite($fp, $out);
 		while (!feof($fp)) {
 			$line = fgets($fp, 128);
