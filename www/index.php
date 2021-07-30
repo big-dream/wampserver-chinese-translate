@@ -193,7 +193,7 @@ if($VirtualHostMenu == "on") {
 	}
 	else {
 		if($virtualHost['vhosts_exist'] === false) {
-			$vhostsContents = "<li><i style='color:red;'>No vhosts file</i></li>";
+			$vhostsContents = "<li><i style='color:red;'>没有 vhosts 文件</i></li>";
 			$vhostError = true;
 			$error_message[] = sprintf($langues['txtNoVhostFile'],$virtualHost['vhosts_file']);
 		}
@@ -236,20 +236,20 @@ if($VirtualHostMenu == "on") {
 							else {
 								$vhostError = true;
 								$vhostErrorCorrected = false;
-								$vhostsContents .= '<li>'.$vh_ip.' for '.$value.' - <i style="color:red;">IP not valid</i></li>';
+								$vhostsContents .= '<li>'.$vh_ip.' for '.$value.' - <i style="color:red;">IP 无效</i></li>';
 								$error_message[] = sprintf($langues['txtServerNameIp'],"<span style='color:black;'>".$vh_ip."</span>","<span style='color:black;'>".$value."</span>",$virtualHost['vhosts_file']);
 							}
 						}
 						elseif($virtualHost['DocRootNotwww'][$value] === false) {
 							$vhostError = true;
 							$vhostErrorCorrected = false;
-							$vhostsContents .= '<li>'.$value.' - <i style="color:red;">DocumentRoot error</i></li>';
+							$vhostsContents .= '<li>'.$value.' - <i style="color:red;">DocumentRoot 错误</i></li>';
 							$error_message[] = sprintf($langues['txtDocRoot'],"<span style='color:black;'>".$value."</span>","<span style='color:black;'>".$wwwDir."</span>");
 						}
 						elseif($virtualHost['ServerNameDev'][$value] === true) {
 							$vhostError = true;
 							$vhostErrorCorrected = false;
-							$vhostsContents .= '<li>'.$value.' - <i style="color:red;">TLD error</i></li>';
+							$vhostsContents .= '<li>'.$value.' - <i style="color:red;">TLD 错误</i></li>';
 							$error_message[] = sprintf($langues['txtTLDdev'],"<span style='color:black;'>".$value."</span>","<span style='color:black;'>.dev</span>");
 						}
 						else {
@@ -327,7 +327,7 @@ if($VirtualHostMenu == "on") {
 						$DuplicateNames .= " ".$NameValue;
 					$vhostError = true;
 					$vhostErrorCorrected = false;
-					$error_message[] = "Duplicate ServerName <span style='color:blue;'>".$DuplicateNames."</span> into ".$virtualHost['vhosts_file'];
+					$error_message[] = "重复 ServerName <span style='color:blue;'>".$DuplicateNames."</span> 复制到 ".$virtualHost['vhosts_file'];
 				}
 				//Check if duplicate Server IP
 				if($virtualHost['nb_duplicateIp'] > 0) {
@@ -336,13 +336,13 @@ if($VirtualHostMenu == "on") {
 						$DuplicateNames .= " ".$NameValue;
 					$vhostError = true;
 					$vhostErrorCorrected = false;
-					$error_message[] = "Duplicate IP <span style='color:blue;'>".$DuplicateNames."</span> into ".$virtualHost['vhosts_file'];
+					$error_message[] = "重复 IP <span style='color:blue;'>".$DuplicateNames."</span> 复制到 ".$virtualHost['vhosts_file'];
 				}
 			}
 		}
 	}
 	if(empty($vhostsContents)) {
-		$vhostsContents = "<li><i style='color:red:'>No VirtualHost</i></li>";
+		$vhostsContents = "<li><i style='color:red:'>没有虚拟主机</i></li>";
 		$vhostError = true;
 		$error_message[] = sprintf($langues['txtNoVhost'],$wampConf['apacheVersion']);
 	}
@@ -351,7 +351,7 @@ if($VirtualHostMenu == "on") {
 		$error_message[] = sprintf($langues['txtNotWritable'],$c_hostsFile)."<br>".nl2br($WarningMsg);
 	}
 	if($vhostError) {
-		$vhostsContents .= "<li><i style='color:red;'>Error(s)</i> See below</li>";
+		$vhostsContents .= "<li><i style='color:red;'>错误</i> 见下文</li>";
 		$error_content .= "<p style='color:red;'>";
 		foreach($error_message as $value) {
 			$error_content .= $value."<br />";
@@ -380,7 +380,7 @@ if (empty($projectContents))
 	$projectContents = "<li class='projectsdir'>".$langues['txtNoProjet']."</li>\n";
 else {
 	if(strpos($projectContents,"http://localhost/") !== false) {
-		$projectContents .= "<li><i style='color:blue;'>Warning:</i> See below</li>";
+		$projectContents .= "<li><i style='color:blue;'>警告:</i> 见下文</li>";
 		if(!isset($error_content))
 			$error_content = '';
 		$error_content .= "<p style='color:blue;'>".sprintf($langues['nolocalhost'],$wampConf['apacheVersion'])."</p>";
@@ -407,18 +407,18 @@ $c_phpConfFileOri = strtolower($c_phpVersionDir.'/php'.$wampConf['phpVersion'].'
 $c_phpCliConf = strtolower($c_phpVersionDir.'/php'.$wampConf['phpVersion'].'/'.$wampConf['phpConfFile']);
 
 if($phpini != strtolower($c_phpConfFile) && $phpini != $c_phpConfFileOri) {
-	$error_content .= "<p style='color:red;'>*** ERROR *** The PHP configuration loaded file is: ".$phpini." - should be: ".$c_phpConfFile." or ".$c_phpConfFileOri;
-	$error_content .= "<br>You must perform: <span style='color:green;'>Right-click icon Wampmanager -> Refresh</span><br>";
+	$error_content .= "<p style='color:red;'>*** 错误 *** 加载的 PHP 配置文件是： ".$phpini." - 应该是: ".$c_phpConfFile." 或 ".$c_phpConfFileOri;
+	$error_content .= "<br>你必须操作: <span style='color:green;'>鼠标右键单击 Wampmanager 图标 -> 刷新</span><br>";
 	if($phpini == $c_phpCliConf || $phpini == $c_phpCliConfFile)
-		$error_content .= " - This file is only for PHP in Command Line.";
+		$error_content .= " - 此文件仅适用于命令行中的 PHP .";
 	$error_content .= "</p>";
 }
 if($filelist = php_ini_scanned_files()) {
 	if (strlen($filelist) > 0) {
-		$error_content .= "<p style='color:red;'>*** ERROR *** There are too many php.ini files</p>";
+		$error_content .= "<p style='color:red;'>*** 错误 *** php.ini 文件太多 </p>";
 		$files = explode(',', $filelist);
 		foreach ($files as $file) {
-			$error_content .= "<p style='color:red;'>*** ERROR *** There are other php.ini files: ".trim(str_replace("\\","/",$file))."</p>";
+			$error_content .= "<p style='color:red;'>*** 错误 *** 还有其它 php.ini 文件: ".trim(str_replace("\\","/",$file))."</p>";
 		}
 	}
 }
@@ -438,7 +438,7 @@ $pageContents = <<< EOPAGE
 <body>
   <div id="head">
     <div class="innerhead">
-	    <h1><abbr title="Windows">W</abbr><abbr title="Apache">a</abbr><abbr title="MySQL/MariaDB">m</abbr><abbr title="PHP">p</abbr><abbr title="server WEB local">server</abbr></h1>
+	    <h1><abbr title="Windows">W</abbr><abbr title="Apache">a</abbr><abbr title="MySQL/MariaDB">m</abbr><abbr title="PHP">p</abbr><abbr title="本地 WEB 服务器">server</abbr></h1>
 		   <ul>
 			   <li>Apache 2.4</li><li>-</li><li>MySQL 5 &amp; 8</li><li>-</li><li>MariaDB 10</li><li>-</li><li>PHP 5, 7 &amp; 8</li>
 		   </ul>
