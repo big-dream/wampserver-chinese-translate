@@ -1,6 +1,4 @@
 <?php
-// - 3.2.5 add CMD /D /C to Command Windows to avoid
-//         automatic autorun of registry keys
 
 //Script to rebuild symbolic links
 if(!defined('WAMPTRACE_PROCESS')) require 'config.trace.php';
@@ -13,54 +11,45 @@ if(WAMPTRACE_PROCESS) {
 require 'config.inc.php';
 require 'wampserver.lib.php';
 
-$newPhpVersion = $_SERVER['argv'][1];
+$newPhpVersion = trim($_SERVER['argv'][1]);
 $verify = (!empty($_SERVER['argv'][2])) ? true : false;
 $doReport = (!empty($_SERVER['argv'][3]) && $_SERVER['argv'][3] == 'doreport') ? true : false;
+$noCreate = (!empty($_SERVER['argv'][4]) && $_SERVER['argv'][4] == 'nocreate') ? true : false;
+$message = '';
 
-if($wampConf['CreateSymlink'] == 'copy') {
-	echo "停止 Apache 服务\n";
-	$command = "CMD /D /C net stop ".$c_apacheService;
-	`$command`;
-}
-
-linkPhpDllToApacheBin($newPhpVersion);
+// Re-create symbolic links
+if(!$noCreate) linkPhpDllToApacheBin($newPhpVersion);
 
 $checkSymlinkResult = CheckSymlink($newPhpVersion);
 
-if($wampConf['CreateSymlink'] == 'copy') {
-	echo "启动 Apache 服务\n";
-	$command = "CMD /D /C net start ".$c_apacheService;
-	`$command`;
-}
-
 if(!$doReport) {
 	if($checkSymlinkResult !== true) {
-		echo "***** 警告 *****\n\n";
-		echo $checkSymlinkResult;
-		echo "\n--- 是否要将结果复制到剪贴板?
-	--- 输入 'y' 确认复制 - 按回车键（ENTER）继续... ";
+		$message .= color('red')."\n***** WARNING *****\n\n";
+		$message .=  $checkSymlinkResult.color('reset');
+		$message .= "\n--- Do you want to copy the results into Clipboard?\n--- Type 'y' to confirm - Press ENTER to continue...\n";
+		Command_Windows($message,-1,-1,0,'Verify Symbolik links');
 	  $confirm = trim(fgetc(STDIN));
 		$confirm = strtolower(trim($confirm ,'\''));
-		if ($confirm == 'y') {
+		if($confirm == 'y') {
 			write_file("temp.txt",$checkSymlinkResult, true);
 			exit(0);
 		}
 	}
 	elseif($verify) {
-		$symTxt = ($wampConf['CreateSymlink'] == 'copy') ? '复制的文件' : '建立的符号链接';
-		echo "所有 ".$symTxt." 已完成\n\n";
-		echo "按回车键（ENTER）继续... ";
+		$message .= "All symbolic links are OK\n\n";
+		$message .= "Press ENTER to continue... ";
+		Command_Windows($message,50,-1,0,'Verify Symbolik links');
 		fgetc(STDIN);
 		exit(0);
 	}
 }
 else {
 	$message = "--------------------------------------------------\n";
-	$message .=  "***** 检查符号链接 *****\n\n";
+	$message .=  "***** Check symbolic links *****\n\n";
 	if($checkSymlinkResult !== true)
 		$message .= $checkSymlinkResult."\n";
 	else
-		$message .= "所有符号链接正常\n";
+		$message .= "All symbolic links are OK\n";
 	write_file($c_installDir."/wampConfReportTemp.txt",$message,false,false,'ab');
 	exit;
 }

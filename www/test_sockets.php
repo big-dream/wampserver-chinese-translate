@@ -6,7 +6,8 @@ if (extension_loaded('sockets')) {
 		$errorcode = socket_last_error() ;
 		$errormsg = socket_strerror($errorcode);
 		echo "<p>IPv4 Socket 错误: ".$errormsg."</p>\n" ;
-	} else {
+	}
+	else {
 		echo "<p>IPv4 Socket: 支持</p>\n" ;
 		socket_close($socket);
 	}

@@ -15,6 +15,8 @@ if ($mysqli->connect_error) {
             . $mysqli->connect_error);
 }
 echo '<p>连接正常</p>';
-echo '<p>连接类型: '. $mysqli->host_info.'</p>';
+echo '<p>连接类型: '.$mysqli->host_info.'</p>';
 echo '<p>MySQL 版本: '.$mysqli->server_info.'</p>';
+
 $mysqli->close();
+?>

@@ -3,6 +3,7 @@
 //3.1.3 - VirtualHostPortNone
 //3.1.4 - txtTLDdev
 //3.1.9 - VirtualHostName modified - Accept diacritical characters (IDN)
+//3.2.6 - HoweverWamp
 $langues = array(
     'langue' => '简体中文',
     'locale' => 'chinese',
@@ -36,6 +37,10 @@ $langues = array(
     'NoModify' => '无法修改 <code>httpd-vhosts.conf</code> 或 <code>hosts</code> 文件',
     'VirtualCreated' => '文件已修改。虚拟主机<code>%s</code>已创建',
     'CommandMessage' => '更新 DNS 提示:',
+    'However' => 'You may add another VirtualHost by validate "Add a VirtualHost".<br>However, for these new VirtualHost are taken into account by Wampmanager (Apache), you must run item<br><code>Restart DNS</code><br>from Right-Click Tools menu of Wampmanager icon.</i>',
+    'HoweverWamp' => 'The created VirtualHost has been taken into account by Apache.<br>You may add another VirtualHost by validate "Add a VirtualHost".<br>You can start working on this new VirtualHost<br>But in order for these new VirtualHosts to be taken into account by the Wampmanager menus, you must launch the item<br><code>Refresh</code><br>from Right-Click menu of Wampmanager icon.</i>',
+    'suppForm' => 'Delete VirtualHost form',
+    'suppVhost' => 'Delete VirtualHost',
     'However' => '如果主机名无法正常使用，您可以尝试以下操作。<br>右键单击 <code>Wampmanager 图标</code> - <code>工具</code> - <code>重启DNS</code><br> <i>(以上步骤都需要您手动操作)</i>',
     'suppForm' => '显示删除虚拟主机',
     'suppVhost' => '删除虚拟主机',

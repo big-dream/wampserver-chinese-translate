@@ -1,5 +1,5 @@
 <?php
-// Update 3.2.0 use write_file instead of fwrite, fclose
+
 if(!defined('WAMPTRACE_PROCESS')) require 'config.trace.php';
 if(WAMPTRACE_PROCESS) {
 	$errorTxt = "script ".__FILE__;
@@ -12,20 +12,29 @@ require 'wampserver.lib.php';
 
 $phpIniFileContents = @file_get_contents($c_phpConfFile) or die ("php.ini file not found");
 
-if ($_SERVER['argv'][2] == 'off') {
-	if(preg_match('/^'.$_SERVER['argv'][1].'\s*=\s*On/im',$phpIniFileContents,$matchesON) !== false)
-		$findTxt = $matchesON[0];
-	else
-		$findTxt  = $_SERVER['argv'][1].' = On';
+if($_SERVER['argv'][2] == 'off') {
+	$findTxt  = $_SERVER['argv'][1].' = On';
 	$replaceTxt  = $_SERVER['argv'][1].' = Off';
+	$regex = 'on';
 }
-else {
-	if(preg_match('/^'.$_SERVER['argv'][1].'\s*=\s*Off/im',$phpIniFileContents,$matchesOFF) !== false)
-		$findTxt = $matchesOFF[0];
-	else
-		$findTxt  = $_SERVER['argv'][1].' = Off';
+elseif($_SERVER['argv'][2] == 'on') {
+	$findTxt  = $_SERVER['argv'][1].' = Off';
 	$replaceTxt  = $_SERVER['argv'][1].' = On';
+	$regex = 'off';
 }
+elseif($_SERVER['argv'][2] == '0') {
+	$findTxt  = $_SERVER['argv'][1].' = 1';
+	$replaceTxt  = $_SERVER['argv'][1].' = 0';
+	$regex = '1';
+}
+elseif($_SERVER['argv'][2] == '1') {
+	$findTxt  = $_SERVER['argv'][1].' = 0';
+	$replaceTxt  = $_SERVER['argv'][1].' = 1';
+	$regex = '0';
+}
+
+if(preg_match('/^'.$_SERVER['argv'][1].'\s*=\s*'.$regex.'/im',$phpIniFileContents,$matchesON) === 1)
+	$findTxt = $matchesON[0];
 
 $phpIniFileContents = str_ireplace($findTxt,$replaceTxt,$phpIniFileContents);
 

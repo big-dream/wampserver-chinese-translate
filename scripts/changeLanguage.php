@@ -1,5 +1,5 @@
 <?php
-//3.2.0 Possibility to trace
+
 if(!defined('WAMPTRACE_PROCESS')) require 'config.trace.php';
 if(WAMPTRACE_PROCESS) {
 	$errorTxt = "script ".__FILE__;

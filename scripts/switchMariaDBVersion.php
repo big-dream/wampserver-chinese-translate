@@ -1,5 +1,5 @@
 <?php
-//3.2.3 - check for sc cmd in place of mysqld.exe --install
+
 if(!defined('WAMPTRACE_PROCESS')) require 'config.trace.php';
 if(WAMPTRACE_PROCESS) {
 	$errorTxt = "script ".__FILE__;
@@ -7,8 +7,8 @@ if(WAMPTRACE_PROCESS) {
 	error_log($errorTxt."\n",3,WAMPTRACE_FILE);
 }
 
-require 'wampserver.lib.php';
 require 'config.inc.php';
+require 'wampserver.lib.php';
 
 $newMariaDBVersion = $_SERVER['argv'][1];
 

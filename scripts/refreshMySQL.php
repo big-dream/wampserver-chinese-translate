@@ -1,7 +1,6 @@
 <?php
-// - 3.2.5 add CMD /D /C to Command Windows to avoid
-//         automatic autorun of registry keys
 
+if(!defined('WAMPTRACE_PROCESS')) require 'config.trace.php';
 if(WAMPTRACE_PROCESS) {
 	$errorTxt = "script ".__FILE__;
 	$iw = 1; while(!empty($_SERVER['argv'][$iw])) {$errorTxt .= " ".$_SERVER['argv'][$iw];$iw++;}
@@ -15,11 +14,6 @@ if(count($mysqlVersionList) == 0) {
 	error_log("No version of MySQL is installed.");
 	$glyph = '19';
 	$WarningsAtEnd = true;
-	if(!isset($WarningMysql)) {
-		$WarningMysql = true;
-		$WarningText .= 'Type: separator; Caption: "Warning MySQL"
-';
-	}
 	$WarningText .= 'Type: item; Caption: "No version of MySQL is installed"; Glyph: '.$glyph.'; Action: multi; Actions: none
 ';
 }
@@ -70,7 +64,7 @@ Type: separator; Caption: "${w_mysql}"
 Type: item; Caption: "${w_startResume}"; Action: service; Service: ${c_mysqlService}; ServiceAction: startresume; Glyph: 9; Flags: ignoreerrors
 ;Type: item; Caption: "${w_pauseService}"; Action: service; Service: mysql; ServiceAction: pause; Glyph: 10
 Type: item; Caption: "${w_stopService}"; Action: service; Service: ${c_mysqlService}; ServiceAction: stop; Glyph: 11
-Type: item; Caption: "${w_restartService}"; Action: service; Service: ${c_mysqlService}; ServiceAction: restart; Glyph: 12
+Type: item; Caption: "${w_restartService}"; Action: service; Service: ${c_mysqlService}; ServiceAction: restart; Flags: ignoreerrors waituntilterminated; Glyph: 12
 Type: separator
 Type: item; Caption: "${w_installService}"; Action: multi; Actions: MySQLServiceInstall; Glyph: 8
 Type: item; Caption: "${w_removeService}"; Action: multi; Actions: MySQLServiceRemove; Glyph: 26
@@ -105,10 +99,9 @@ $myPattern = ';WAMPALTERNATEMYSQLPORTSTART';
 $myreplace = <<< EOF
 ;WAMPALTERNATEMYSQLPORTSTART
 [UseAlternateMysqlPort]
-Action: service; Service: ${c_apacheService}; ServiceAction: stop; Flags: ignoreerrors waituntilterminated
 Action: service; Service: ${c_mysqlService}; ServiceAction: stop; Flags: ignoreerrors waituntilterminated
 Action: run; FileName: "${c_phpExe}"; Parameters: "switchMysqlPort.php %MysqlPort%";WorkingDir: "${c_installDir}/scripts"; Flags: waituntilterminated
-Action: service; Service: ${c_apacheService}; ServiceAction: startresume; Flags: ignoreerrors waituntilterminated
+${Apache_Restart}
 Action: service; Service: ${c_mysqlService}; ServiceAction: startresume; Flags: ignoreerrors waituntilterminated
 Action: run; FileName: "${c_phpCli}"; Parameters: "refresh.php";WorkingDir: "${c_installDir}/scripts"; Flags: waituntilterminated
 Action: readconfig
@@ -116,18 +109,18 @@ EOF;
 $tpl = str_replace($myPattern,$myreplace,$tpl);
 
 // MySQL console prompt submenu
-$myPattern = ';WAMPMYSQLUSECONSOLEPROMPTSTART';
-$myreplace = <<< EOF
+if($MysqlMariaPromptBool) {
+	$myPattern = ';WAMPMYSQLUSECONSOLEPROMPTSTART';
+	$myreplace = <<< EOF
 ;WAMPMYSQLUSECONSOLEPROMPTSTART
 [mysqlUseConsolePrompt]
-Action: service; Service: ${c_apacheService}; ServiceAction: stop; Flags: waituntilterminated
 Action: run; FileName: "${c_phpExe}";Parameters: "switchWampParam.php mysqlUseConsolePrompt ${mysqlConsolePromptChange}"; WorkingDir: "$c_installDir/scripts"; Flags: waituntilterminated
+${Apache_Restart}
 Action: run; FileName: "${c_phpExe}";Parameters: "refresh.php"; WorkingDir: "$c_installDir/scripts"; Flags: waituntilterminated
-Action: run; FileName: "CMD"; Parameters: "/D /C net start ${c_apacheService}"; ShowCmd: hidden; Flags: waituntilterminated
-Action: resetservices
 Action: readconfig
 EOF;
-$tpl = str_replace($myPattern,$myreplace,$tpl);
+	$tpl = str_replace($myPattern,$myreplace,$tpl);
+}
 
 // MySQL Tools menu
 $myPattern = ';WAMPMYSQLSUPPORTTOOLS';
@@ -137,7 +130,7 @@ Type: separator; Caption: "${w_portUsedMysql}${c_UsedMysqlPort}"
 ${TestPort3306}Type: item; Caption: "${w_testPortMysql}"; Action: run; FileName: "${c_phpExe}"; Parameters: "testPort.php 3306 ${c_mysqlService}";WorkingDir: "$c_installDir/scripts"; Flags: waituntilterminated; Glyph: 24
 ${MysqlTestPortUsed}Type: item; Caption: "${w_testPortMysqlUsed}${c_UsedMysqlPort}"; Action: run; FileName: "${c_phpExe}"; Parameters: "testPort.php ${c_UsedMysqlPort} ${c_mysqlService}";WorkingDir: "$c_installDir/scripts"; Flags: waituntilterminated; Glyph: 24
 Type: item; Caption: "${w_AlternateMysqlPort}"; Action: multi; Actions: UseAlternateMysqlPort; Glyph: 24
-Type: item; Caption: "${w_settings['mysqlUseConsolePrompt']}: ${mysqlConsolePromptUsed}"; Glyph: 24; Action: multi; Actions: mysqlUseConsolePrompt
+${MysqlMariaPrompt}Type: item; Caption: "${w_settings['mysqlUseConsolePrompt']}: ${mysqlConsolePromptUsed}"; Glyph: 24; Action: multi; Actions: mysqlUseConsolePrompt
 EOF;
 $tpl = str_replace($myPattern,$myreplace,$tpl);
 
@@ -178,10 +171,10 @@ foreach ($mysqlVersionList as $oneMysqlVersion) {
 		$mysqlServer[$oneMysqlVersion] = 0;
 	unset($myIniContents);
 
-	if ($oneMysqlVersion === $wampConf['mysqlVersion'] && $mysqlServer[$oneMysqlVersion] == 0)
+	if($oneMysqlVersion === $wampConf['mysqlVersion'] && $mysqlServer[$oneMysqlVersion] == 0)
   	$mysqlServer[$oneMysqlVersion] = 1;
 
-	if ($mysqlServer[$oneMysqlVersion] == 1) {
+	if($mysqlServer[$oneMysqlVersion] == 1) {
     $myreplace .= 'Type: item; Caption: "'.$oneMysqlVersion.'"; Action: multi; Actions:switchMysql'.$oneMysqlVersion.'; Glyph: 13
 ';
 	}
@@ -238,10 +231,31 @@ $tpl = str_replace($myPattern,$myreplace.$myreplacemenu,$tpl);
 
 // **********************
 // Configuration of MySQL
-// Retrieves the values of the [wampmysqld] section
-$mysqliniS = parse_ini_file($c_mysqlConfFile, true);
+// Retrieves the values of the [wampmysqld] or [wampmysqld64] section
+$mysqliniS = parse_ini_file($c_mysqlConfFile, true,INI_SCANNER_RAW);
 //To correct MySQL 8.0 bug
 $mysqlini = (count($mysqliniS[$c_mysqlService]) > 0) ? $mysqliniS[$c_mysqlService] : $mysqliniS['mysqld'];
+// Retrieve the three values of port used
+$MysqlPort['client'] = $mysqliniS['client']['port'];
+$MysqlPort[$c_mysqlService] = $mysqliniS[$c_mysqlService]['port'];
+$MysqlPort['mysqld'] =$mysqliniS['mysqld']['port'];
+// Check if three values are identical and equal to port used in wampmanager.conf
+// $wampConf['mysqlPortUsed']
+if($MysqlPort['client'] <> $MysqlPort[$c_mysqlService] || $MysqlPort['client'] <> $MysqlPort['mysqld'] || $MysqlPort['mysqld'] <> $MysqlPort[$c_mysqlService]) {
+	$WarningsAtEnd = true;
+	$message = color('red',"\r\nThe three 'port=number' directives in the MySQL my.ini file:\r\n[client], [".$c_mysqlService."], [mysqld]\r\ndo not have the same port number.\r\n");
+	if($doReport)	$wampReport['gen2'] .= $message;
+	$WarningText .= 'Type: item; Caption: "Not same MySQL port"; Glyph: 19; Action: run; FileName: "'.$c_phpExe.'";Parameters: "msg.php 11 '.base64_encode($message).'";WorkingDir: "'.$c_installDir.'/scripts"; Flags: waituntilterminated
+';
+}
+if($MysqlPort['client'] <> $wampConf['mysqlPortUsed'] || $MysqlPort[$c_mysqlService] <> $wampConf['mysqlPortUsed'] || $MysqlPort['mysqld'] <> $wampConf['mysqlPortUsed']) {
+	$WarningsAtEnd = true;
+	$message = color('red',"\r\nThe three 'port=number' directives in the MySQL my.ini file:\r\n[client], [".$c_mysqlService."], [mysqld]\r\ndo not have the port number defined in wampmanager.conf: mysqlPortUsed\r\n");
+	if($doReport)	$wampReport['gen2'] .= $message;
+	$WarningText .= 'Type: item; Caption: "MySQL port not equal"; Glyph: 19; Action: run; FileName: "'.$c_phpExe.'";Parameters: "msg.php 11 '.base64_encode($message).'";WorkingDir: "'.$c_installDir.'/scripts"; Flags: waituntilterminated
+';
+}
+
 //Check if there is prompt directive into [mysql] section
 if(!empty($mysqliniS['mysql']['prompt'])) {
 	$mysqlini += array('prompt' => $mysqliniS['mysql']['prompt']);
@@ -261,7 +275,7 @@ $myIniFileContents = @file_get_contents($c_mysqlConfFile) or die ("my.ini file n
 $UserSqlMode = (preg_match('/^[;]?sql-mode[ \t]*=[ \t]*"[^"].*$/m',$myIniFileContents) > 0 ? true : false);
 //Check if skip-grant-tables is on (uncommented)
 if(preg_match('/^skip-grant-tables[\r]?$/m',$myIniFileContents) > 0) {
-	$mysqlini += array('skip-grant-tables' => 'On - !! WARNING !!');
+	$mysqlini += array('skip-grant-tables' => 'MySQL On - !! WARNING !!');
 }
 if($wampConf['mysqlUseConsolePrompt'] == 'on') {
 	if(!$mysqlPrompt) {
@@ -295,7 +309,7 @@ $mysqlErrorMsg = array();
 $mysqlParams = array_combine($mysqlParams,$mysqlParams);
 foreach($mysqlParams as $next_param_name=>$next_param_text)
 {
-  if (isset($mysqlini[$next_param_text]))
+  if(isset($mysqlini[$next_param_text]))
   {
   	if(array_key_exists($next_param_name, $mysqlParamsNotOnOff)) {
   		if($mysqlParamsNotOnOff[$next_param_name]['change'] !== true) {
@@ -338,7 +352,7 @@ foreach ($params_for_mysqlini as $paramname=>$paramstatus)
     $mysqlConfText .= 'Type: item; Caption: "'.$paramname.'"; Glyph: '.$glyph.'; Action: multi; Actions: '.$mysqlParams[$paramname].'
 ';
 	}
-	elseif ($params_for_mysqlini[$paramname] == -2) { // I blue to indicate different from 0 or 1 or On or Off
+	elseif($params_for_mysqlini[$paramname] == -2) { // I blue to indicate different from 0 or 1 or On or Off
 		if(!$information_only) {
 			$mysqlConfForInfo .= 'Type: separator; Caption: "'.$w_phpparam_info.'"
 ';
@@ -346,11 +360,6 @@ foreach ($params_for_mysqlini as $paramname=>$paramstatus)
 		}
 		if($paramname == 'skip-grant-tables') {
 			$WarningsAtEnd = true;
-			if(!isset($WarningMysql)) {
-				$WarningMysql = true;
-				$WarningText .= 'Type: separator; Caption: "Warning MySQL"
-';
-			}
 			$WarningText .= 'Type: item; Caption: "'.$paramname.' = '.$mysqlini[$paramname].'"; Glyph: 19; Action: multi; Actions: '.$mysqlParams[$paramname].'
 ';
 		}
@@ -364,13 +373,13 @@ foreach ($params_for_mysqlini as $paramname=>$paramstatus)
 		}
 		if($doReport && ($paramname == 'basedir' || $paramname == 'datadir')) $wampReport['mysql'] .= "\nMySQL ".$paramname." = ".$mysqlini[$paramname];
 	}
-	elseif ($params_for_mysqlini[$paramname] == -3) { // Indicate different from 0 or 1 or On or Off but can be changed
+	elseif($params_for_mysqlini[$paramname] == -3) { // Indicate different from 0 or 1 or On or Off but can be changed
 		$action_sup[] = $paramname;
 		$text = ($mysqlParamsNotOnOff[$paramname]['title'] == 'Number' ? ' - '.$mysqlParamsNotOnOff[$paramname]['text'][$mysqlini[$paramname]] : '');
 		$mysqlConfText .= 'Type: submenu; Caption: "'.$paramname.' = '.$mysqlini[$paramname].$text.'"; Submenu: '.$paramname.'; Glyph: 9
 ';
 	}
-	elseif ($params_for_mysqlini[$paramname] == -4) { // Indicate different from 0 or 1 or On or Off but can be changed with Special treatment
+	elseif($params_for_mysqlini[$paramname] == -4) { // Indicate different from 0 or 1 or On or Off but can be changed with Special treatment
 		$action_sup[] = $paramname;
 		if($paramname == 'sql-mode') {
 			$mysqlConfTextMode = '';
@@ -564,7 +573,7 @@ EOF;
 $mysqlConfText .= $mysqlConfTextInfo.$mysqlConfForInfo;
 
 foreach ($params_for_mysqlini as $paramname=>$paramstatus) {
-	if ($params_for_mysqlini[$paramname] == 1 || $params_for_mysqlini[$paramname] == 0) {
+	if($params_for_mysqlini[$paramname] == 1 || $params_for_mysqlini[$paramname] == 0) {
 		$SwitchAction = ($params_for_mysqlini[$paramname] == 1 ? 'off' : 'on');
   	$mysqlConfText .= <<< EOF
 [${mysqlParams[$paramname]}]
@@ -577,7 +586,7 @@ Action: readconfig
 
 EOF;
 	}
-  elseif ($params_for_mysqlini[$paramname] == -2)  {//Parameter is neither 'on' nor 'off'
+  elseif($params_for_mysqlini[$paramname] == -2)  {//Parameter is neither 'on' nor 'off'
   	$mysqlConfText .= '['.$mysqlParams[$paramname].']
 Action: run; FileName: "'.$c_phpExe.'";Parameters: "msg.php 6 '.base64_encode($paramname).' '.base64_encode($mysqlErrorMsg[$paramname]).'";WorkingDir: "'.$c_installDir.'/scripts"; Flags: waituntilterminated
 ';

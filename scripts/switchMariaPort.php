@@ -1,6 +1,5 @@
 <?php
-// script to change MariaDB port used
-// 3.2.0 use write_file instead of fwrite, fclose
+
 if(!defined('WAMPTRACE_PROCESS')) require 'config.trace.php';
 if(WAMPTRACE_PROCESS) {
 	$errorTxt = "script ".__FILE__;
@@ -10,7 +9,7 @@ if(WAMPTRACE_PROCESS) {
 
 require 'config.inc.php';
 require 'wampserver.lib.php';
-
+$message ='';
 $minPort = "3301";
 $maxPort = "3309";
 
@@ -20,6 +19,9 @@ $portToUse = intval(trim($_SERVER['argv'][1]));
 $goodPort = true;
 if($portToUse < $minPort || $portToUse > $maxPort || $portToUse == $wampConf['mysqlPortUsed'])
 	$goodPort = false;
+//If nocheck parameter
+if(!empty($_SERVER['argv'][2]) && $_SERVER['argv'][2] == 'nocheck')
+	$goodPort = true;
 
 $myIniReplace = false;
 
@@ -31,12 +33,15 @@ if($goodPort) {
 	$portCount = preg_match_all('/^port[ \t]*=[ \t]*('.$portToUse.').*$/m',$mariaIniFileContents,$matches);
 	//If the port number already exists three times, there is nothing to change.
 	if($portCount !== 3) {
-		$findTxtRegex = array(
-		'/^(port)[ \t]*=.*$/m',
-		);
-		$mariaIniFileContents = preg_replace($findTxtRegex,"$1 = ".$portToUse, $mariaIniFileContents, -1, $nb_myIni);
-		if($nb_myIni == 3)
-			$myIniReplace = true;
+		$findTxtRegex = '/^((port[ \t]*=[ \t]*)[0-9]*)/m';
+		preg_match_all($findTxtRegex,$mariaIniFileContents,$matches);
+		reset($matches[2]);
+		foreach($matches[1] as $value) {
+			$value2 = current($matches[2]);
+			$mariaIniFileContents = str_replace($value,$value2.$portToUse,$mariaIniFileContents,$count);
+			if($count > 0) $myIniReplace = true;
+			next($matches[2]);
+		}
 
 		if($myIniReplace) {
 			write_file($c_mariadbConfFile,$mariaIniFileContents);
@@ -49,12 +54,12 @@ if($goodPort) {
 		}
 	}
 }
-
 else {
-	echo "您输入的端口: ".$portToUse."\n\n";
-	echo "无效\n";
-	echo "允许范围 ".$minPort." 至 ".$maxPort."\n但 ".$wampConf['mysqlPortUsed']." 不是为 MySQL 保留的\n";
-	echo "\n按回车键（ENTER）继续...";
+	$message .= color('red')."The port number you give: ".$portToUse."\n";
+	$message .= "is not valid".color('black')."\n";
+	$message .= "Must be between ".$minPort." and ".$maxPort."\nbut not ".$wampConf['mysqlPortUsed']." that is already used by MariaDB\n";
+	$message .= "\nPress ENTER to continue...";
+	Command_Windows($message,-1,-1,0,'Check port for MariaDB');
   trim(fgets(STDIN));
 }
 

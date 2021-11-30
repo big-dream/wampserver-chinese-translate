@@ -1,7 +1,6 @@
 <?php
-// - 3.2.5 add CMD /D /C to Command Windows to avoid
-//         automatic autorun of registry keys
 
+if(!defined('WAMPTRACE_PROCESS')) require 'config.trace.php';
 if(WAMPTRACE_PROCESS) {
 	$errorTxt = "script ".__FILE__;
 	$iw = 1; while(!empty($_SERVER['argv'][$iw])) {$errorTxt .= " ".$_SERVER['argv'][$iw];$iw++;}
@@ -15,11 +14,6 @@ if(count($mariadbVersionList) == 0) {
 	error_log("No version of MariaDB is installed.");
 	$glyph = '19';
 	$WarningsAtEnd = true;
-	if(!isset($WarningMariadb)) {
-		$WarningMariadb = true;
-		$WarningText .= 'Type: separator; Caption: "Warning MariaDB"
-';
-	}
 	$WarningText .= 'Type: item; Caption: "No version of MariaDB is installed"; Glyph: '.$glyph.'; Action: multi; Actions: none
 ';
 }
@@ -69,7 +63,7 @@ Type: separator; Caption: "MariaDB"
 Type: item; Caption: "${w_startResume}"; Action: service; Service: ${c_mariadbService}; ServiceAction: startresume; Glyph: 9 ;Flags: ignoreerrors
 ;Type: item; Caption: "${w_pauseService}"; Action: service; Service: mariadb; ServiceAction: pause; Glyph: 10
 Type: item; Caption: "${w_stopService}"; Action: service; Service: ${c_mariadbService}; ServiceAction: stop; Glyph: 11
-Type: item; Caption: "${w_restartService}"; Action: service; Service: ${c_mariadbService}; ServiceAction: restart; Glyph: 12
+Type: item; Caption: "${w_restartService}"; Action: service; Service: ${c_mariadbService}; ServiceAction: restart; Flags: ignoreerrors waituntilterminated; Glyph: 12
 Type: separator
 Type: item; Caption: "${w_installService}"; Action: multi; Actions: MariaDBServiceInstall; Glyph: 8
 Type: item; Caption: "${w_removeService}"; Action: multi; Actions: MariaDBServiceRemove; Glyph: 26
@@ -104,10 +98,9 @@ $myPattern = ';WAMPALTERNATEMARIAPORTSTART';
 $myreplace = <<< EOF
 ;WAMPALTERNATEMARIAPORTSTART
 [UseAlternateMariaPort]
-Action: service; Service: ${c_apacheService}; ServiceAction: stop; Flags: ignoreerrors waituntilterminated
 Action: service; Service: ${c_mariadbService}; ServiceAction: stop; Flags: ignoreerrors waituntilterminated
 Action: run; FileName: "${c_phpExe}"; Parameters: "switchMariaPort.php %MariaPort%";WorkingDir: "${c_installDir}/scripts"; Flags: waituntilterminated
-Action: service; Service: ${c_apacheService}; ServiceAction: startresume; Flags: ignoreerrors waituntilterminated
+${Apache_Restart}
 Action: service; Service: ${c_mariadbService}; ServiceAction: startresume; Flags: ignoreerrors waituntilterminated
 Action: run; FileName: "${c_phpCli}"; Parameters: "refresh.php";WorkingDir: "${c_installDir}/scripts"; Flags: waituntilterminated
 Action: readconfig
@@ -115,18 +108,18 @@ EOF;
 $tpl = str_replace($myPattern,$myreplace,$tpl);
 
 //MariaDB console prompt submenu
-$myPattern = ';WAMPMARIADBUSECONSOLEPROMPTSTART';
-$myreplace = <<< EOF
+if($MysqlMariaPromptBool) {
+	$myPattern = ';WAMPMARIADBUSECONSOLEPROMPTSTART';
+	$myreplace = <<< EOF
 ;WAMPMARIADBUSECONSOLEPROMPTSTART
 [mariadbUseConsolePrompt]
-Action: service; Service: ${c_apacheService}; ServiceAction: stop; Flags: waituntilterminated
 Action: run; FileName: "${c_phpExe}";Parameters: "switchWampParam.php mariadbUseConsolePrompt ${mariadbConsolePromptChange}"; WorkingDir: "$c_installDir/scripts"; Flags: waituntilterminated
+${Apache_Restart}
 Action: run; FileName: "${c_phpExe}";Parameters: "refresh.php"; WorkingDir: "$c_installDir/scripts"; Flags: waituntilterminated
-Action: run; FileName: "CMD"; Parameters: "/D /C net start ${c_apacheService}"; ShowCmd: hidden; Flags: waituntilterminated
-Action: resetservices
 Action: readconfig
 EOF;
-$tpl = str_replace($myPattern,$myreplace,$tpl);
+	$tpl = str_replace($myPattern,$myreplace,$tpl);
+}
 
 //MariaDB Tools menu
 $myPattern = ';WAMPMARIADBSUPPORTTOOLS';
@@ -136,7 +129,7 @@ Type: separator; Caption: "${w_portUsedMaria}${c_UsedMariaPort}"
 ${TestPort3306}Type: item; Caption: "${w_testPortMysql}"; Action: run; FileName: "${c_phpExe}"; Parameters: "testPort.php 3306 ${c_mariadbService}";WorkingDir: "$c_installDir/scripts"; Flags: waituntilterminated; Glyph: 24
 ${MariaTestPortUsed}Type: item; Caption: "${w_testPortMariaUsed}${c_UsedMariaPort}"; Action: run; FileName: "${c_phpExe}"; Parameters: "testPort.php ${c_UsedMariaPort} ${c_mariadbService}";WorkingDir: "$c_installDir/scripts"; Flags: waituntilterminated; Glyph: 24
 Type: item; Caption: "${w_AlternateMariaPort}"; Action: multi; Actions: UseAlternateMariaPort; Glyph: 24
-Type: item; Caption: "${w_settings['mariadbUseConsolePrompt']}: ${mariadbConsolePromptUsed}"; Glyph: 24; Action: multi; Actions: mariadbUseConsolePrompt
+${MysqlMariaPrompt}Type: item; Caption: "${w_settings['mariadbUseConsolePrompt']}: ${mariadbConsolePromptUsed}"; Glyph: 24; Action: multi; Actions: mariadbUseConsolePrompt
 EOF;
 $tpl = str_replace($myPattern,$myreplace,$tpl);
 
@@ -171,10 +164,10 @@ foreach ($mariadbVersionList as $oneMariaDBVersion) {
 		$mariaServer[$oneMariaDBVersion] = 0;
 	unset($maIniContents);
 
-	if ($oneMariaDBVersion === $wampConf['mariadbVersion'] && $mariaServer[$oneMariaDBVersion] == 0)
+	if($oneMariaDBVersion === $wampConf['mariadbVersion'] && $mariaServer[$oneMariaDBVersion] == 0)
   	$mariaServer[$oneMariaDBVersion] = 1;
 
-	if ($mariaServer[$oneMariaDBVersion] == 1) {
+	if($mariaServer[$oneMariaDBVersion] == 1) {
     $mareplace .= 'Type: item; Caption: "'.$oneMariaDBVersion.'"; Action: multi; Actions:switchMariaDB'.$oneMariaDBVersion.'; Glyph: 13
 ';
 	}
@@ -223,8 +216,29 @@ $tpl = str_replace($maPattern,$mareplace.$mareplacemenu,$tpl);
 
 // Configuration of MariaDB
 // Retrieves the values of the [wampmariadb] or [wampmariadb64] section
-$mariadbiniS = parse_ini_file($c_mariadbConfFile, true);
+$mariadbiniS = parse_ini_file($c_mariadbConfFile, true,INI_SCANNER_RAW);
 $mariadbini = $mariadbiniS[$c_mariadbService];
+// Retrieve the three values of port used
+$MariadbPort['client'] = $mariadbiniS['client']['port'];
+$MariadbPort[$c_mariadbService] = $mariadbiniS[$c_mariadbService]['port'];
+$MariadbPort['mysqld'] =$mariadbiniS['mysqld']['port'];
+// Check if three values are identical and equal to port used in wampmanager.conf
+// $wampConf['mariaPortUsed']
+if($MariadbPort['client'] <> $MariadbPort[$c_mariadbService] || $MariadbPort['client'] <> $MariadbPort['mysqld'] || $MariadbPort['mysqld'] <> $MariadbPort[$c_mariadbService]) {
+	$WarningsAtEnd = true;
+	$message = color('red',"\r\nThe three 'port=number' directives in the MariaDB my.ini file:\r\n[client], [".$c_mariadbService."], [mysqld]\r\ndo not have the same port number.\r\n");
+	if($doReport)	$wampReport['gen2'] .= $message;
+	$WarningText .= 'Type: item; Caption: "Not same MariaDB port"; Glyph: 19; Action: run; FileName: "'.$c_phpExe.'";Parameters: "msg.php 11 '.base64_encode($message).'";WorkingDir: "'.$c_installDir.'/scripts"; Flags: waituntilterminated
+';
+}
+if($MariadbPort['client'] <> $wampConf['mariaPortUsed'] || $MariadbPort[$c_mariadbService] <> $wampConf['mariaPortUsed'] || $MariadbPort['mysqld'] <> $wampConf['mariaPortUsed']) {
+	$WarningsAtEnd = true;
+	$message = color('red',"\r\nThe three 'port=number' directives in the MariaDB my.ini file:\r\n[client], [".$c_mariadbService."], [mysqld]\r\ndo not have the port number defined in wampmanager.conf: mariaPortUsed\r\n");
+	if($doReport)	$wampReport['gen2'] .= $message;
+	$WarningText .= 'Type: item; Caption: "MariaDB port not equal"; Glyph: 19; Action: run; FileName: "'.$c_phpExe.'";Parameters: "msg.php 11 '.base64_encode($message).'";WorkingDir: "'.$c_installDir.'/scripts"; Flags: waituntilterminated
+';
+}
+
 //Check if there is prompt directive into [mysql] section
 if(!empty($mariadbiniS['mysql']['prompt'])) {
 	$mariadbini += array('prompt' => $mariadbiniS['mysql']['prompt']);
@@ -244,7 +258,7 @@ $myIniFileContents = @file_get_contents($c_mariadbConfFile) or die ("my.ini file
 $UserSqlMode = (preg_match('/^[;]?sql-mode[ \t]*=[ \t]*"[^"].*$/m',$myIniFileContents) > 0 ? true : false);
 //Check if skip-grant-tables is on (uncommented)
 if(preg_match('/^skip-grant-tables[\r]?$/m',$myIniFileContents) > 0) {
-	$mariadbini = $mariadbini + array('skip-grant-tables' => 'On - !! WARNING !!');
+	$mariadbini = $mariadbini + array('skip-grant-tables' => 'MariaDB On - !! WARNING !!');
 }
 if($wampConf['mariadbUseConsolePrompt'] == 'on') {
 	if(!$mariadbPrompt) {
@@ -278,7 +292,7 @@ $mariadbErrorMsg = array();
 $mariadbParams = array_combine($mariadbParams,$mariadbParams);
 foreach($mariadbParams as $next_param_name=>$next_param_text)
 {
-  if (isset($mariadbini[$next_param_text]))
+  if(isset($mariadbini[$next_param_text]))
   {
   	if(array_key_exists($next_param_name, $mariadbParamsNotOnOff)) {
   		if($mariadbParamsNotOnOff[$next_param_name]['change'] !== true) {
@@ -321,7 +335,7 @@ foreach ($params_for_mariadb as $paramname=>$paramstatus)
     $mariadbConfText .= 'Type: item; Caption: "'.$paramname.'"; Glyph: '.$glyph.'; Action: multi; Actions: maria_'.$mariadbParams[$paramname].'
 ';
 	}
-	elseif ($params_for_mariadb[$paramname] == -2) { // I blue to indicate different from 0 or 1 or On or Off
+	elseif($params_for_mariadb[$paramname] == -2) { // I blue to indicate different from 0 or 1 or On or Off
 		if(!$information_only) {
 			$mariadbConfForInfo .= 'Type: separator; Caption: "'.$w_phpparam_info.'"
 ';
@@ -329,11 +343,6 @@ foreach ($params_for_mariadb as $paramname=>$paramstatus)
 		}
 		if($paramname == 'skip-grant-tables') {
 			$WarningsAtEnd = true;
-			if(!isset($WarningMariadb)) {
-				$WarningMariadb = true;
-				$WarningText .= 'Type: separator; Caption: "Warning MariaDB"
-';
-			}
 			$WarningText .= 'Type: item; Caption: "'.$paramname.' = '.$mariadbini[$paramname].'"; Glyph: 19; Action: multi; Actions: maria_'.$mariadbParams[$paramname].'
 ';
 		}
@@ -347,13 +356,13 @@ foreach ($params_for_mariadb as $paramname=>$paramstatus)
 		}
 		if($doReport && ($paramname == 'basedir' || $paramname == 'datadir')) $wampReport['mariadb'] .= "\nMariaDB ".$paramname." = ".$mariadbini[$paramname];
 	}
-	elseif ($params_for_mariadb[$paramname] == -3) { // Indicate different from 0 or 1 or On or Off but can be changed
+	elseif($params_for_mariadb[$paramname] == -3) { // Indicate different from 0 or 1 or On or Off but can be changed
 		$action_sup[] = $paramname;
 		$text = ($mariadbParamsNotOnOff[$paramname]['title'] == 'Number' ? ' - '.$mariadbParamsNotOnOff[$paramname]['text'][$mariadbini[$paramname]] : '');
 		$mariadbConfText .= 'Type: submenu; Caption: "'.$paramname.' = '.$mariadbini[$paramname].$text.'"; Submenu: maria_'.$paramname.'; Glyph: 9
 ';
 	}
-	elseif ($params_for_mariadb[$paramname] == -4) { // Indicate different from 0 or 1 or On or Off but can be changed with Special treatment
+	elseif($params_for_mariadb[$paramname] == -4) { // Indicate different from 0 or 1 or On or Off but can be changed with Special treatment
 		$action_sup[] = $paramname;
 		if($paramname == 'sql-mode') {
 			$mariadbConfTextMode = '';
@@ -542,7 +551,7 @@ EOF;
 $mariadbConfText .= $mariadbConfTextInfo.$mariadbConfForInfo;
 
 foreach ($params_for_mariadb as $paramname=>$paramstatus) {
-	if ($params_for_mariadb[$paramname] == 1 || $params_for_mariadb[$paramname] == 0) {
+	if($params_for_mariadb[$paramname] == 1 || $params_for_mariadb[$paramname] == 0) {
 		$SwitchAction = ($params_for_mariadb[$paramname] == 1 ? 'off' : 'on');
   	$mariadbConfText .= <<< EOF
 [maria_${mariadbParams[$paramname]}]
@@ -555,7 +564,7 @@ Action: readconfig
 
 EOF;
 	}
-  elseif ($params_for_mariadb[$paramname] == -2)  {//Parameter is neither 'on' nor 'off'
+  elseif($params_for_mariadb[$paramname] == -2)  {//Parameter is neither 'on' nor 'off'
   	$mariadbConfText .= '[maria_'.$mariadbParams[$paramname].']
 Action: run; FileName: "'.$c_phpExe.'";Parameters: "msg.php 6 '.base64_encode($paramname).' '.base64_encode($mariadbErrorMsg[$paramname]).'";WorkingDir: "'.$c_installDir.'/scripts"; Flags: waituntilterminated
 ';

@@ -1,5 +1,4 @@
 <?php
-// 3.2.3 - Support for service with windows command sc
 
 if(!defined('WAMPTRACE_PROCESS')) require 'config.trace.php';
 if(WAMPTRACE_PROCESS) {

@@ -1,8 +1,6 @@
 <?php
-// Update 3.2.0
-// Possibility to trace Wampmanager processes
 
-define('WAMPTRACE_PROCESS',	FALSE);
+define('WAMPTRACE_PROCESS',	false);
 
 if(WAMPTRACE_PROCESS) {
 	if(!defined('WAMPTRACE_FILE')) {
@@ -10,7 +8,7 @@ if(WAMPTRACE_PROCESS) {
 		define('WAMPTRACE_FILE', $wampConf['installDir']."/logs/wamptrace.log");
 		//Create file with datetime in first line
 		$fp = fopen(WAMPTRACE_FILE, "ab");
-		fwrite($fp,"- Wampserver ¸ú×Ù±¨¸æ - ".date(DATE_RSS)."\n");
+		fwrite($fp,"- Wampserver trace report - ".date(DATE_RSS)."\n");
 		fclose($fp);
 		unset($wampConf,$fp);
 	}

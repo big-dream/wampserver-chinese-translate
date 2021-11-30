@@ -1,5 +1,5 @@
 <?php
-//3.0.7 Delete unused versions PHP, MySQL, Apache or Mariadb
+
 if(!defined('WAMPTRACE_PROCESS')) require 'config.trace.php';
 if(WAMPTRACE_PROCESS) {
 	$errorTxt = "script ".__FILE__;
@@ -7,23 +7,8 @@ if(WAMPTRACE_PROCESS) {
 	error_log($errorTxt."\n",3,WAMPTRACE_FILE);
 }
 
-function rrmdir($dir) {
-	if (is_dir($dir)) {
-		$objects = scandir($dir);
-		foreach ($objects as $object) {
-			if ($object != "." && $object != "..") {
-				if (filetype($dir."/".$object) == "dir")
-					rrmdir($dir."/".$object);
-				else unlink($dir."/".$object);
-			}
-		}
-		reset($objects);
-		return rmdir($dir);
-	}
-}
-
 require 'config.inc.php';
-
+require 'wampserver.lib.php';
 
 $type = $_SERVER['argv'][1];
 $version = $_SERVER['argv'][2];
@@ -42,7 +27,7 @@ else {
 if(file_exists($delDir) && is_dir($delDir)) {
 	//exec("rd /s /q {$delDir}");
 	if(rrmdir($delDir) === false)
-		error_log("ÎÄ¼þ¼Ð ".$delDir." Î´ÄÜÉ¾³ý");
+		error_log("Folder ".$delDir." not deleted");
 }
 
 ?>

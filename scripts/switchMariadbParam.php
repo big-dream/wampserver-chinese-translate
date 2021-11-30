@@ -1,5 +1,5 @@
 <?php
-//3.2.0 use write_file instead of fwrite, fclose
+
 if(!defined('WAMPTRACE_PROCESS')) require 'config.trace.php';
 if(WAMPTRACE_PROCESS) {
 	$errorTxt = "script ".__FILE__;
@@ -12,7 +12,7 @@ require 'wampserver.lib.php';
 
 $myIniFileContents = @file_get_contents($c_mariadbConfFile) or die ("my.ini file not found");
 
-if ($_SERVER['argv'][2] == 'off')
+if($_SERVER['argv'][2] == 'off')
 {
     $findTxt  = $_SERVER['argv'][1].' = On';
     $replaceTxt  = $_SERVER['argv'][1].' = Off';

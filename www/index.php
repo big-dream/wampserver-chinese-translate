@@ -5,58 +5,53 @@
 // and Romain Bourdon <rromain@romainbourdon.com>
 // and Hervé Leclerc <herve.leclerc@alterway.fr>
 // Icons by Mark James <http://www.famfamfam.com/lab/icons/silk/>
-// Version 2.5 -> 3.0.0 by Dominique Ottello aka Otomatic
-// 3.2.5 - Improved layout and css classic
-//       - All PhpMyAdmin versions with warning if not compatible with PHP
-//
-//
+// Version 2.5 -> 3.2.6 by Dominique Ottello aka Otomatic
 
 $server_dir = "../";
 
 require $server_dir.'scripts/config.inc.php';
 require $server_dir.'scripts/wampserver.lib.php';
 
-//chemin jusqu'aux fichiers alias
+//path to alias files
 $aliasDir = $server_dir.'alias/';
 
-//Fonctionne à condition d'avoir ServerSignature On et ServerTokens Full dans httpd.conf
+//Works if you have ServerSignature On and ServerTokens Full in httpd.conf
 $server_software = $_SERVER['SERVER_SOFTWARE'];
 $error_content = '';
 
-// on récupère les versions des applis
+// we get the versions of the applications
 $phpVersion = $wampConf['phpVersion'];
 $apacheVersion = $wampConf['apacheVersion'];
 $doca_version = 'doca'.substr($apacheVersion,0,3);
 $mysqlVersion = $wampConf['mysqlVersion'];
 
-//On récupère la valeur de VirtualHostMenu
+//We get the value of VirtualHostMenu
 $VirtualHostMenu = $wampConf['VirtualHostSubMenu'];
 
-//on récupère la valeur de apachePortUsed
+//we get the value of apachePortUsed
 $port = $wampConf['apachePortUsed'];
 $UrlPort = $port !== "80" ? ":".$port : '';
-//On récupère le ou les valeurs des ports en écoute dans Apache
-$ListenPorts = implode(' - ',listen_ports());
-//on récupère la valeur de mysqlPortUsed
+//We get the value(s) of the listening ports in Apache
+$ListenPorts = implode(' - ',listen_ports($c_apacheConfFile));
+//We get the value of mysqlPortUsed
 $Mysqlport = $wampConf['mysqlPortUsed'];
 
-
-// répertoires à ignorer dans les projets
+//Directories to ignore in projects
 $projectsListIgnore = array ('.','..','wampthemes','wamplangues');
 
-// Recherche des différents thèmes disponibles
+//Search for available themes
 $styleswitcher = '<select id="themes">'."\n";
 $themes = glob('wampthemes/*', GLOB_ONLYDIR);
 foreach ($themes as $theme) {
-    if (file_exists($theme.'/style.css')) {
+    if(file_exists($theme.'/style.css')) {
         $theme = str_replace('wampthemes/', '', $theme);
         $styleswitcher .= '<option id="'.$theme.'">'.$theme.'</option>'."\n";
     }
 }
 $styleswitcher .= '</select>'."\n";
 
-//affichage du phpinfo
-if (isset($_GET['phpinfo'])) {
+//Displaying phpinfo
+if(isset($_GET['phpinfo'])) {
 	$type_info = intval(trim($_GET['phpinfo']));
 	if($type_info < -1 || $type_info > 64)
 		$type_info = -1;
@@ -64,21 +59,31 @@ if (isset($_GET['phpinfo'])) {
 	exit();
 }
 
+//Displaying xdebug_info();
+$xdebug_info = '';
+if(function_exists('xdebug_info')) {
+	if(isset($_GET['xdebuginfo'])) {
+		xdebug_info();
+		exit();
+	}
+	$xdebug_info = '<li><a href="?xdebuginfo">xdebug_info()</a></li>';
+}
+
 // Language
 $langue = $wampConf['language'];
 $i_langues = glob('wamplangues/index_*.php');
 $languages = array();
-foreach ($i_langues as $value) {
+foreach($i_langues as $value) {
   $languages[] = str_replace(array('wamplangues/index_','.php'), '', $value);
 }
 $langueget = (!empty($_GET['lang']) ? strip_tags(trim($_GET['lang'])) : '');
 if(in_array($langueget,$languages))
 	$langue = $langueget;
 
-// Recherche des différentes langues disponibles
+// Search for available languages
 $langueswitcher = '<form method="get" style="display:inline-block;"><select name="lang" id="langues" onchange="this.form.submit();">'."\n";
 $selected = false;
-foreach ($languages as $i_langue) {
+foreach($languages as $i_langue) {
   $langueswitcher .= '<option value="'.$i_langue.'"';
   if(!$selected && $langue == $i_langue) {
   	$langueswitcher .= ' selected ';
@@ -95,9 +100,7 @@ if(file_exists('wamplangues/index_'.$langue.'.php')) {
 	$langues = array_merge($langue_temp, $langues);
 }
 
-//initialisation
-
-// Récupération MySQL si supporté
+// MySQL retrieval if supported
 $nbDBMS = 0;
 $MySQLdb = '';
 if(isset($wampConf['SupportMySQL']) && $wampConf['SupportMySQL'] =='on') {
@@ -109,7 +112,7 @@ if(isset($wampConf['SupportMySQL']) && $wampConf['SupportMySQL'] =='on') {
 EOF;
 }
 
-// Récupération MariaDB si supporté
+// MariaDB retrieval if supported
 $MariaDB = '';
 if(isset($wampConf['SupportMariaDB']) && $wampConf['SupportMariaDB'] =='on') {
 	$nbDBMS++;
@@ -137,13 +140,12 @@ else
 $noDBMS = (empty($MySQLdb) && empty($MariaDB)) ? true : false;
 
 $aliasContents = '';
-
-// récupération des alias
+// alias retrieval
 GetPhpMyAdminVersions();
-if (is_dir($aliasDir)) {
+if(is_dir($aliasDir)) {
 	$handle=opendir($aliasDir);
 	while (false !== ($file = readdir($handle))) {
-	  if (is_file($aliasDir.$file) && strstr($file, '.conf')) {
+	  if(is_file($aliasDir.$file) && strstr($file, '.conf')) {
 			$href = $file = str_replace('.conf','',$file);
 	  	if(stripos($file,'phpmyadmin') !== false || stripos($file,'adminer') !== false) {
 	  		if(!$noDBMS) {
@@ -172,12 +174,12 @@ if (is_dir($aliasDir)) {
 	closedir($handle);
 }
 
-if (empty($aliasContents))
+if(empty($aliasContents))
 	$aliasContents = "<li class='phpmynot'>".$langues['txtNoAlias']."</li>\n";
 
 $phpsysinfo = file_exists($aliasDir.'phpsysinfo.conf') ? '<li><a href="phpsysinfo">PhpSysInfo</a></li>' : '';
 
-//Récupération des ServerName de httpd-vhosts.conf
+//Retrieving ServerName from httpd-vhosts.conf
 $addVhost = "<li><a href='add_vhost.php?lang=".$langue."'>".$langues['txtAddVhost']."</a></li>";
 if($VirtualHostMenu == "on") {
 	$vhostError = false;
@@ -251,6 +253,12 @@ if($VirtualHostMenu == "on") {
 							$vhostErrorCorrected = false;
 							$vhostsContents .= '<li>'.$value.' - <i style="color:red;">TLD 错误</i></li>';
 							$error_message[] = sprintf($langues['txtTLDdev'],"<span style='color:black;'>".$value."</span>","<span style='color:black;'>.dev</span>");
+						}
+						elseif($virtualHost['ServerNameIntoHosts'][$value] === false) {
+							$vhostError = true;
+							$vhostErrorCorrected = false;
+							$vhostsContents .= '<li>'.$value.' - <i style="color:red;">hosts file error</i></li>';
+							$error_message[] = sprintf($langues['txtNoHosts'],"<span style='color:black;'>".$value."</span>");
 						}
 						else {
 							$value_url = ((strpos($value, ':') !== false) ? strstr($value,':',true) : $value);
@@ -364,22 +372,21 @@ if($VirtualHostMenu == "on") {
 else {
     $allToolsClass = "three-columns";
 }
+//End retrieving ServerName from httpd-vhosts.conf
 
-//Fin Récupération ServerName
-
-// récupération des projets
+// Project recovery
 $handle=opendir(".");
 $projectContents = '';
 while (false !== ($file = readdir($handle))) {
-	if (is_dir($file) && !in_array($file,$projectsListIgnore)){
-		$projectContents .= '<li>'.$file.'</li>';
+	if(is_dir($file) && !in_array($file,$projectsListIgnore)){
+		$projectContents .= ($wampConf['LinksOnProjectsHomePage'] == 'on') ? "<li><a href='http://localhost/".$file."/'>".$file."</a></li>" : '<li>'.$file.'</li>';
 	}
 }
 closedir($handle);
-if (empty($projectContents))
+if(empty($projectContents))
 	$projectContents = "<li class='projectsdir'>".$langues['txtNoProjet']."</li>\n";
 else {
-	if(strpos($projectContents,"http://localhost/") !== false) {
+	if($wampConf['LinksOnProjectsHomePage'] == 'off' && strpos($projectContents,"http://localhost/") !== false) {
 		$projectContents .= "<li><i style='color:blue;'>警告:</i> 见下文</li>";
 		if(!isset($error_content))
 			$error_content = '';
@@ -393,15 +400,15 @@ else {
 //initialisation
 $phpExtContents = '';
 
-// récupération des extensions PHP
+// Retrieving PHP extensions
 $loaded_extensions = get_loaded_extensions();
-// classement alphabétique des extensions
+// alphabetical order of extensions
 setlocale(LC_ALL,"{$langues['locale']}");
 sort($loaded_extensions,SORT_LOCALE_STRING);
 foreach ($loaded_extensions as $extension)
 	$phpExtContents .= "<li>${extension}</li>";
 
-//vérifications diverses - Quel php.ini est chargé ?
+//Miscellaneous checks - Which php.ini is loaded?
 $phpini = strtolower(trim(str_replace("\\","/",php_ini_loaded_file())));
 $c_phpConfFileOri = strtolower($c_phpVersionDir.'/php'.$wampConf['phpVersion'].'/'.$phpConfFileForApache);
 $c_phpCliConf = strtolower($c_phpVersionDir.'/php'.$wampConf['phpVersion'].'/'.$wampConf['phpConfFile']);
@@ -478,6 +485,7 @@ $pageContents = <<< EOPAGE
 	            <h2>{$langues['titrePage']}</h2>
 	            <ul class="tools">
 		            <li><a href="?phpinfo=-1">phpinfo()</a></li>
+		            {$xdebug_info}
 		            {$phpsysinfo}
 		            {$addVhost}
 	            </ul>
@@ -523,12 +531,12 @@ $pageContents .= <<< EOPAGEC
 
 <script>
 var select = document.getElementById("themes");
-if (select.addEventListener) {
+if(select.addEventListener) {
     /* Only for modern browser and IE > 9 */
     var stylecall = document.getElementById("stylecall");
     /* looking for stored style name */
     var wampStyle = localStorage.getItem("wampStyle");
-    if (wampStyle !== null) {
+    if(wampStyle !== null) {
         stylecall.setAttribute("href", "wampthemes/" + wampStyle + "/style.css");
         selectedOption = document.getElementById(wampStyle);
         selectedOption.setAttribute("selected", "selected");

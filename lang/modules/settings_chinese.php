@@ -20,6 +20,12 @@
 // 3.2.3 wampserver.aviatechno 调整为 https
 // 3.2.5 $w_emptyLogs - $w_emptyPHPlog - $w_emptyApaErrLog - $w_emptyApaAccLog - $w_emptyMySQLog - $w_emptyMariaLog - $w_emptyAllLog
 //       $w_testAliasDir - $w_verifyxDebugdll - $w_apacheLoadedIncludes - $w_settings 'ShowWWWdirMenu'
+// 3.2.6 $w_compareApache - $w_versus - $w_restorefile - $w_restore - $w_apache_restore - $w_ApacheRestoreInfo - $w_apache_restore
+//       $w_ApacheCompareInfo - $w_apacheDefineVariables - $w_Refresh_Restart - $w_Refresh_Restart_Info
+//       $w_checkUpdates - $w_PhpMyAdminBigFileTxt - $w_apacheTools - $w_PHPloadedExt
+//       $w_settings 	apacheCompareVersion - apacheRestoreFiles - apacheGracefulRestart - LinksOnProjectsHomePage
+//                    ApacheWampParams - apachePhpCurlDll
+//       Suppress : $w_enterServiceNameApache - $w_enterServiceNameMysql - $w_enterServiceNameAll
 
 // 项目子菜单
 $w_projectsSubMenu = '项目列表';
@@ -71,6 +77,12 @@ $w_settings = array(
     'iniCommented' => '已注释 php.ini 配置',
     'BackupHosts' => '备份 hosts 文件',
     'ShowWWWdirMenu' => '显示 www 文件夹菜单',
+    'ApacheWampParams' => 'Wampserver settings for Apache',
+    'apacheCompareVersion' => 'Allow comparison of Apache settings.',
+    'apacheRestoreFiles' => 'Allow Apache files restoration',
+    'apacheGracefulRestart' => 'Allow Apache Graceful Restart',
+    'LinksOnProjectsHomePage' => 'Allow links on projects homepage',
+    'apachePhpCurlDll' => 'Allow Apache to use libcrypto-*.dll and libssl-*.dll from PHP',
 );
 
 // 右键子菜单-工具
@@ -79,15 +91,13 @@ $w_restartDNS = '重启 DNS';
 $w_testConf = '检查 httpd.conf 语法';
 $w_testServices = '检查服务状态';
 $w_changeServices = '更改服务名称';
-$w_enterServiceNameApache = "Enter an index number for the Apache service. It will be added to 'wampapache'";
-$w_enterServiceNameMysql = "Enter an index number for the Mysql service. It will be added to 'wampmysqld'";
-$w_enterServiceNameAll = "Enter a number for the suffix of service names (empty to return original services)";
 $w_compilerVersions = '检查 VC 运行库依赖、兼容性和 ini 文件';
 $w_UseAlternatePort = '使用 %s 以外的端口';
 $w_AddListenPort = '新增 Apache 监听端口';
 $w_vhostConfig = '显示 Apache 中有效的虚拟主机';
 $w_apacheLoadedModules = '显示 Apache 已加载的模块';
 $w_apacheLoadedIncludes = '显示 Apache 已加载的额外配置文件';
+$w_apacheDefineVariables = 'Show Apache variables (Define)';
 $w_testAliasDir = '检查别名（Alias）与目录的关联';
 $w_verifyxDebugdll = '检查未使用的 xDebug 扩展 dll';
 $w_empty = '清空';
@@ -116,6 +126,13 @@ $w_dowampReport = '创建 '.$w_wampReport;
 $w_verifySymlink = '验证软链接（symbolic links）';
 $w_goto = '转到：';
 $w_FileRepository = 'Wampserver 文件储存库网站';
+$w_compareApache = 'Apache settings comparison';
+$w_versus = 'versus';
+$w_restorefile = 'Restore files saved at the installation of Apache';
+$w_restore = 'Restore';
+$w_checkUpdates = 'Check for updates';
+$w_apacheTools = 'Apache Tools';
+$w_PHPloadedExt = 'Show PHP loaded Extensions';
 
 // 杂项
 $w_ext_spec = '专用扩展';
@@ -130,6 +147,9 @@ $w_mysql_none = "none";
 $w_mysql_user = "user mode";
 $w_mysql_default = "by default";
 $w_mysql_mode = "sql-mode 说明";
+$w_apache_restore = "Warning Apache restoration;";
+$w_apache_compare = "Warning Apache settings comparison";
+$w_Refresh_Restart = "Help ".$w_refresh.' - '.$w_restartWamp;
 $w_Size = "大小";
 $w_Time = "时间";
 $w_Integer = "整数数值";
@@ -176,5 +196,8 @@ $w_PhpMyAdMinHelpTxt = "-- PhpMyAdmin\r\n".
 	"如果只启用了一个数据库管理系统，则没有选择。如果有选择，则第一个为默认数据库管理系统.\r\n".
 	"记住，如果您有不同的用户帐户，则必须为所选的数据库管理系统使用正确的用户帐户.\r\n".
 	"另外: 两个数据库管理系统之间的用户和数据不互通.\r\n";
-
+$w_PhpMyAdminBigFileTxt = "\r\n-- Importing large files\r\nWhen importing large files, the maximum memory and/or time limits may be exceeded.\r\nAny changes to the memory and time limits should not be made in php.ini but in the wamp(64)\\alias\\phpmyadmin.conf file.\r\n";
+$w_ApacheRestoreInfo = "--- Restoring Apache Files\r\nSince Apache 2.4.41, at the end of a release installation, the operational files httpd.conf and httpd-vhosts.conf are copied to a backup folder.\r\nIn case of problems or unwanted changes to Apache you can restore these two files to the original Apache configuration.\r\nOf course, IN THIS CASE YOU WILL LOSE ANY CONFIGURATION CHANGES YOU MAY HAVE MADE AFTER INSTALLATION, such as module or include loads.";
+$w_ApacheCompareInfo = "--- Comparing Apache versions\r\nIf you have at least two versions of Apache, you have the possibility to compare the current version with a previous version.\r\nThe following are compared:\r\n- LoadModule\r\n- Include\r\n- httpd-vhosts.conf files\r\n- httpd-ssl.conf files\r\n- openssl.cnf files\r\n- Presence and content of the Certs folder\r\nYou have the possibility to copy the configuration of an old version on the current version.\r\n*** WARNING *** No backups will be made, it is your responsibility to make backups BEFORE copying the configurations.";
+$w_Refresh_Restart_Info = "--- Differences between '".$w_refresh."' and '".$w_restartWamp."'\r\n-- ".$w_refresh.":\r\n- Performs various checks,\r\n- Rereads the configuration files of Wampserver, Apache, PHP, MySQL and MariaDB,\r\n- Modifies the Wampmanager configuration file accordingly and updates the menus,\r\n- Performs a 'Graceful Restart Apache',\r\n- Reloads the Aestan Tray menu.\r\nThere is no interruption of the Apache, PHP, MySQL and MariaDB connections.\r\n\r\n-- ".$w_restartWamp.":\r\n- Stop the services :".$c_apacheService.", ".$c_mysqlService." and ".$c_mariadbService.",\r\n- Empty all the log files,\r\n- Empty the tmp folder,\r\n- Exit Wampserver,\r\n- Starts Wampserver 'normally'.\r\nThere is thus a total cut of the connections Apache, PHP, MySQL and MariaDB and put back in place these under other identifications";
 ?>

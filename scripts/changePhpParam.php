@@ -1,5 +1,5 @@
 <?php
-//3.2.0 use write_file instead of fwrite, fclose
+
 if(!defined('WAMPTRACE_PROCESS')) require 'config.trace.php';
 if(WAMPTRACE_PROCESS) {
 	$errorTxt = "script ".__FILE__;
@@ -10,7 +10,7 @@ if(WAMPTRACE_PROCESS) {
 require 'config.inc.php';
 require 'wampserver.lib.php';
 
-$phpIniFileContents = @file_get_contents($c_phpConfFile) or die ("php.ini 文件未找到");
+$phpIniFileContents = @file_get_contents($c_phpConfFile) or die ("php.ini file not found");
 
 $quoted = false;
 if($_SERVER['argv'][1] == 'quotes')
@@ -24,9 +24,9 @@ if(!empty($_SERVER['argv'][4])) {
 	if($choose == 'Seconds') {
 		if(preg_match('/^[1-9][0-9]{1,3}$/m',$newvalue) != 1) {
 		$changeError = <<< EOFERROR
-您输入的值（{$newvalue}）超出范围。
-输入的值必须是整数，范围在 10 至 9999 之间。
-已将值设为默认的 60 秒。
+The value you entered ({$newvalue}) is out of range.
+The number of seconds must be between 10 and 9999.
+The value is set to 300 seconds by default.
 EOFERROR;
 		$newvalue = '300';
 		}
@@ -35,10 +35,10 @@ EOFERROR;
 		$newvalue = strtoupper($newvalue);
 		if(preg_match('/^[1-9][0-9]{1,3}(M|G)$/m',$newvalue) != 1) {
 		$changeError = <<< EOF1ERROR
-您输入的值（{$newvalue}）超出范围.
-输入的值必须是整数，范围在 10 至 9999 之间。
-数字后面必须跟着单位，M 或 G。
-已将值设为默认的 128M。
+The value you entered ({$newvalue}) is out of range.
+The number must be between 10 and 9999.
+The number must be followed by M (For Mega) or G (For Giga)
+The value is set to 128M by default.
 EOF1ERROR;
 		$newvalue = '128M';
 		}
@@ -48,9 +48,10 @@ EOF1ERROR;
 		list($min, $max, $default) = explode("^",$_SERVER['argv'][5]);
 		if($newvalue < $min || $newvalue > $max) {
 		$changeError = <<< EOF2ERROR
-您输入的值（{$newvalue}）超出范围.
-输入的值必须是整数，范围在 {$min} 至 {$max} 之间。
-已将值设为默认的 {$default}。
+The value you entered ({$newvalue}) is out of range.
+The number must be between {$min} and {$max}.
+And must be an integer value.
+The value is set to {$default} by default.
 EOF2ERROR;
 		$newvalue = $default;
 		}
@@ -68,7 +69,7 @@ if($count > 0) {
 // Check if we need to modify also CLI php.ini and $c_phpConfFileIni
 if(in_array($parameter,$phpCLIparams)) {
 	//error_log("aussi dans CLI=".$c_phpCliConfFile);
-	$phpIniCLIFileContents = @file_get_contents($c_phpCliConfFile) or die ("php.ini 文件未找到");
+	$phpIniCLIFileContents = @file_get_contents($c_phpCliConfFile) or die ("php.ini file not found");
 	$phpIniCLIFileContents = preg_replace('|^'.$parameter.'[ \t]*=.*|m',$parameter.' = '.$newvalue,$phpIniCLIFileContents, -1, $count);
 
 	if($count > 0) {
@@ -76,7 +77,7 @@ if(in_array($parameter,$phpCLIparams)) {
 	}
 	if($c_phpConfFileIni <> $c_phpCliConfFile) {
 		//error_log("aussi dans CLI=".$c_phpConfFileIni);
-		$phpIniFileContentsIni = @file_get_contents($c_phpConfFileIni) or die ("php.ini 文件未找到");
+		$phpIniFileContentsIni = @file_get_contents($c_phpConfFileIni) or die ("php.ini file not found");
 		$phpIniFileContentsIni = preg_replace('|^'.$parameter.'[ \t]*=.*|m',$parameter.' = '.$newvalue,$phpIniFileContentsIni, -1, $count);
 
 		if($count > 0) {
@@ -86,9 +87,10 @@ if(in_array($parameter,$phpCLIparams)) {
 }
 
 if(!empty($changeError)) {
-	echo "********************* 警告 ********************\n\n";
-	echo $changeError;
-	echo "\n按回车键（ENTER）继续...";
+	$message = "********************* WARNING ********************\n\n";
+	$message .= $changeError;
+	$message .= "\nPress ENTER to continue...";
+	Command_Windows($message,-1,-1,0,'Change PHP parameter');
   trim(fgets(STDIN));
 }
 

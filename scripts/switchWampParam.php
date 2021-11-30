@@ -1,6 +1,4 @@
 <?php
-// - 3.2.5 add CMD /D /C to Command Windows to avoid
-//         automatic autorun of registry keys
 
 if(!defined('WAMPTRACE_PROCESS')) require 'config.trace.php';
 if(WAMPTRACE_PROCESS) {
@@ -24,7 +22,7 @@ else {
   			$mariadbVersionList = listDir($c_mariadbVersionDir,'checkMariaDBConf','mariadb');
   			if(count($mariadbVersionList) == 0) {
   				$goodParam = false;
-  				$errorMessage .= "未安装可用 MariaDB 版本.\n需要在 Wampserver 中安装一个可以用的 MariaDB 版本.\n";
+  				$errorMessage .= "No version of MariaDB is installed.\nAt least one version of MariaDB must be installed in Wampserver.\n";
   			}
   			else {
   				//Check if mariadb version installed is that in wampmanager.conf
@@ -46,7 +44,7 @@ else {
 							$output = `$command`;
 							if(strpos($output, 'successfully installed') === false) {
 								$goodParam = false;
-  							$errorMessage .= "'".$c_mariadbService."' 服务似乎未成功安装\n";
+  							$errorMessage .= "The service '".$c_mariadbService."' seems to be not successfully installed\n";
 							}
 					}
   			}
@@ -81,7 +79,7 @@ else {
 		}
 		else {
 			$goodParam = false;
-			$errorMessage .= $c_mariadbVersionDir." 不存在或不是目录\n";
+			$errorMessage .= $c_mariadbVersionDir." does not exist or is not a directory\n";
 		}
 		if($goodParam) {
 			if($_SERVER['argv'][2] == 'on') {
@@ -104,7 +102,7 @@ else {
   			$mysqlVersionList = listDir($c_mysqlVersionDir,'checkMysqlConf','mysql');
   			if(count($mysqlVersionList) == 0) {
   				$goodParam = false;
-  				$errorMessage .= "未安装 MySQL.\nWampserver中至少安装一个MySQL版本.\n";
+  				$errorMessage .= "No version of MySQL is installed.\nAt least one version of MySQL must be installed in Wampserver.\n";
   			}
   			else {
   				//Check if mysql version installed is that in wampmanager.conf
@@ -127,7 +125,7 @@ else {
 							$output = `$command`;
 							if(strpos($output, 'successfully installed') === false) {
 								$goodParam = false;
-  							$errorMessage .= "'".$c_mysqlService."' 服务似乎未成功安装\n";
+  							$errorMessage .= "The service '".$c_mysqlService."' seems to be not successfully installed\n";
 							}
 					}
   			}
@@ -162,7 +160,7 @@ else {
 		}
 		else {
 			$goodParam = false;
-			$errorMessage .= $c_mysqlVersionDir." 不存在或不是目录\n";
+			$errorMessage .= $c_mysqlVersionDir." does not exist or is not a directory\n";
 		}
 		if($goodParam) {
 			if($_SERVER['argv'][2] == 'on') {
@@ -183,12 +181,17 @@ else {
 	if($goodParam) {
 		$wampIniNewContents[$_SERVER['argv'][1]] = $_SERVER['argv'][2];
 		wampIniSet($configurationFile, $wampIniNewContents);
+		if($_SERVER['argv'][1] == 'apachePhpCurlDll') {
+			$wampConf['apachePhpCurlDll'] = $_SERVER['argv'][2];
+			linkPhpDllToApacheBin($c_phpVersion);
+		}
 	}
 	else {
-		echo "参数 '".$_SERVER['argv'][1]."' 不能切换到 '".$_SERVER['argv'][2]."'\n\n";
-		echo $errorMessage."\n\n";
-		echo "----- 操作取消 -----\n\n";
-		echo "\n按回车键（ENTER）继续...";
+		$message = "The parameter '".$_SERVER['argv'][1]."' cannot be switched '".$_SERVER['argv'][2]."'\n\n";
+		$message .= $errorMessage."\n\n";
+		$message .= "----- Switch canceled -----\n\n";
+		$message .=  "\nPress ENTER to continue...";
+		Command_Windows($message,-1,-1,0,'Switch Wampmanager parameter');
  		trim(fgets(STDIN));
 	}
 }

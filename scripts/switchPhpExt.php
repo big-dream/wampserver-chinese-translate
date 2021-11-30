@@ -1,5 +1,5 @@
 <?php
-// Update 3.2.0 use write_file instead of fwrite, fclose
+
 if(!defined('WAMPTRACE_PROCESS')) require 'config.trace.php';
 if(WAMPTRACE_PROCESS) {
 	$errorTxt = "script ".__FILE__;
@@ -26,14 +26,14 @@ if(strpos($mode,'zend') !== false) {
 }
 
 // on remplace la ligne
-if ($mode == 'on') {
+if($mode == 'on') {
 	if(preg_match('~^;'.$zend.'extension\s*=\s*"?'.$_SERVER['argv'][1].$reg_dll.'"?~im',$phpIniFileContents,$matchesOFF) !== false)
 		$findTxt = $matchesOFF[0];
 	else
 		$findTxt  = ';'.$zend.'extension='.$_SERVER['argv'][1].$dll;
 	$replaceTxt  = $zend.'extension='.$quote.$_SERVER['argv'][1].$dll.$quote;
 }
-elseif ($mode == 'off') {
+elseif($mode == 'off') {
 	if(preg_match('~^'.$zend.'extension\s*=\s*"?'.$_SERVER['argv'][1].$reg_dll.'"?~im',$phpIniFileContents,$matchesON) !== false)
 		$findTxt = $matchesON[0];
 	else
@@ -46,7 +46,7 @@ $phpIniFileContents2 = str_replace($findTxt,$replaceTxt,$phpIniFileContents);
 
 
 // on ajoute la ligne si elle n'existe pas
-if ($phpIniFileContents2 == $phpIniFileContents) {
+if($phpIniFileContents2 == $phpIniFileContents) {
 	$findTxt  = <<< EOF
 ;;;;;;;;;;;;;;;;;;;
 ; Module Settings ;

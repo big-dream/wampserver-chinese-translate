@@ -1,6 +1,5 @@
 <?php
-// 3.2.5 - Verifies that a folder exists in wamp/apps/ for each alias
-//         and that each folder in wamp/apps/ corresponds to an alias.
+
 if(!defined('WAMPTRACE_PROCESS')) require 'config.trace.php';
 if(WAMPTRACE_PROCESS) {
 	$errorTxt = "script ".__FILE__;
@@ -8,32 +7,18 @@ if(WAMPTRACE_PROCESS) {
 	error_log($errorTxt."\n",3,WAMPTRACE_FILE);
 }
 
-function rrmdir($dir) {
-	if (is_dir($dir)) {
-		$objects = scandir($dir);
-		foreach ($objects as $object) {
-			if ($object != "." && $object != "..") {
-				if (filetype($dir."/".$object) == "dir")
-					rrmdir($dir."/".$object);
-				else unlink($dir."/".$object);
-			}
-		}
-		reset($objects);
-		return rmdir($dir);
-	}
-	return false;
-}
-
 require 'config.inc.php';
+require 'wampserver.lib.php';
+
 $allOK = true;
-echo "\n\nCheck relationships Alias  <-> Directory\n\n";
+$message = "Relationship between Alias and Directories\n";
 //Get alias files & directory
 $aliasList = array();
 if(is_dir($aliasDir)) {
   $handle=opendir($aliasDir);
   $i = 0;
   while(false !== ($file = readdir($handle))) {
-  	if (is_file($aliasDir.$file) && stripos($file, '.conf') !== false) {
+  	if(is_file($aliasDir.$file) && stripos($file, '.conf') !== false) {
     	$aliasList[$i]['file'] = $file;
 			$alias_contents = @file_get_contents($aliasDir.$file);
 	  	if(preg_match('~^Alias\s+/(.+)\s+"(.+)"\r?$~m',$alias_contents,$matches) > 0) {
@@ -50,15 +35,16 @@ if(is_dir($aliasDir)) {
   	foreach($aliasList as $key => $value) {
   		if(is_dir($aliasList[$key]['dir']) === false) {
   			$allOK = false;
-  			echo "\n\nIn alias file: '".$aliasList[$key]['file']."'\n";
-  			echo "Alias '".$aliasList[$key]['alias']."' request to use the directory '".$aliasList[$key]['dir']."' that doesn't exist.\n";
-  			echo "The alias is therefore inoperative.\n\n";
-  			echo "Do you want to delete alias file : '".$aliasList[$key]['file']."'\n\nType 'yes' to confirm : ";
+  			$message .= "\n\nIn alias file: '".$aliasList[$key]['file']."'\n";
+  			$message .= "Alias '".$aliasList[$key]['alias']."' request to use the directory '".$aliasList[$key]['dir']."' that doesn't exist.\n";
+  			$message .= "The alias is therefore inoperative.\n\n";
+  			$message .= "Do you want to delete alias file : '".$aliasList[$key]['file']."'\n\nType 'Y' key then Enter to confirm\nPress Enter key to exit: ";
+				Command_Windows($message,-1,-1,0,'Reliationships Alias & Directories');
 				$confirm = trim(fgets(STDIN));
-				$confirm = strtolower(trim($confirm ,'\''));
-				if($confirm == 'yes') {
+				$confirm = strtoupper(trim($confirm ,'\''));
+				if($confirm == 'Y') {
 					if(unlink($aliasDir.str_replace('-whitespace-',' ',$aliasList[$key]['file']))) {
-						echo "\n Alias file '".$aliasList[$key]['file']."' deleted.\n";
+						$message .= "\n Alias file '".$aliasList[$key]['file']."' deleted.\n";
 					}
 				}
   		}
@@ -78,20 +64,22 @@ foreach($listAppsDir as $value) {
 	if($value[strlen($value)-1] != '/')	$value .= '/';
 	if(!in_array($value, $DirAlias)) {
 		$allOK = false;
-		echo "\n\n'".$value."' directory is not used by any alias\n";
-  	echo "Do you want to delete directory : '".$value."'\n\nType 'yes' to confirm : ";
+		$message .= "\n'".$value."' directory is not used by any alias\n";
+  	$message .= "Do you want to delete directory : '".$value."'\n\nType 'Y' key then Enter to confirm\nPress Enter to exit : ";
+  	Command_Windows($message,-1,-1,0,'Reliationships Alias & Directories');
 		$confirm = trim(fgets(STDIN));
 		$confirm = strtolower(trim($confirm ,'\''));
 		if($confirm == 'yes') {
 			if(rrmdir($value) === false)
-				echo "\n\nFolder ".$value." **not** deleted\n";
+				$message .= "\n\nFolder ".$value." **not** deleted\n";
 			else
-				echo "\n\nFolder ".$value." deleted\n";
+				$message .= "\n\nFolder ".$value." deleted\n";
 		}
 	}
 }
-if($allOK) echo "\n\nNo faults were detected\n";
-echo "\nPress Enter to exit...";
+if($allOK) $message .= "\n\nNo faults were detected\n";
+$message .= "\nPress Enter to exit...";
+Command_Windows($message,-1,-1,0,'Reliationships Alias & Directories');
 trim(fgets(STDIN));
 exit();
 

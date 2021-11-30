@@ -1,7 +1,5 @@
 <?php
-// 3.2.3 modify switchPhpVersion function for LoadModule in httpd.conf
-//   improve IDNA ServerName check
-//   improve PHP error_reporting display
+
 if(!defined('WAMPTRACE_PROCESS')) require 'config.trace.php';
 if(WAMPTRACE_PROCESS) {
 	$errorTxt = "script ".__FILE__;
@@ -63,20 +61,21 @@ function write_file($file, $string, $clipboard = false, $delete = true, $mode = 
 	return $writeFileOK;
 }
 
+//Function to modify an ini file like wampmanager.conf
 function wampIniSet($iniFile, $params) {
 	if(WAMPTRACE_PROCESS) error_log("function ".__FUNCTION__."\n",3,WAMPTRACE_FILE);
 	$iniFileContents = @file_get_contents($iniFile);
 	$count = false;
 	foreach ($params as $param => $value) {
 		if(preg_match('|^'.$param.'[ \t]*=[ \t]*"?([^"]+)"?\r?$|m',$iniFileContents,$matches) > 0) {
-			if($matches[1] !== $value) {
-				$iniFileContents = preg_replace('|^'.$param.'[ \t]*=.*|m',$param.' = '.'"'.$value.'"',$iniFileContents);
-				$count = true;
+			if($matches[1] <> $value) {
+				$iniFileContents = preg_replace('|^'.$param.'[ \t]*=.*|m',$param.' = '.'"'.$value.'"',$iniFileContents,-1,$countR);
+				if($countR > 0) $count = true;
 			}
 		}
 		else {
-			$iniFileContents = preg_replace('|^'.$param.'[ \t]*=.*|m',$param.' = '.'"'.$value.'"',$iniFileContents);
-			$count = true;
+			$iniFileContents = preg_replace('|^'.$param.'[ \t]*=.*|m',$param.' = '.'"'.$value.'"',$iniFileContents,-1,$countR);
+			if($countR > 0) $count = true;
 		}
 	}
 	if($count) {
@@ -87,10 +86,10 @@ function wampIniSet($iniFile, $params) {
 function listDir($dir,$toCheck = '',$racine='') {
 	$list = array();
 	if(is_dir($dir)) {
-		if ($handle = opendir($dir)) {
+		if($handle = opendir($dir)) {
 			while (false !== ($file = readdir($handle))) {
-				if ($file != "." && $file != ".." && is_dir($dir.'/'.$file)) {
-					if (!empty($toCheck)) {
+				if($file != "." && $file != ".." && is_dir($dir.'/'.$file)) {
+					if(!empty($toCheck)) {
 						if(call_user_func($toCheck,$dir,$file,$racine))
 							$list[] = $file;
 					}
@@ -103,6 +102,22 @@ function listDir($dir,$toCheck = '',$racine='') {
 		error_log("*** WARNING is_dir(".$dir.") is not a directory");
 	}
 	return $list;
+}
+
+//Recursive function to completely delete a folder
+function rrmdir($dir) {
+	if(is_dir($dir)) {
+		$objects = scandir($dir);
+		foreach ($objects as $object) {
+			if($object != "." && $object != "..") {
+				if(filetype($dir."/".$object) == "dir")
+					rrmdir($dir."/".$object);
+				else unlink($dir."/".$object);
+			}
+		}
+		reset($objects);
+		return rmdir($dir);
+	}
 }
 
 function checkPhpConf($baseDir,$version,$racine) {
@@ -138,13 +153,12 @@ function checkMariaDBConf($baseDir,$version,$racine) {
 }
 
 function linkPhpDllToApacheBin($php_version) {
-	global $phpDllToCopy, $c_phpVersionDir, $c_apacheVersionDir, $wampConf, $phpConfFileForApache;
-	if(WAMPTRACE_PROCESS) error_log("function ".__FUNCTION__."\n",3,WAMPTRACE_FILE);
+	global $phpDllToCopy, $phpDllApacheDll, $c_phpVersionDir, $c_apacheVersionDir, $wampConf, $phpConfFileForApache;
+	if(WAMPTRACE_PROCESS) error_log("function ".__FUNCTION__." - php_version=".$php_version."\n",3,WAMPTRACE_FILE);
 	$errorTxt = '';
-	//Create symbolic link or copy dll's files
+	//Create symbolic link dll's files
 	clearstatcache();
-	foreach ($phpDllToCopy as $dll)
-	{
+	foreach ($phpDllToCopy as $dll)	{
 		$target = $c_phpVersionDir.'/php'.$php_version.'/'.$dll;
 		$link = $c_apacheVersionDir.'/apache'.$wampConf['apacheVersion'].'/'.$wampConf['apacheExeDir'].'/'.$dll;
 		//File or symlink deleted if exists
@@ -152,15 +166,51 @@ function linkPhpDllToApacheBin($php_version) {
 			unlink($link);
 		}
 		//Symlink created if file exists in phpx.y.z directory
-		if (is_file($target)) {
-			if($wampConf['CreateSymlink'] == 'symlink') {
+		if(is_file($target)) {
+			if(symlink($target, $link) === false) {
+				$errorTxt .= "Error while creating symlink '".$link."' to '".$target."' using php symlink function\n";
+			}
+		}
+	}
+	//Create symbolic link for php and Apache curl dll if needed
+	//Save original Apache dll file
+	if($wampConf['apachePhpCurlDll'] == 'on') {
+		foreach ($phpDllApacheDll as $dll)	{
+			$target = $c_phpVersionDir.'/php'.$php_version.'/'.$dll;
+			$link = $c_apacheVersionDir.'/apache'.$wampConf['apacheVersion'].'/'.$wampConf['apacheExeDir'].'/'.$dll;
+			//File saved with .original extension or symlink deleted if exists
+			if(is_link($link)) {
+				unlink($link);
+			}
+			elseif(is_file($link)) {
+				if(rename($link,$link.'.original') === false) {
+					$errorTxt .= "Error while renaming file '".$link."' to '".$link.".original' using php rename function\n";
+			}
+			}
+			//Symlink created if file exists in phpx.y.z directory
+			if(is_file($target)) {
 				if(symlink($target, $link) === false) {
 					$errorTxt .= "Error while creating symlink '".$link."' to '".$target."' using php symlink function\n";
 				}
 			}
-			elseif($wampConf['CreateSymlink'] == 'copy') {
-				if(copy($target, $link) === false) {
-					$errorTxt .= "Error while copy '".$target."' to '".$link."' using php copy() function\n";
+		}
+	}
+	else { // Restore original Apache curl dll's if exist
+		foreach ($phpDllApacheDll as $dll)	{
+			$target = $c_phpVersionDir.'/php'.$php_version.'/'.$dll;
+			$original = $c_apacheVersionDir.'/apache'.$wampConf['apacheVersion'].'/'.$wampConf['apacheExeDir'].'/'.$dll.'.original';
+			$link = $c_apacheVersionDir.'/apache'.$wampConf['apacheVersion'].'/'.$wampConf['apacheExeDir'].'/'.$dll;
+			//link deleted if file with .original extension exist then file renamed
+			if(is_link($link) && file_exists($original)) {
+				unlink($link);
+				if(rename($original,$link) === false) {
+					$errorTxt .= "Error while renaming file '".$original."' to '".$link."' using php rename function\n";
+					//Symlink created if file exists in phpx.y.z directory
+					if(is_file($target)) {
+						if(symlink($target, $link) === false) {
+							$errorTxt .= "Error while creating symlink '".$link."' to '".$target."' using php symlink function\n";
+						}
+					}
 				}
 			}
 		}
@@ -172,17 +222,10 @@ function linkPhpDllToApacheBin($php_version) {
 	if(is_file($link) || is_link($link)) {
 		unlink($link);
 	}
-	if($wampConf['CreateSymlink'] == 'symlink') {
-		if(symlink($target, $link) === false) {
-			$errorTxt .= "Error while creating symlink '".$link."' to '".$target."' using php symlink function\n";
-		}
+	if(symlink($target, $link) === false) {
+		$errorTxt .= "Error while creating symlink '".$link."' to '".$target."' using php symlink function\n";
 	}
-	elseif($wampConf['CreateSymlink'] == 'copy') {
-		if(copy($target, $link) === false) {
-			$errorTxt .= "Error while copy '".$target."' to '".$link."' using php copy() function\n";
-		}
-	}
-	if(empty($errortxt)) {
+	if(empty($errorTxt)) {
 		return true;
 	}
 	else {
@@ -193,13 +236,12 @@ function linkPhpDllToApacheBin($php_version) {
 }
 
 function CheckSymlink($php_version) {
-	global $phpDllToCopy, $c_phpVersionDir, $c_apacheVersionDir, $wampConf, $phpConfFileForApache;
+	global $phpDllToCopy, $phpDllApacheDll, $c_phpVersionDir, $c_apacheVersionDir, $wampConf, $phpConfFileForApache;
 	if(WAMPTRACE_PROCESS) error_log("function ".__FUNCTION__."\n",3,WAMPTRACE_FILE);
 	$errorTxt = '';
 	//Check if necessary symlinks exists
 	clearstatcache();
-	foreach ($phpDllToCopy as $dll)
-	{
+	foreach ($phpDllToCopy as $dll)	{
 		$target = $c_phpVersionDir.'/php'.$php_version.'/'.$dll;
 		$link = $c_apacheVersionDir.'/apache'.$wampConf['apacheVersion'].'/'.$wampConf['apacheExeDir'].'/'.$dll;
 		//Check Symlink if file exists in phpx.y.z directory
@@ -211,14 +253,36 @@ function CheckSymlink($php_version) {
 				}
 			}
 			elseif(is_file($link)) {
-				if($wampConf['CreateSymlink'] != 'copy')
-					$errorTxt .= "File ".$link." exists.\nShould be a symbolic link\n";
+				$errorTxt .= "File ".$link." exists.\nShould be a symbolic link\n";
 			}
 			else {
-				$errorTxt .= "Symbolic link or file ".$link." does not exist\n";
+				$errorTxt .= "Symbolic link ".$link." does not exist\n";
 			}
 		}
 	}
+	//Check symbolic link for php and Apache curl dll if needed
+	if($wampConf['apachePhpCurlDll'] == 'on') {
+		foreach ($phpDllApacheDll as $dll)	{
+			$target = $c_phpVersionDir.'/php'.$php_version.'/'.$dll;
+			$link = $c_apacheVersionDir.'/apache'.$wampConf['apacheVersion'].'/'.$wampConf['apacheExeDir'].'/'.$dll;
+			//Check Symlink if file exists in phpx.y.z directory
+			if(is_file($target)) {
+				if(is_link($link)) {
+					$real_link = str_replace("\\", "/",readlink($link));
+					if(strtolower($real_link) != strtolower($target)) {
+						$errorTxt .= "Symbolic link ".$link."\n      is: ".$real_link."\nshould be ".$target."\n\n";
+					}
+				}
+				elseif(is_file($link)) {
+					$errorTxt .= "File ".$link." exists.\nShould be a symbolic link\n";
+				}
+				else {
+					$errorTxt .= "Symbolic link ".$link." does not exist\n";
+				}
+			}
+		}
+	}
+
 	//Verify apache/apachex.y.z/bin/php.ini link to phpForApache.ini file of active version of PHP
 	$target = $c_phpVersionDir."/php".$php_version."/".$phpConfFileForApache;
 	$link = $c_apacheVersionDir."/apache".$wampConf['apacheVersion']."/".$wampConf['apacheExeDir']."/php.ini";
@@ -229,13 +293,13 @@ function CheckSymlink($php_version) {
 		}
 	}
 	elseif(is_file($link)) {
-		if($wampConf['CreateSymlink'] != 'copy')
-			$errorTxt .= "File ".$link." exists.\nShould be a symbolic link\n";
+		$errorTxt .= "File ".$link." exists.\nShould be a symbolic link\n";
 	}
 	else {
 		$errorTxt .= "Symbolic link or file ".$link." does not exist\n";
 	}
-	if(empty($errortxt)) {
+
+	if(empty($errorTxt)) {
 		return true;
 	}
 	else {
@@ -254,25 +318,24 @@ function switchPhpVersion($newPhpVersion) {
 
 	//the httpd.conf texts depending on the version of apache is determined
 	$apacheVersion = $wampConf['apacheVersion'];
-	while (!isset($phpConf['apache'][$apacheVersion]) && $apacheVersion != '')
-	{
+	while (!isset($phpConf['apache'][$apacheVersion]) && $apacheVersion != '') {
 		$pos = strrpos($apacheVersion,'.');
 		$apacheVersion = substr($apacheVersion,0,$pos);
-
 	}
 
 	// modifying httpd.conf apache file for LoadModule php5_module or php7_module or php_module
-	// New method with preg_replace 3.2.2
 	$httpdFileContents = file_get_contents_dos($c_apacheConfFile);
-	$c_phpVersionDirA = (substr($c_apacheVersion,0,3) == '2.4') ? str_replace($c_installDir, '${INSTALL_DIR}',$c_phpVersionDir) : $c_phpVersionDir ;
-	$search = '~^(LoadModule[ \t]+)(php_module|php7_module|php5_module)([ \t]+".+/bin/php/)(.+)(/)(.+\.dll)"\r?$~mi';
-	$replacement = '${1}'.$phpConf['apache'][$apacheVersion]['LoadModuleName'].' "'.$c_phpVersionDirA.'/php'.$newPhpVersion.'${5}'.$phpConf['apache'][$apacheVersion]['LoadModuleFile'].'"';
-	$httpdFileContents = preg_replace($search, $replacement, $httpdFileContents, -1 , $count);
-	if($count > 0) {
-		write_file($c_apacheConfFile,$httpdFileContents);
+	$c_phpVersionDirA = str_replace($c_installDir, '${INSTALL_DIR}',$c_phpVersionDir);
+	$search = '~^(LoadModule[ \t]+)(php_module|php7_module|php5_module)([ \t]+".+/bin/php/)(.+)(/)(.+\.dll)"~mi';
+	preg_match($search,$httpdFileContents,$matches);
+	$replacement = $matches[1].$phpConf['apache'][$apacheVersion]['LoadModuleName'].' "'.$c_phpVersionDirA.'/php'.$newPhpVersion.$matches[5].$phpConf['apache'][$apacheVersion]['LoadModuleFile'].'"';
+	if($matches[0] <> $replacement) {
+		$httpdFileContents = str_replace(trim($matches[0]),$replacement,$httpdFileContents,$count);
+		if($count > 0) {
+			write_file($c_apacheConfFile,$httpdFileContents);
+		}
 	}
 	unset($httpdFileContents);
-	// End of new method
 
 	//modifying the conf of WampServer
 	$wampIniNewContents['phpIniDir'] = $phpConf['phpIniDir'];
@@ -337,10 +400,10 @@ function decbin32 ($dec) {
 // Note little validation is done on the range inputs - it expects you to
 // use one of the above 3 formats.
 function ip_in_range($ip, $range) {
-  if (strpos($range, '/') !== false) {
+  if(strpos($range, '/') !== false) {
     // $range is in IP/NETMASK format
     list($range, $netmask) = explode('/', $range, 2);
-    if (strpos($netmask, '.') !== false) {
+    if(strpos($netmask, '.') !== false) {
       // $netmask is a 255.255.0.0 format
       $netmask = str_replace('*', '0', $netmask);
       $netmask_dec = ip2long($netmask);
@@ -366,14 +429,14 @@ function ip_in_range($ip, $range) {
     }
   } else {
     // range might be 255.255.*.* or 1.2.3.0-1.2.3.255
-    if (strpos($range, '*') !==false) { // a.b.*.* format
+    if(strpos($range, '*') !==false) { // a.b.*.* format
       // Just convert to A-B format by setting * to 0 for A and 255 for B
       $lower = str_replace('*', '0', $range);
       $upper = str_replace('*', '255', $range);
       $range = "$lower-$upper";
     }
 
-    if (strpos($range, '-')!==false) { // A-B format
+    if(strpos($range, '-')!==false) { // A-B format
       list($lower, $upper) = explode('-', $range, 2);
       $lower_dec = (float)sprintf("%u",ip2long($lower));
       $upper_dec = (float)sprintf("%u",ip2long($upper));
@@ -408,6 +471,36 @@ function check_IP($ip, $local_ip = true, $all_local = false) {
 	}
 	return $valid;
 }
+//Function to retrieve the Apache variables (Define)
+//Default from wamp(64)\bin\apache\apache2.4.xx\wampdefineapache.conf file.
+//With $apacheItself true, from command httpd.exe -t -D DUMP_RUN_CFG
+function retrieve_apache_define($c_apacheDefineConf,$apacheItself = false) {
+	global $c_apacheExe, $c_apacheError;
+	$c_apacheError = '';
+	$c_ApacheDefine = array();
+	if(!$apacheItself) {
+		if(file_exists($c_apacheDefineConf)) {
+			$c_ApacheDefine = @parse_ini_file($c_apacheDefineConf,false,INI_SCANNER_RAW);
+		}
+	}
+	else{
+		//$command = 'CMD /D /C '.$c_apacheExe." -t -D DUMP_RUN_CFG";
+		//$output = `$command`;
+		$command = $c_apacheExe." -t -D DUMP_RUN_CFG";
+		$output = proc_open_output($command);
+		if(!empty($output)) {
+			if(stripos($output,'Syntax error') !== false)  {
+				$c_apacheError = $output;
+			}
+			else {
+				if(preg_match_all("~^Define: (.+)=(.+)~m",$output, $matches) > 0 )
+				$c_ApacheDefine = array_combine($matches[1], $matches[2]);
+			}
+		}
+	}
+	return $c_ApacheDefine;
+}
+
 //Function to check if it is Apache variable
 function is_apache_var($a_var) {
 	global $c_ApacheDefine;
@@ -425,7 +518,7 @@ function replace_apache_var($chemin) {
 			$chemin = str_replace($var[0],trim($c_ApacheDefine[$var[1]]),$chemin);
 		}
 		else {
-			$errorTxt = "Apache variable '".$var[0]."' is not defined.\n\tMay be there is syntax error in httpd.conf\n\tCheck it by right-click Wampmanager tray icon -> Tools -> Check httpd.conf syntax.\n\tMay be Apache service '".$c_apacheService."' is not started.\n\tCheck it by right-click Wampmanager tray icon -> Tools -> Check state of services\n";
+			$errorTxt = "Apache variable '".$var[0]."' is not defined.\n";
 			error_log($errorTxt);
 			if(WAMPTRACE_PROCESS) error_log("function ".__FUNCTION__."\n*** ".$errorTxt."\n",3,WAMPTRACE_FILE);
 		}
@@ -433,20 +526,20 @@ function replace_apache_var($chemin) {
 	return $chemin;
 }
 // Function to retrieve Apache Listen ports
-function listen_ports() {
+function listen_ports($ApacheHttpdConfFile) {
 	if(WAMPTRACE_PROCESS) error_log("function ".__FUNCTION__."\n",3,WAMPTRACE_FILE);
-	global $c_apacheConfFile;
-	$httpdFileContents = file_get_contents($c_apacheConfFile);
+	$c_listenPort = array();
+	$httpdFileContents = file_get_contents($ApacheHttpdConfFile);
 	preg_match_all("~^Listen[ \t]+.*:(\S*)\s*$~m",$httpdFileContents, $matches);
 	$c_listenPort = array_values(array_map('replace_apache_var',array_unique($matches[1])));
 	sort($c_listenPort);
-	return $c_listenPort;
+	return (array)$c_listenPort;
 }
 
 // Function to check if VirtualHost exist and are valid
 function check_virtualhost($check_files_only = false) {
 	if(WAMPTRACE_PROCESS) error_log("function ".__FUNCTION__."\n",3,WAMPTRACE_FILE);
-	global $wampConf, $c_apacheConfFile, $c_apacheVhostConfFile, $c_DefaultPort, $c_UsedPort, $wwwDir, $c_phpVersion;
+	global $wampConf, $c_apacheConfFile, $c_apacheVhostConfFile, $c_DefaultPort, $c_UsedPort, $wwwDir, $c_phpVersion, $c_hostsFile;
 	clearstatcache();
 	$virtualHost = array(
 		'include_vhosts' => true,
@@ -466,6 +559,7 @@ function check_virtualhost($check_files_only = false) {
 		'ServerNamePortValid' => array(),
 		'ServerNamePortListen' => array(),
 		'ServerNamePortApacheVar' => array(),
+		'ServerNameIntoHosts' => array(),
 		'FirstServerName' => '',
 		'nb_Virtual' => 0,
 		'nb_Virtual_Port' => 0,
@@ -504,7 +598,7 @@ function check_virtualhost($check_files_only = false) {
 	if($check_files_only) {
 		return $virtualHost;
 	}
-
+	$myHostsContents = file_get_contents($c_hostsFile);
 	$myVhostsContents = file_get_contents($virtualHost['vhosts_file']);
 	// Extract values of ServerName (without # at the beginning of the line)
 	$nb_Server = preg_match_all("/^(?![ \t]*#).*ServerName[ \t]+(.*?\r?)$/m", $myVhostsContents, $Server_matches);
@@ -595,6 +689,8 @@ function check_virtualhost($check_files_only = false) {
 		$virtualHost['ServerNameDev'][$value] = false;
 		$virtualHost['ServerNameIp'][$value] = false;
 		$virtualHost['ServerNameIpValid'][$value] = false;
+		$virtualHost['ServerNameIntoHosts'][$value] = true;
+
 
 		//Validity of ServerName (Like domain name)
 		// IDNA (Punycode) - 3.2.3 improve regex
@@ -651,6 +747,9 @@ function check_virtualhost($check_files_only = false) {
 				$virtualHost['Server'][$i]['ip'] = '';
 			}
 		}
+	//Check ServerName into hosts file
+	if(stripos($myHostsContents, $value) === false && $wampConf['NotCheckVirtualHost'] =='off')
+		$virtualHost['ServerNameIntoHosts'][$value] = false;
 	} //End for
 
 	//Check if tld is .dev
@@ -665,26 +764,26 @@ function check_virtualhost($check_files_only = false) {
 	//Check if duplicate ServerName
 	if($wampConf['NotCheckDuplicate'] == 'off' && $wampConf['NotCheckVirtualHost'] == 'off') {
 		$array_unique = array_unique($TempServerName);
-		if (count($TempServerName) - count($array_unique) != 0 ){
+		if(count($TempServerName) - count($array_unique) != 0 ){
 			$virtualHost['nb_duplicate'] = count($TempServerName) - count($array_unique);
     	for ($i=0; $i < count($TempServerName); $i++) {
-    		if (!array_key_exists($i, $array_unique))
+    		if(!array_key_exists($i, $array_unique))
       		$virtualHost['duplicate'][] = $TempServerName[$i];
     	}
 		}
 		//Check duplicate Ip
 		$array_unique = array_unique($TempServerIp);
-		if (count($TempServerIp) - count($array_unique) != 0 ){
+		if(count($TempServerIp) - count($array_unique) != 0 ){
 			$virtualHost['nb_duplicateIp'] = count($TempServerIp) - count($array_unique);
     	for ($i=0; $i < count($TempServerIp); $i++) {
-    		if (!array_key_exists($i, $array_unique))
+    		if(!array_key_exists($i, $array_unique))
       		$virtualHost['duplicateIp'][] = $TempServerIp[$i];
     	}
 		}
 	}
 
 	//Check VirtualHost port not Listen port in httpd.conf
-	$diffVL = array_diff(array_values(array_unique(array_values($virtualHost['ServerNamePort']))),listen_ports());
+	$diffVL = array_diff(array_values(array_unique(array_values($virtualHost['ServerNamePort']))),listen_ports($c_apacheConfFile));
 	if(count($diffVL) > 0) {
 		$virtualHost['port_listen'] = false;
 		$virtualHost['nb_NotListenPort'] = count($diffVL);
@@ -784,9 +883,9 @@ function ListAllVersions() {
 // False to delete array item - True to not delete
 function array_filter_recursive($array, $callback) {
 	foreach ($array as $key => &$value) { // Warning, $value is by reference
-		if (is_array($value))
+		if(is_array($value))
 			$value = array_filter_recursive($value, $callback);
-		elseif (!$callback($value)) unset($array[$key]);
+		elseif(!$callback($value)) unset($array[$key]);
 	}
 	unset($value); // Suppress the reference
 	return $array;
@@ -801,6 +900,7 @@ function file_get_contents_dos($file, $retour = true) {
 		$count = 0;
 		$check_DOS = preg_replace(array('/\r\n?/','/\n/'),array("\n","\r\n"), $check_DOS, -1, $count);
 		if($count > 0) {
+			if(WAMPTRACE_PROCESS) error_log("function ".__FUNCTION__.' - '.$file." -+- REWRITE FILE ASKED -+-\n",3,WAMPTRACE_FILE);
 			write_file($file,$check_DOS);
 		}
 	}
@@ -829,6 +929,7 @@ function clean_file_contents($contents, $twoToNone = array(2,0), $all_spaces = f
 	if($count > 0) $clean_count = true;
 
 	if($save && $clean_count) {
+		if(WAMPTRACE_PROCESS) error_log("function ".__FUNCTION__.' - '.$file." -+- REWRITE FILE ASKED -+-\n",3,WAMPTRACE_FILE);
 		write_file($file,$contents);
 	}
 	return $contents;
@@ -886,36 +987,42 @@ function checkDir($dir) {
 //Return error_reporting from integer into string
 function errorLevel($error_number) {
 	$error_description = $error_comment = array();
+	if(is_string($error_number)) {
+		// To convert error_reporting value from string for example: 'E_ALL & ~E_WARNING'
+		// into integer from constant value.
+		$newpara = parse_ini_string('error_reporting = '.$error_number);
+		$error_number = $newpara['error_reporting'];
+	}
 	//The ampersand "&" are doubled into strings to be displayed and not to be considered as a key prefix by Aestran Tray Menu.
 	$error_codes = array(
-	E_ALL => array('str' => "E_ALL", 'comment' => "开发模式^显示所有异常。"),	//32767 - Development value
-	(E_ALL & ~E_ERROR) => array('str' => "E_ALL && ~E_ERROR", 'comment' =>'显示所有异常，除了 Error'), //32766
-	(E_ALL & ~E_WARNING)	=> array('str' => "E_ALL && ~E_WARNING", 'comment' => '显示所有异常，除了 Warning'), //32765
-	(E_ALL & ~E_NOTICE) => array('str' => "E_ALL && ~E_NOTICE",	'comment' => '显示所有异常，除了 Notice'), //32759
-	(E_ALL & ~E_NOTICE & ~E_STRICT)	=> array('str' => "E_ALL && ~E_NOTICE && ~E_STRICT", 'comment' =>'显示所有异常，除了 Notice 和 Strict'), //30711
-	(E_ALL & ~E_DEPRECATED & ~E_STRICT)	=> array('str' => "E_ALL && ~E_DEPRECATED && ~E_STRICT", 'comment' =>'生产模式^显示所有异常，除了 Deprecated 和 Strict。'), // 22527
-	(E_ALL & ~E_NOTICE & ~E_STRICT & ~E_DEPRECATED) => array('str' => "E_ALL && ~E_NOTICE && ~E_STRICT && ~E_DEPRECATED", 'comment' => '默认模式^显示所有异常，除了 Notice、Strict 和 Deprecated'), // 22519 Default value
-	E_USER_DEPRECATED => array('str' => "E_USER_DEPRECATED", 'comment' => '只显示用户级别的 Deprecated 异常'), //16384
-	E_DEPRECATED => array('str' => "E_DEPRECATED", 'comment' => '只显示 Deprecated 异常'), // 8192
-	(E_COMPILE_ERROR | E_RECOVERABLE_ERROR | E_ERROR | E_CORE_ERROR) => array('str' => 'E_COMPILE_ERROR | E_RECOVERABLE_ERROR | E_ERROR | E_CORE_ERROR', 'comment' => '只显示错误异常'), //4177
-	E_RECOVERABLE_ERROR => array('str' => "E_RECOVERABLE_ERROR", 'comment' => '只显示运行时的致命异常'),// 4096
-	E_STRICT => array('str' => "E_STRICT", 'comment' => '只显示 Strict 异常'), // 2048
-	E_USER_NOTICE => array('str' => "E_USER_NOTICE", 'comment' => '只显示用户级别的 Notice 异常'), // 1024
-	E_USER_WARNING => array('str' => "E_USER_WARNING", 'comment' => '只显示用户级别的 Warning 异常'), // 512
-	E_USER_ERROR => array('str' => "E_USER_ERROR", 'comment' => '只显示用户级别的 Error 异常'), // 256
-	E_COMPILE_WARNING => array('str' => "E_COMPILE_WARNING", 'comment' => '只显示编译时警告（非致命错误）'), // 128
-	E_COMPILE_ERROR => array('str' => "E_COMPILE_ERROR", 'comment' => '只显示编译时的致命错误'), // 64
-	E_CORE_WARNING => array('str' => "E_CORE_WARNING", 'comment' => '只显示PHP启动时出现的警告（非致命错误）'), // 32
-	E_CORE_ERROR => array('str' => "E_CORE_ERROR", 'comment' => '只显示PHP启动时出现的致命错误'), // 16
-	E_NOTICE => array('str' => "E_NOTICE", 'comment' => '只显示 Notice 异常'), // 8
-	(E_PARSE | E_ERROR) => array('str' => "E_PARSE | E_ERROR", 'comment' => '只显示 Parse 和 Error 异常'), // 5
-	E_PARSE => array('str' => "E_PARSE", 'comment' => '只显示 Parse 异常'), // 4
-	E_WARNING => array('str' => "E_WARNING", 'comment' => '只显示 Warning 异常（非致命错误）'), // 2
-	E_ERROR => array('str' => "E_ERROR", 'comment' => '只显示 Error 异常'), // 1
+	E_ALL => array('str' => "E_ALL", 'comment' => "Development value^Show all errors, warnings and notices including coding standards."),	//32767 - Development value
+	(E_ALL & ~E_ERROR) => array('str' => "E_ALL && ~E_ERROR", 'comment' =>'Show all errors, except for fatal run-time errors'), //32766
+	(E_ALL & ~E_WARNING)	=> array('str' => "E_ALL && ~E_WARNING", 'comment' => 'Show all errors, except for warnings'), //32765
+	(E_ALL & ~E_NOTICE) => array('str' => "E_ALL && ~E_NOTICE",	'comment' => 'Show all errors, except for notices'), //32759
+	(E_ALL & ~E_NOTICE & ~E_STRICT)	=> array('str' => "E_ALL && ~E_NOTICE && ~E_STRICT", 'comment' =>'Show all errors, except for notices and coding standards warnings'), //30711
+	(E_ALL & ~E_DEPRECATED & ~E_STRICT)	=> array('str' => "E_ALL && ~E_DEPRECATED && ~E_STRICT", 'comment' =>'Production value^Show all errors, except for notices .'), // 22527
+	(E_ALL & ~E_NOTICE & ~E_STRICT & ~E_DEPRECATED) => array('str' => "E_ALL && ~E_NOTICE && ~E_STRICT && ~E_DEPRECATED", 'comment' => 'Default value^Show all errors, except for notices and coding standards warnings and code that will not work in future versions of PHP'), // 22519 Default value
+	E_USER_DEPRECATED => array('str' => "E_USER_DEPRECATED", 'comment' => 'user-generated deprecation warnings'), //16384
+	E_DEPRECATED => array('str' => "E_DEPRECATED", 'comment' => 'warn about code that will not work in future versions of PHP'), // 8192
+	(E_COMPILE_ERROR | E_RECOVERABLE_ERROR | E_ERROR | E_CORE_ERROR) => array('str' => 'E_COMPILE_ERROR | E_RECOVERABLE_ERROR | E_ERROR | E_CORE_ERROR', 'comment' => 'Show only errors'), //4177
+	E_RECOVERABLE_ERROR => array('str' => "E_RECOVERABLE_ERROR", 'comment' => 'almost fatal run-time errors'),// 4096
+	E_STRICT => array('str' => "E_STRICT", 'comment' => 'run-time notices, enable to have PHP suggest changes to your code which will ensure the best interoperability and forward compatibility of your code'), // 2048
+	E_USER_NOTICE => array('str' => "E_USER_NOTICE", 'comment' => 'user-generated notice message'), // 1024
+	E_USER_WARNING => array('str' => "E_USER_WARNING", 'comment' => 'user-generated warning message'), // 512
+	E_USER_ERROR => array('str' => "E_USER_ERROR", 'comment' => 'user-generated error message'), // 256
+	E_COMPILE_WARNING => array('str' => "E_COMPILE_WARNING", 'comment' => 'compile-time warnings (non-fatal errors)'), // 128
+	E_COMPILE_ERROR => array('str' => "E_COMPILE_ERROR", 'comment' => 'fatal compile-time errors'), // 64
+	E_CORE_WARNING => array('str' => "E_CORE_WARNING", 'comment' => 'warnings (non-fatal errors) that occur during PHP\'s initial startup'), // 32
+	E_CORE_ERROR => array('str' => "E_CORE_ERROR", 'comment' => 'fatal errors that occur during PHP\'s initial startup'), // 16
+	E_NOTICE => array('str' => "E_NOTICE", 'comment' => 'run-time notices (these are warnings which often result from a bug in your code, but it\'s possible that it was intentional (e.g., using an uninitialized variable and relying on the fact it is automatically initialized to an empty string)'), // 8
+	(E_PARSE | E_ERROR) => array('str' => "E_PARSE | E_ERROR", 'comment' => 'compile-time parse errors - fatal run-time errors'), // 5
+	E_PARSE => array('str' => "E_PARSE", 'comment' => 'compile-time parse errors'), // 4
+	E_WARNING => array('str' => "E_WARNING", 'comment' => 'run-time warnings (non-fatal errors)'), // 2
+	E_ERROR => array('str' => "E_ERROR", 'comment' => 'fatal run-time errors'), // 1
 	);
 	$i = 0;
 	foreach( $error_codes as $number => $description ) {
- 		if (($number & $error_number) >= $number ) {
+ 		if(($number & $error_number) >= $number ) {
   		$error_description[$i]['str'] = $description['str'];
   		$error_description[$i]['comment'] = $description['comment'];
   		$error_number -= $number;
@@ -956,6 +1063,117 @@ function FileSizeConvert($bytes) {
   }
   return $result;
 }
+//Send command function via cmd.exe
+//retrieve the result of stdout AND stderr
+function proc_open_output($command) {
+	global $c_apacheError;
+	$descriptorspec = array(
+		0 => array('pipe', 'rb'), // stdin
+		1 => array('pipe', 'wb'), // stdout
+		2 => array('pipe', 'wb')  // stderr
+	);
+	$process = proc_open(escapeshellarg($command), $descriptorspec, $pipes);
+	$output = '';
+	while (!feof($pipes[1])) {
+		foreach($pipes as $key => $pipe) {
+			$line = stream_get_line($pipe,0);
+			if($line !== false ) $output .= $line."\n";
+		}
+	}
+	fclose($pipes[0]);
+	fclose($pipes[1]);
+	fclose($pipes[2]);
+	proc_close($process);
+
+	return $output;
+}
+
+//Function to create colored string for command windows
+//Color supported: black, red, green, yellow, blue, magenta,
+//  cyan, white, bold, underline, inverse
+//Color 'clean' suppress all color codes and return a cleaned string
+function color($color,$string = '') {
+	if(php_uname('r') == '6.1' ) return $string;
+	$seq = array(
+		'black'			=> chr(27).'[30m',
+		'red'				=> chr(27).'[91m',
+		'green'			=> chr(27).'[92m',
+		'yellow'		=> chr(27).'[93m',
+		'blue'			=> chr(27).'[94m',
+		'magenta'		=> chr(27).'[95m',
+		'cyan'			=> chr(27).'[96m',
+		'white'			=> chr(27).'[97m',
+		'inverse'		=> chr(27).'[7m',
+		'bold'			=> chr(27).'[1m',
+		'underline'	=> chr(27).'[4m',
+		'reset'			=> chr(27).'[0;107;30m',
+		'normal'		=> chr(27).'[30m',
+	);
+	if($color == 'clean') return str_replace(array_values($seq),'',$string);
+	if(!array_key_exists($color, $seq)) return $string;
+	if(empty($string)) $seq['normal'] = '';
+	elseif($color == 'inverse' || $color == 'bold' || $color == 'underline') $seq['normal'] = $seq['reset'];
+	return $seq[$color].$string.$seq['normal'];
+}
+
+//Function to output a command window, clears it and displays a message
+function Command_Windows($message,$nbCols=-1,$nbLines=-1,$linesSup=0,$title='Wampserver') {
+	if($nbCols < 0) {
+		$array = explode("\n",$message);
+		foreach($array as $value) {
+			//Number of escape sequences
+			$Cols = strlen($value) - (substr_count($value,chr(27).'[')*5);
+			if($Cols > $nbCols) $nbCols = $Cols;
+		}
+		$nbCols += 2;
+		if($nbCols > 132) $nbCols = 132;
+	}
+	if($nbLines < 0){
+		$nbLines = substr_count($message,"\n") + 3;
+	}
+	$nbLines += $linesSup;
+	if($nbLines > 9999) $nbLines = 9999;
+	pclose(popen('mode con cols='.$nbCols.' lines='.$nbLines, 'w'));
+	pclose(popen('TITLE '.escapeshellcmd($title), 'w'));
+	pclose(popen('COLOR F0', 'w'));
+	echo $message;
+}
+//Function to create $wamp_versions_here items with last version
+function create_wamp_versions($versionList,$soft) {
+	global $wamp_versions_here;
+	$racine = '00';
+	foreach($versionList as $value) {
+		$list = explode('.',$value);
+		if($list[0].$list[1] != $racine) {
+			$racine = $list[0].$list[1];
+			$wamp_versions_here += array($soft.$racine => $value);
+		}
+		else {
+			if(version_compare($value,$wamp_versions_here[$soft.$racine], '>'))
+				$wamp_versions_here[$soft.$racine] = $value;
+		}
+	}
+}
+
+//Function to read the content of a dir
+	function read_dir($dir) {
+		if(substr($dir,-1,1) == '/') $dir = substr($dir,0,-1);
+		$array = array();
+		$d = dir($dir);
+		while (false !== ($entry = $d->read())) {
+			if($entry!='.' && $entry!='..') {
+				$entry = $dir.'/'.$entry;
+				if(is_dir($entry)) {
+					$array[] = $entry;
+					$array = array_merge($array, read_dir($entry));
+				} else {
+					$array[] = $entry;
+				}
+			}
+		}
+		$d->close();
+		return $array;
+	}
 
 //Function to replace some characters by entities
 //for Aestan Tray Menu PromptText fields and Text menu items
@@ -1007,13 +1225,13 @@ function GetPhpMyAdminVersions(){
 			if($phpmyadminCount > 1) {
 				$WarningsPMA = false;
 				$WarningMenuPMA = ';WAMPMULTIPLEPHPMYADMINEND
-	';
+';
 				$WarningTextPMA = '';
 				$WarningS = 'WarningsPMA';
 				$WarningM = 'WarningMenuPMA';
 				$WarningT = 'WarningTextPMA';
 			}
-			$temp = @parse_ini_file($c_installDir.'/scripts/appsversusphp.ini',true);
+			$temp = @parse_ini_file($c_installDir.'/scripts/appsversusphp.ini',true,INI_SCANNER_RAW);
 			$phpVerPhpMyAdmin = $temp['phpphpmyadmin'];
 			foreach($phpMyAdminAlias as $cle => $version) {
 				$VersionPhpMyAdmin = $version['version'];
@@ -1024,12 +1242,12 @@ function GetPhpMyAdminVersions(){
 							$phpMyAdminAlias[$cle]['notcompat'] = 'PhpMyAdmin '.$VersionPhpMyAdmin.' not compatible with PHP '.$c_phpVersion;
 							$$WarningS = true;
 							$$WarningM .= 'Type: item; Caption: "'.$phpMyAdminAlias[$cle]['notcompat'].'"; Glyph: 22; Action: multi; Actions: warning_phpmyadmin'.$VersionPhpMyAdmin.'
-	';
+';
 							$temp = "\r\n".$phpMyAdminAlias[$cle]['notcompat']."\r\nYou must use a version of PhpMyAdmin from ".$value[0]." to ".$value[1];
 							$temp .= "\r\n----------------------------------------\r\n";
 							$$WarningT .= '[warning_phpmyadmin'.$VersionPhpMyAdmin.']
-	Action: run; FileName: "'.$c_phpExe.'";Parameters: "msg.php 11 '.base64_encode($temp).'";WorkingDir: "'.$c_installDir.'/scripts"; Flags: waituntilterminated
-	';
+Action: run; FileName: "'.$c_phpExe.'";Parameters: "msg.php 11 '.base64_encode($temp).'";WorkingDir: "'.$c_installDir.'/scripts"; Flags: waituntilterminated
+';
 						}
 						break;
 					}
@@ -1041,7 +1259,7 @@ function GetPhpMyAdminVersions(){
 
 // Function test of IPv6 support
 function test_IPv6() {
-	if (extension_loaded('sockets')) {
+	if(extension_loaded('sockets')) {
 		//Create socket IPv6
 		$socket = socket_create(AF_INET6, SOCK_STREAM, SOL_TCP);
 		if($socket === false) {
@@ -1063,5 +1281,7 @@ function test_IPv6() {
 		return false;
 	}
 }
+
+$c_ApacheDefine = retrieve_apache_define($c_apacheDefineConf);
 
 ?>
