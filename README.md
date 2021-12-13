@@ -6,4 +6,6 @@
 * 转载请注明出处（翻译和维护不易，注明出处仅仅一两行文字，不会很占用你多少版面）
 * 未经允许，禁止用于商业用途
 
-> 感谢[JetBrains](https://www.jetbrains.com/?from=wampserver-chinese-translate)为本项目提供的《[免费JetBrains开源许可证](https://www.jetbrains.com/buy/opensource)》
+## 仓库
+* [Github](https://github.com/big-dream/wampserver-chinese-translate)（`国外` / `可PR`）
+* [Gitee](https://gitee.com/jwj666/wampserver-chinese-translate)（`国内` / `镜像` / `不可PR`）
