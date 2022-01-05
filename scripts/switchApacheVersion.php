@@ -357,46 +357,46 @@ if($apacheNew != $apacheOld) {
 		$message = str_repeat('-',86)."\n";
 		$message = color('blue');
 		if($compareOnly) {
-			$message .= str_repeat(' ',9)."COMPARISON OF SETTINGS BETWEEN CURRENT APACHE ".$apacheNew." AND APACHE ".$apacheOld."\n";
+			$message .= str_repeat(' ',9)."比较 APACHE ".$apacheNew."（当前）和 APACHE ".$apacheOld." 的设置\n";
 		}
 		else {
-			$message .= str_repeat(' ',9)."SWITCH APACHE VERSIONS - FROM CURRENT APACHE ".$apacheOld." TO APACHE ".$apacheNew."\n";
+			$message .= str_repeat(' ',9)."切换 APACHE 版本 - 从 APACHE ".$apacheOld." 到 ".$apacheNew."\n";
 		}
-		$message .= str_repeat(' ',12).color('red')."There are differences between Apache ".$apacheNew." and Apache ".$apacheOld.color('black')."\n";
+		$message .= str_repeat(' ',12).color('red')."Apache ".$apacheNew." 和 Apache ".$apacheOld.color('black')."之间存在差异\n";
 		$message .= str_repeat('-',86)."\n";
 		if($majModules) {
-			$message .= str_pad("  *** -> LoadModule",48).str_pad("Key 'M' for ".($majModulesGo ? 'NO' : 'YES'),16)."- Requested update ".($majModulesGo ? $YESred : $NOgreen)."\n";
-			$message .= str_pad("   Module",30).str_pad($apacheNew,12).$apacheOld."\n";
+			$message .= str_pad("  *** -> LoadModule",48).str_pad("按 'M' 选择 ".($majModulesGo ? 'NO' : 'YES'),16)."- 更新：".($majModulesGo ? $YESred : $NOgreen)."\n";
+			$message .= str_pad("   模块",30).str_pad($apacheNew,12).$apacheOld."\n";
 			foreach($moduleDiff as $key => $value) {
 				$key0 = explode(' ',$key);
-				$temp = str_pad(trim($key0[0]),30).($value ? str_pad("loaded",12) : str_pad("not loaded",12));
-				$temp .= ($value ? "not loaded " : "loaded");
+				$temp = str_pad(trim($key0[0]),30).($value ? str_pad("已加载",12) : str_pad("未加载",12));
+				$temp .= ($value ? "未加载 " : "已加载");
 				$message .= $temp."\n";
 			}
 			$message .= str_repeat('-',86)."\n";
 		}
 		if($majIncludes) {
-			$message .= str_pad("  *** -> Include",48).str_pad("Key 'I' for ".($majIncludesGo ? 'NO' : 'YES'),16)."- Requested update ".($majIncludesGo ? $YESred : $NOgreen)."\n";
+			$message .= str_pad("  *** -> Include",48).str_pad("按 'I' 选择 ".($majIncludesGo ? 'NO' : 'YES'),16)."- 更新：".($majIncludesGo ? $YESred : $NOgreen)."\n";
 			$message .= str_pad("   Include",30).str_pad($apacheNew,12).$apacheOld."\n";
 			foreach($includeDiff as $key => $value) {
 				$key = str_replace('conf/extra/','',trim($key));
-				$temp = str_pad($key,30).($value ? str_pad("loaded",12) : str_pad("not loaded",12));
-				$temp .= ($value ? "not loaded " : "loaded");
+				$temp = str_pad($key,30).($value ? str_pad("已加载",12) : str_pad("未加载",12));
+				$temp .= ($value ? "未加载 " : "已加载");
 				$message .= $temp."\n";
 			}
 			$message .= str_repeat('-',86)."\n";
 		}
 		if($majVhost) {
-			$message .= str_pad("  *** -> httpd-vhosts.conf",48).str_pad("Key 'V' for ".($majVhostGo ? 'NO' : 'YES'),16)."- Requested update ".($majVhostGo ? $YESred : $NOgreen)."\n";
+			$message .= str_pad("  *** -> httpd-vhosts.conf",48).str_pad("按 'V' 选择 ".($majVhostGo ? 'NO' : 'YES'),16)."- 更新：".($majVhostGo ? $YESred : $NOgreen)."\n";
 			$message .= str_pad(" ",30).str_pad($apacheNew,12).$apacheOld."\n";
-			$message .= str_pad("Number of lines",30).str_pad($nbVhostNew,12).$nbVhostOld."\n";
+			$message .= str_pad("行数",30).str_pad($nbVhostNew,12).$nbVhostOld."\n";
 			if(($nbVhostNew == $nbVhostOld) || $lineDiffVhost) {
-				$message .= str_repeat(' ',22)."At least one line is different\n";
+				$message .= str_repeat(' ',22)."至少有 1 行不同\n";
 				if($lineDiffVhost) {
 					reset($oldLineDiffVhost);
 					foreach($newLineDiffVhost as $key => $value) {
 						$value2 = current($oldLineDiffVhost);
-						$message .= str_pad("Line ".$key,10).str_pad($apacheNew,8)." : ".$value."\n".str_pad(' ',10).str_pad($apacheOld,8)." : ".$value2."\n";
+						$message .= str_pad("行".$key,10).str_pad($apacheNew,8)." : ".$value."\n".str_pad(' ',10).str_pad($apacheOld,8)." : ".$value2."\n";
 						next($oldLineDiffVhost);
 					}
 				}
@@ -404,26 +404,26 @@ if($apacheNew != $apacheOld) {
 		$message .= str_repeat('-',86)."\n";
 		}
 		if($majDefaultListen){
-			$message .= str_pad("  *** -> Default Port used by Apache",48).str_pad("Key 'P' for ".($majDefaultListenGo ? 'NO' : 'YES'),16)."- Requested update ".($majDefaultListenGo ? $YESred : $NOgreen)."\n";
+			$message .= str_pad("  *** -> 使用的默认端口",48).str_pad("按 'P' 选择 ".($majDefaultListenGo ? 'NO' : 'YES'),16)."- 更新：".($majDefaultListenGo ? $YESred : $NOgreen)."\n";
 			$message .= str_pad(" ",30).str_pad($apacheNew,12).$apacheOld."\n";
-			$message .= str_pad("Port",30).str_pad($newDefaultListenPort,12).$oldDefaultListenPort."\n";
+			$message .= str_pad("端口",30).str_pad($newDefaultListenPort,12).$oldDefaultListenPort."\n";
 			if(!$compareOnly){
-				if($majVhost) $message .= color('blue')."  If the only difference between the httpd-vhosts.conf files\n   is the port number ".$c_DefaultPort." versus ".$c_UsedPort.color('black')."\n";
-				$message .= color('blue')."   the default Apache listening port will be automatically updated\n   by this Apache version change procedure.".color('black')."\n";
+				if($majVhost) $message .= color('blue')."  如果只有 httpd-vhosts.conf 文件的区别\n   是端口号 ".$c_DefaultPort." 还是 ".$c_UsedPort.color('black')."\n";
+				$message .= color('blue')."   默认的 Apache 监听端口会自动更新\n   通过这个 Apache 版本切换程序.".color('black')."\n";
 			}
 			$message .= str_repeat('-',86)."\n";
 		}
 		if($majHttpdssl) {
-			$message .= str_pad("  *** -> httpd-ssl.conf",48).str_pad("Key 'H' for ".($majHttpdsslGo ? 'NO' : 'YES'),16)."- Requested update ".($majHttpdsslGo ? $YESred : $NOgreen)."\n";
+			$message .= str_pad("  *** -> httpd-ssl.conf",48).str_pad("按 'H' 选择 ".($majHttpdsslGo ? 'NO' : 'YES'),16)."- 更新：".($majHttpdsslGo ? $YESred : $NOgreen)."\n";
 			$message .= str_pad(" ",30).str_pad($apacheNew,12).$apacheOld."\n";
-			$message .= str_pad("Number of lines",30).str_pad($nbSslNew,12).$nbSslOld."\n";
+			$message .= str_pad("行数",30).str_pad($nbSslNew,12).$nbSslOld."\n";
 			if(($nbSslNew == $nbSslOld) || $lineDiffSsl) {
-				$message .= str_repeat(' ',22)."At least one line is different\n";
+				$message .= str_repeat(' ',22)."至少有 1 行不同\n";
 				if($lineDiffSsl) {
 					reset($oldLineDiffSsl);
 					foreach($newLineDiffSsl as $key => $value) {
 						$value2 = current($oldLineDiffSsl);
-						$message .= str_pad("Line ".$key,10).str_pad($apacheNew,8)." : ".$value."\n".str_pad(' ',10).str_pad($apacheOld,8)." : ".$value2."\n";
+						$message .= str_pad("行".$key,10).str_pad($apacheNew,8)." : ".$value."\n".str_pad(' ',10).str_pad($apacheOld,8)." : ".$value2."\n";
 						next($oldLineDiffSsl);
 					}
 				}
@@ -431,16 +431,16 @@ if($apacheNew != $apacheOld) {
 			$message .= str_repeat('-',86)."\n";
 		}
 		if($majOpenssl) {
-			$message .= str_pad("  *** -> openssl.cnf",48).str_pad("Key 'O' for ".($majOpensslGo ? 'NO' : 'YES'),16)."- Requested update ".($majOpensslGo ? $YESred : $NOgreen)."\n";
+			$message .= str_pad("  *** -> openssl.cnf",48).str_pad("按 'O' 选择 ".($majOpensslGo ? 'NO' : 'YES'),16)."- 更新：".($majOpensslGo ? $YESred : $NOgreen)."\n";
 			$message .= str_pad(" ",30).str_pad($apacheNew,12).$apacheOld."\n";
-			$message .= str_pad("Number of lines",30).str_pad($nbOpenNew,12).$nbOpenOld."\n";
+			$message .= str_pad("行数",30).str_pad($nbOpenNew,12).$nbOpenOld."\n";
 			if(($nbOpenNew == $nbOpenOld) || $lineDiffOpen) {
-				$message .= str_repeat(' ',22)."At least one line is different\n";
+				$message .= str_repeat(' ',22)."至少有 1 行不同\n";
 				if($lineDiffOpen) {
 					reset($oldLineDiffOpen);
 					foreach($newLineDiffOpen as $key => $value) {
 						$value2 = current($oldLineDiffOpen);
-						$message .= str_pad("Line ".$key,10).str_pad($apacheNew,8)." : ".$value."\n".str_pad(' ',10).str_pad($apacheOld,8)." : ".$value2."\n";
+						$message .= str_pad("行".$key,10).str_pad($apacheNew,8)." : ".$value."\n".str_pad(' ',10).str_pad($apacheOld,8)." : ".$value2."\n";
 						next($oldLineDiffOpen);
 					}
 				}
@@ -448,49 +448,49 @@ if($apacheNew != $apacheOld) {
 			$message .= str_repeat('-',86)."\n";
 		}
 		if($majCerts) {
-			$message .= str_pad("  *** -> Certs directory (SSL certificats)",48).str_pad("Key 'C' for ".($majCertsGo ? 'NO' : 'YES'),16)."- Requested update ".($majCertsGo ? $YESred : $NOgreen)."\n";
+			$message .= str_pad("  *** -> 证书目录 (SSL 证书)",48).str_pad("按 'C' 选择 ".($majCertsGo ? 'NO' : 'YES'),16)."- 更新：".($majCertsGo ? $YESred : $NOgreen)."\n";
 			$message .= str_pad(" ",50).str_pad($apacheNew,12).$apacheOld."\n";
-			$message .= str_pad("Certs directory",50).($CertsNew ? str_pad("Exists",12) : str_pad("Not exists",12)).($CertsOld ? str_pad("Exists",12) : str_pad("Not exists",12))."\n";
+			$message .= str_pad("证书目录",50).($CertsNew ? str_pad("存在",12) : str_pad("不存在",12)).($CertsOld ? str_pad("存在",12) : str_pad("不存在",12))."\n";
 			if(count($notCertsNew) > 0) {
 				//Certs files not found on Apache New
-				$message .= str_pad("File or Dir",50)."\n";
+				$message .= str_pad("文件或目录",50)."\n";
 				foreach($notCertsNew as $value) {
-					$message .= str_pad($value,50)."Not exists\n";
+					$message .= str_pad($value,50)."不存在\n";
 				}
 			}
 			if(count($notCertsOld) > 0) {
 				//Certs files not found on Apache New
-				$message .= str_pad("File or Dir",50)."\n";
+				$message .= str_pad("文件或目录",50)."\n";
 				foreach($notCertsOld as $value) {
-					$message .= str_pad($value,62)."Not exists\n";
+					$message .= str_pad($value,62)."不存在\n";
 				}
 			}
 			$message .= str_repeat('-',86)."\n";
 		}
 		$listenToAdd = $listenToDel = false;
 		if($majListen) {
-			$message .= str_pad("  *** -> Listen Ports",48).str_pad("Key 'L' for ".($majListenGo ? 'NO' : 'YES'),16)."- Requested update ".($majListenGo ? $YESred : $NOgreen)."\n";
+			$message .= str_pad("  *** -> 监听端口",48).str_pad("按 'L' 键选择 ".($majListenGo ? 'NO' : 'YES'),16)."- 更新：".($majListenGo ? $YESred : $NOgreen)."\n";
 			$message .= str_pad(" ",10).$apacheNew." : ".implode(" - ",$newListenPort)."\n";
 			if(!empty($notListenNew)) {
 				$listenToAdd = true;
-				$message .= str_pad(" ",19)."LISTEN PORT TO ADD : ".implode(" - ",$notListenNew)."\n";
+				$message .= str_pad(" ",19)."增加监听端口 : ".implode(" - ",$notListenNew)."\n";
 			}
 			if(!empty($notListenOld)) {
 				$listenToDel = true;
-				$message .= str_pad(" ",19)."LISTEN PORT TO DELETE : ".implode(" - ",$notListenOld)."\n";
+				$message .= str_pad(" ",19)."取消监听端口 : ".implode(" - ",$notListenOld)."\n";
 			}
 			$message .= str_pad(" ",10).$apacheOld." : ".implode(" - ",$oldListenPort)."\n";
 			$message .= str_repeat('-',86)."\n";
 		}
-		$message .= "    Do you want to copy or update configured files\n";
-		$message .= "    ".color('red','FROM Apache '.$apacheOld)." -> to Apache ".$apacheNew."\n\n";
-		$message .= "For       ".color('blue','ALL')."      updates press ".color('blue',"'A'")." key then Enter key\n";
-		$message .= "For       ".color('blue','RESET')."    choice press  ".color('blue',"'R'")." key then Enter key\n";
-		$message .= "To        ".color('blue',"CANCEL")."   updates, press only ".color('blue',"Enter")." key\n";
-		$message .= "When your ".color('blue',"CHOICE is READY")." press  ".color('blue',"'G'")." key then Enter key\n";
-		$message .= "To choose one or more updates, press the associated key then Enter key: ";
+		$message .= "    是否要复制或更新配置文件\n";
+		$message .= "    ".color('red','从 Apache '.$apacheOld)." -> 到 Apache ".$apacheNew."\n\n";
+		$message .= "要        ".color('blue','更新所有')."       按 ".color('blue',"'A'")." 键，然后按 Enter 键\n";
+		$message .= "要        ".color('blue','重置选择')."       按 ".color('blue',"'R'")." 键，然后按 Enter 键\n";
+		$message .= "要        ".color('blue',"取消更新")."       只需按 ".color('blue',"Enter")." 键\n";
+		$message .= "如果      ".color('blue',"选择完毕")."       按 ".color('blue',"'G'")." 键，然后按 Enter 键\n";
+		$message .= "要选择选项，按关联的键，然后按 Enter 键： ";
 		//Write message in Command Windows
-		Command_Windows($message,-1,-1,0,'Compare Apache version');
+		Command_Windows($message,-1,-1,0,'比较 Apache 版本');
 		$touche = strtoupper(trim(fgets(STDIN)));
 		if($touche == 'A') {
 			$majModulesGo = $majIncludesGo = $majVhostGo = $majHttpdsslGo = $majOpensslGo = $majCertsGo = $majListenGo = $majDefaultListenGo = true;
@@ -540,12 +540,12 @@ if($apacheNew != $apacheOld) {
 	}
 	elseif($compareOnly){
 		$message = str_repeat('-',46)."\n";
-		$message .= "  *** There are no configuration differences\n";
-		$message .= "  *** between Apache ".$apacheOld." and Apache ".$apacheNew."\n";
-		$message .= "  *** There is no need to update anything\n";
-		$message .= "Press Enter key to continue ";
+		$message .= "  *** 没有配置差异\n";
+		$message .= "  *** Apache ".$apacheOld." 和 Apache ".$apacheNew." 之间\n";
+		$message .= "  *** 无需更新任何内容\n";
+		$message .= "按 Enter 键继续 ";
 		//Write message in Command Windows
-		Command_Windows($message,-1,-1,0,'Compare Apache version');
+		Command_Windows($message,-1,-1,0,'比较 Apache 版本');
 		$touche = strtoupper(trim(fgets(STDIN)));
 	}
 	$copyConf = $FileToWrite = false;
@@ -626,7 +626,7 @@ if($apacheNew != $apacheOld) {
 			$virtualHost = check_virtualhost(true);
 			if($virtualHost['include_vhosts'] && $virtualHost['vhosts_exist']) {
 				$c_vhostConfFile = $virtualHost['vhosts_file'];
-				$myVhostsContents = file_get_contents($c_vhostConfFile) or die ("httpd-vhosts.conf file not found");
+				$myVhostsContents = file_get_contents($c_vhostConfFile) or die ("httpd-vhosts.conf 文件不存在");
 				$findTxtRegex = '/^([ \t]*<VirtualHost[ \t]+.+:)[0-9]{2,5}>/m';
 				$replaceTxtRegex = '${1}'.$oldDefaultListenPort.'>';
 
@@ -653,21 +653,21 @@ if($apacheNew != $apacheOld) {
 		// Rewrite httpd-vhosts.conf's?
 		if($majVhost && $majVhostGo) {
 			if(copy($oldVhost,$newVhost) === false) {
-				error_log("**** Copy error ****\n".$oldVhost."\nto\n".$newVhost."\n");
+				error_log("**** 复制错误 ****\n".$oldVhost."\nto\n".$newVhost."\n");
 			}
 			else $copyConf = true;
 		}
 		// Rewrite httpd-ssl.conf's?
 		if($majHttpdssl && $majHttpdsslGo) {
 			if(copy($oldSslConf,$newSslConf) === false) {
-				error_log("**** Copy error ****\n".$oldSslConf."\nto\n".$newSslConf."\n");
+				error_log("**** 复制错误 ****\n".$oldSslConf."\nto\n".$newSslConf."\n");
 			}
 			else $copyConf = true;
 		}
 		// Rewrite openssl.cnf's?
 		if($majOpenssl && $majOpensslGo) {
 			if(copy($oldOpenssl,$newOpenssl) === false) {
-				error_log("**** Copy error ****\n".$oldOpenssl."\nto\n".$newOpenssl."\n");
+				error_log("**** 复制错误 ****\n".$oldOpenssl."\nto\n".$newOpenssl."\n");
 			}
 			else $copyConf = true;
 		}
