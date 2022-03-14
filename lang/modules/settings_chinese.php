@@ -26,6 +26,7 @@
 //       $w_settings 	apacheCompareVersion - apacheRestoreFiles - apacheGracefulRestart - LinksOnProjectsHomePage
 //                    ApacheWampParams - apachePhpCurlDll
 //       Suppress : $w_enterServiceNameApache - $w_enterServiceNameMysql - $w_enterServiceNameAll
+// 3.2.7 $w_showExcludedPorts
 
 // 项目子菜单
 $w_projectsSubMenu = '项目列表';
@@ -98,6 +99,7 @@ $w_vhostConfig = '显示 Apache 中有效的虚拟主机';
 $w_apacheLoadedModules = '显示 Apache 已加载的模块';
 $w_apacheLoadedIncludes = '显示 Apache 已加载的额外配置文件';
 $w_apacheDefineVariables = '显示 Apache 变量 (已定义)';
+$w_showExcludedPorts = 'Show the ports excluded by the system';
 $w_testAliasDir = '检查别名（Alias）与目录的关联';
 $w_verifyxDebugdll = '检查未使用的 xDebug 扩展 dll';
 $w_empty = '清空';

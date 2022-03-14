@@ -189,6 +189,7 @@ $wampReport['gen1'] .= <<< EOF
 - Windows Charset: ${Windows_Charset}
 - Wampserver version ${c_wampVersion} - ${c_wampMode}
 - Wampserver install version ${c_wampVersionInstall}
+- Update $c_wampVersionUpdate
 - Install directory: ${c_installDir}
 - Default browser: ${c_navigator} ${c_edge}
 - Default text editor: ${c_editor}
@@ -302,7 +303,7 @@ if($doReport) {
 EOF;
 	$wampConfSections = @parse_ini_file($configurationFile,true,INI_SCANNER_RAW);
 	$wampReport['gen2'] .= "\n------ Wampserver configuration ------\n";
-	$sections = array('options','apacheoptions','mysqloptions','mariadboptions');
+	$sections = array('main','options','apacheoptions','mysqloptions','mariadboptions');
 	foreach($sections as $section) {
 		$wampReport['gen2'] .= "---------- Section [".$section."]\n";
 		$nbbyline = 0;
@@ -717,32 +718,24 @@ ${SupportDBMS}Type: item; Caption: "${w_phpmyadmin}	${value['version']}"; Action
 
 EOF;
 	}
-	if($phpmyadminCount > 1 ) {
-		$subPhpMyAdmin = <<< EOF
+	$subPhpMyAdmin = <<< EOF
 ${SupportDBMS}Type: submenu; Caption: "PhpMyAdmin"; Submenu: MultiplephpMyAdmin; Glyph: 39
 
 EOF;
 	// Do PhpMyAdmin replacements
-		$search = ';WAMPPHPMYADMIN
+	$search = ';WAMPPHPMYADMIN
 ';
-		$tpl = str_replace($search,$search.$subPhpMyAdmin,$tpl);
-		$search = ';WAMPMULTIPLEPHPMYADMIN
+	$tpl = str_replace($search,$search.$subPhpMyAdmin,$tpl);
+	$search = ';WAMPMULTIPLEPHPMYADMINSTART
 ';
-		$tpl = str_replace($search,$search.$ItemMenuPMA,$tpl);
-		// Add warnings PhpMyAdmin if needed
-		if($WarningsPMA) {
-			$WarningTextAll = '
+	$tpl = str_replace($search,$search.$ItemMenuPMA,$tpl);
+	// Add warnings PhpMyAdmin if needed
+	if($WarningsPMA) {
+		$WarningTextAll = '
 Type: Separator;
 ';
-			$tpl = str_replace('WAMPMULTIPLEPHPMYADMINEND',$WarningTextAll.$WarningMenuPMA.$WarningTextPMA,$tpl);
-		}
+		$tpl = str_replace(';WAMPMULTIPLEPHPMYADMINEND',$WarningTextAll.$WarningMenuPMA.$WarningTextPMA,$tpl);
 	}
-	else {
-		$search = ';WAMPPHPMYADMIN
-';
-		$tpl = str_replace($search,$search.$ItemMenuPMA,$tpl);
-	}
-
 	unset($ItemMenuPMA,$SubPhpMyAdmin);
 }
 // END of PhpMyAdmin menu
@@ -2685,7 +2678,7 @@ if($wampConf['AutoCleanTmp'] == 'on') {
 // Add warnings at the end of Left-Click menu if needed
 if($WarningsAtEnd) {
 	$WarningTextAll = '
-Type: separator; Caption: ">>>>>    WARNING    <<<<<"
+Type: separator; Caption: ">>>>>    '.$w_warning.'    <<<<<"
 ';
 	$tpl = str_replace(';WAMPMENULEFTEND',$WarningMenu.$WarningTextAll.$WarningText,$tpl);
 }

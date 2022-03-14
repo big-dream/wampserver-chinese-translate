@@ -1072,7 +1072,7 @@ function proc_open_output($command) {
 		1 => array('pipe', 'wb'), // stdout
 		2 => array('pipe', 'wb')  // stderr
 	);
-	$process = proc_open(escapeshellarg($command), $descriptorspec, $pipes);
+	$process = proc_open(escapeshellcmd($command), $descriptorspec, $pipes);
 	$output = '';
 	while (!feof($pipes[1])) {
 		foreach($pipes as $key => $pipe) {
@@ -1198,13 +1198,11 @@ function ReplaceAestan($value,$What = 'all') {
 // $phpMyAdminAlias[x]['compat'] = true Compatible with PHP version used
 //   if false $phpMyAdminAlias[x]['notcompat'] = incompatibily text
 // $phmyadOK = true if at least one version of PhpMyAdmin
-// $phpmyadminCount Number of PhpMyAdmin versions
 function GetPhpMyAdminVersions(){
-	global $phpMyAdminAlias, $c_installDir, $aliasDir, $phmyadOK, $phpmyadminCount, $c_phpVersion, $c_phpExe,
-	$WarningsAtEnd, $WarningMenu, $WarningText, $WarningPMA, $WarningMenuPMA, $WarningTextPMA, $WarningsPMA;
+	global $phpMyAdminAlias, $c_installDir, $aliasDir, $phmyadOK, $c_phpVersion, $c_phpExe,
+	$WarningPMA, $WarningMenuPMA, $WarningTextPMA, $WarningsPMA;
 	$phpMyAdminAlias = $temp = array();
 	$phmyadOK = false;
-	$phpmyadminCount = 0;
 	$temp = glob($aliasDir.'phpmyadmin*.conf');
 	if(!empty($temp)) {
 		$phmyadOK = true;
@@ -1215,22 +1213,12 @@ function GetPhpMyAdminVersions(){
 			$phpMyAdminAlias[$key]['version'] = $matches[2];
 			$phpMyAdminAlias[$key]['compat'] = true;
 		}
-		$phpmyadminCount = count($phpMyAdminAlias);
-
 		//Check if PhpMyAdmin version is compatible with PHP version
 		if(file_exists($c_installDir.'/scripts/appsversusphp.ini')) {
-			$WarningS = 'WarningsAtEnd';
-			$WarningM = 'WarningMenu';
-			$WarningT = 'WarningText';
-			if($phpmyadminCount > 1) {
-				$WarningsPMA = false;
-				$WarningMenuPMA = ';WAMPMULTIPLEPHPMYADMINEND
+			$WarningsPMA = false;
+			$WarningMenuPMA = ';WAMPMULTIPLEPHPMYADMINEND
 ';
-				$WarningTextPMA = '';
-				$WarningS = 'WarningsPMA';
-				$WarningM = 'WarningMenuPMA';
-				$WarningT = 'WarningTextPMA';
-			}
+			$WarningTextPMA = '';
 			$temp = @parse_ini_file($c_installDir.'/scripts/appsversusphp.ini',true,INI_SCANNER_RAW);
 			$phpVerPhpMyAdmin = $temp['phpphpmyadmin'];
 			foreach($phpMyAdminAlias as $cle => $version) {
@@ -1240,12 +1228,12 @@ function GetPhpMyAdminVersions(){
 						if(!(version_compare($VersionPhpMyAdmin,$value[0],'>=') && version_compare($VersionPhpMyAdmin,$value[1],'<='))) {
 							$phpMyAdminAlias[$cle]['compat'] = false;
 							$phpMyAdminAlias[$cle]['notcompat'] = 'PhpMyAdmin '.$VersionPhpMyAdmin.' not compatible with PHP '.$c_phpVersion;
-							$$WarningS = true;
-							$$WarningM .= 'Type: item; Caption: "'.$phpMyAdminAlias[$cle]['notcompat'].'"; Glyph: 22; Action: multi; Actions: warning_phpmyadmin'.$VersionPhpMyAdmin.'
+							$WarningsPMA = true;
+							$WarningMenuPMA .= 'Type: item; Caption: "'.$phpMyAdminAlias[$cle]['notcompat'].'"; Glyph: 22; Action: multi; Actions: warning_phpmyadmin'.$VersionPhpMyAdmin.'
 ';
 							$temp = "\r\n".$phpMyAdminAlias[$cle]['notcompat']."\r\nYou must use a version of PhpMyAdmin from ".$value[0]." to ".$value[1];
 							$temp .= "\r\n----------------------------------------\r\n";
-							$$WarningT .= '[warning_phpmyadmin'.$VersionPhpMyAdmin.']
+							$WarningTextPMA .= '[warning_phpmyadmin'.$VersionPhpMyAdmin.']
 Action: run; FileName: "'.$c_phpExe.'";Parameters: "msg.php 11 '.base64_encode($temp).'";WorkingDir: "'.$c_installDir.'/scripts"; Flags: waituntilterminated
 ';
 						}

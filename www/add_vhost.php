@@ -1,14 +1,11 @@
 <?php
-// 3.1.9 - Check session variables
-//   Support VirtualHost IDNA ServerName
-// 3.2.5 - Improved layout
+// 3.2.6 - Support for Apache Graceful Restart
 
 $server_dir = "../";
 session_start();
 
 require $server_dir.'scripts/config.inc.php';
 require $server_dir.'scripts/wampserver.lib.php';
-
 $c_PortToUse = $c_UsedPort;
 
 // Language
@@ -42,7 +39,7 @@ if(file_exists('wamplangues/add_vhost_'.$langue.'.php')) {
 	$langues = array_merge($langue_temp, $langues);
 }
 
-// Correction automatique des erreurs ?
+// Automatic error correction?
 $automatique = (isset($_POST['correct']) ? true : false);
 
 $message_ok = '';
@@ -52,7 +49,7 @@ $errors_auto = false;
 $vhost_created = false;
 $sub_menu_on = true;
 
-//On récupère la valeur de VirtualHostMenu
+//We get the value of VirtualHostMenu
 $VirtualHostMenu = !empty($wampConf['VirtualHostSubMenu']) ? $wampConf['VirtualHostSubMenu'] : "off";
 if($VirtualHostMenu !== "on") {
 	$message[] = '<p class="warning">'.$langues['VirtualSubMenuOn'].'</p>';
@@ -64,7 +61,7 @@ $seeVhostDelete = (isset($_POST['seedelete']) && strip_tags(trim($_POST['seedele
 
 /* Some tests about httpd-vhosts.conf file */
 $virtualHost = check_virtualhost();
-$listenPort = listen_ports();
+$listenPort = listen_ports($c_apacheConfFile);
 $w_VirtualPortForm = '';
 $authorizedPorts = array();
 if(count($listenPort) > 1) {
@@ -86,7 +83,7 @@ if(count($listenPort) > 1) {
 			<input style='width:20px;height:20px;margin:2px 0 5px 45px;' type='checkbox' name='vh_port_on' value='on'><select style='margin:5px 0 5px 10px;' name='vh_port'>
 EOF;
 	for($i=0;$i < count($authorizedPorts);$i++) {
-  	$w_VirtualPortForm .= "<option value='".$authorizedPorts[$i]."'>监听端口&nbsp;:&nbsp;".$authorizedPorts[$i]."&nbsp;&nbsp;</option>";
+  	$w_VirtualPortForm .= "<option value='".$authorizedPorts[$i]."'>Listen Port&nbsp;:&nbsp;".$authorizedPorts[$i]."&nbsp;&nbsp;</option>";
 	}
 	$w_VirtualPortForm .= "</select><br>";
 
@@ -165,14 +162,14 @@ if(isset($_POST['vhostdelete'])
 				if($countName == 1) {
 					//Suppress ServerName into hosts file
 					$count = $count1 = 0;
-					$myHostsContents = preg_replace("~^[0-9\.:]+\s+".$p_value."\r?$~mi",'',$myHostsContents,-1, $count);
+					$myHostsContents = preg_replace("~^([0-9\.:]+\s+".$p_value."\r?\n?)~mi",'',$myHostsContents,-1, $count);
 					$myHostsContents = str_ireplace($value,'',$myHostsContents,$count1);
 					if($count > 0 || $count1 > 0 )
 						$replaceHosts = true;
 				}
 			}
 			else {
-				$message[] = '<p class="warning">ServerName '.$value.' 不存在</p>';
+				$message[] = '<p class="warning">ServerName '.$value.' doesn\'t exist</p>';
 				$errors = true;
 			}
 
@@ -200,7 +197,7 @@ if(isset($_POST['vhostdelete'])
     		flock($fp, LOCK_UN);    // release the lock
 			}
 			else {
-				$message[] = '<p class="warning">无法写入 '.$c_hostsFile.' 文件</p>';
+				$message[] = '<p class="warning">Unable to write to '.$c_hostsFile.' file</p>';
 				$errors = true;
 			}
 			fclose($fp);
@@ -220,9 +217,9 @@ if($virtualHost['nb_Server'] > 0) {
 		$value_url = ((strpos($value, ':') !== false) ? strstr($value,':',true) : $value);
 		$value_aff = ($virtualHost['ServerNameIDNA'][$value] === true) ? $value." <span style='color:green;'><small>IDNA-> ".$virtualHost['ServerNameUTF8'][$value].'</small></span>' : $value_url;
 		if($virtualHost['ServerNameValid'][$value] === false)
-			$VhostDefine .= "<li><i>ServerName : </i><span style='color:red;'>".$value_aff." - ServerName 语法错误</span></li>\n";
+			$VhostDefine .= "<li><i>ServerName : </i><span style='color:red;'>".$value_aff." - ServerName syntax error</span></li>\n";
 		else
-			$VhostDefine .= "<li><i>ServerName : </i><span style='color:blue;'>".$value_aff."</span>".$UrlPortVH." - <i>目录 : </i>".$virtualHost['documentPath'][$i].$ip."</li>\n";
+			$VhostDefine .= "<li><i>ServerName : </i><span style='color:blue;'>".$value_aff."</span>".$UrlPortVH." - <i>Directory : </i>".$virtualHost['documentPath'][$i].$ip."</li>\n";
 		if($value != 'localhost')
 			$VhostDelete .= "<li><i>ServerName : </i><input type='checkbox' name='virtual_del[]' value='".$value."'/> <span style='color:blue;'>".$value."</span></li>";
 		$i++;
@@ -269,26 +266,6 @@ if(in_array("dummy", $virtualHost['ServerNameValid'], true) !== false && !$error
 }
 if(empty($virtualHost['FirstServerName']) && !$errors) {
 	if($automatique) {
-		if(substr($wampConf['apacheVersion'],0,3) == '2.2') {
-		$virtual_localhost = <<< EOFLOCAL
-
-NameVirtualHost *:{$c_PortToUse}
-
-<VirtualHost *:{$c_PortToUse}>
-	ServerName localhost
-	DocumentRoot "{$wwwDir}"
-	<Directory  "{$wwwDir}/">
-		Options +Indexes +Includes +FollowSymLinks +MultiViews
-		AllowOverride All
-    Order Deny,Allow
-    Deny from all
-    Allow from localhost ::1 127.0.0.1
-	</Directory>
-</VirtualHost>
-
-EOFLOCAL;
-		}
-		else {
 		$virtual_localhost = <<< EOFLOCAL
 
 #
@@ -303,7 +280,6 @@ EOFLOCAL;
 </VirtualHost>
 
 EOFLOCAL;
-		}
 
 		$fp = fopen($c_apacheVhostConfFile,'wb');
 		fwrite($fp,$virtual_localhost);
@@ -319,7 +295,7 @@ EOFLOCAL;
 }
 
 /* If form submitted */
-if (isset($_POST['submit'])
+if(isset($_POST['submit'])
 	&& !$errors
 	&& isset($_SESSION['passadd'])
 	&& isset($_POST['checkadd'])
@@ -344,7 +320,7 @@ if (isset($_POST['submit'])
 		$message[] = '<p class="warning">'.sprintf($langues['NoFirst'],$c_apacheVhostConfFile).'</p>';
 		$errors = true;
 	}
-	/* Validité du nom de domaine */
+	/* Validity of the domain name */
 	clearstatcache(); // added for update 3.1.4
 	//Check if IDN is needed
 	$vh_nameIDN = idn_to_ascii($vh_name,IDNA_DEFAULT,INTL_IDNA_VARIANT_UTS46);
@@ -422,26 +398,7 @@ if (isset($_POST['submit'])
 		}
 	}
 	if($errors === false) {
-		/* Préparation du contenu des fichiers */
-		if(substr($wampConf['apacheVersion'],0,3) == '2.2') {
-		$httpd_vhosts_add = <<< EOFNEWVHOST
-
-#
-<VirtualHost {$c_UsedIp}:{$c_PortToUse}>
-	ServerName {$vh_name}
-	DocumentRoot "{$vh_folder}"
-	<Directory  "{$vh_folder}/">
-		Options +Indexes +Includes +FollowSymLinks +MultiViews
-		AllowOverride All
-    Order Deny,Allow
-    Deny from all
-    Allow from localhost ::1 127.0.0.1
-	</Directory>
-</VirtualHost>
-
-EOFNEWVHOST;
-		}
-		else {
+		/* Preparation of files content */
 		$httpd_vhosts_add = <<< EOFNEWVHOST
 
 
@@ -457,52 +414,57 @@ EOFNEWVHOST;
 </VirtualHost>
 
 EOFNEWVHOST;
-		}
 		$hosts_add = <<< EOFHOSTS
 
 {$c_HostIp}	{$vh_name}
 ::1	{$vh_name}
 
 EOFHOSTS;
-		/* Ouverture des fichiers pour ajout des lignes */
+		/* Opening the files to add the lines */
 		if($wampConf['BackupHosts'] == 'on') {
 			@copy($c_hostsFile,$c_hostsFile."_wampsave.".$next_hosts_save);
 			$next_hosts_save++;
 		}
 		$fp1 = fopen($c_apacheVhostConfFile, 'a+b');
 		$fp2 = fopen($c_hostsFile, 'a+b');
-		if (fwrite($fp1, $httpd_vhosts_add) && fwrite($fp2, $hosts_add)) {
-			/* Actualisation des dns - Il faudrait redémarrer le service Apache par
-			   	net stop wampapache
-			   	net start wampapache
-			   et c'est impossible car alors plus de PHP.
-			   Les commandes ci-dessous fonctionnent parfaitement dans un script comme wamp/script/msg.php*/
-			   /*$command = 'CMD /D /C ipconfig /flushdns';
-			   $output = `$command`;
-			   $command = 'CMD /D /C '.$c_apacheExe.' -n '.$c_apacheService.' -k restart';
-			   error_log("cmd=".$command);
-			   $output .= `$command`;
-			   $dns_refresh_message = '<pre><code>'.$output.'</code></pre>';*/
-			   /*mais pas si elles sont lancées via http*/
+		$fp1w = $fpw2 = false;
+		if(fwrite($fp1, $httpd_vhosts_add) !== false) $fp1w = true;
+		if(fwrite($fp2, $hosts_add) !== false) $fp2w = true;
+		fclose($fp1);
+		fclose($fp2);
+		if($fp1w === true && $fp2w === true) {
+			if("Possible" === true) { // It is not possible — for the moment — to do that from php WEB
+			// Restart DNS
+			$command = 'CMD /D /C ipconfig /flushdns';
+			$output = `$command`;
+			// Apache Graceful Restart
+			$command = 'CMD /D /C '.str_replace('/','\\',$c_apacheExe).' -n '.$c_apacheService.' -k restart';
+			$output .= `$command`;
+			$command = 'CMD /D /C START /D '.str_replace('/','\\',$c_installDir).'\scripts /WAIT /B '.str_replace('/','\\',$c_phpExe).' -f refresh.php';
+			//error_log("command=\n".$command);
+			$output = `$command`;
+			//error_log("output=\n".$output);
 
-			$dns_refresh_message = "";
-
+			// Message to Refresh Wampmanager to update menu's
 			$message_ok = '<p class="ok">'.sprintf($langues['VirtualCreated'],$vh_name).'</p>';
-			$message_ok .= '<h2>'.$langues['CommandMessage'].'</h2>'.$dns_refresh_message;
-			$message_ok .= '<p class="ok_plus">'.$langues['However'].'</p>';
+			$message_ok .= '<p class="ok_plus">'.$langues['HoweverWamp'].'</p>';
 			$vhost_created = true;
+			}
+			else {
+				$message_ok = '<p class="ok">'.sprintf($langues['VirtualCreated'],$vh_name).'</p>';
+				$message_ok .= '<p class="ok_plus">'.$langues['However'].'</p>';
+				$vhost_created = true;
+			}
 		}
 		else {
 			$message = '<p class="warning">'.$langues['NoModify'].'</p>';
 		}
-		fclose($fp1);
-		fclose($fp2);
 	}
 }
 
 $pageContents = <<< EOPAGE
 <!DOCTYPE html>
-<html lang="zh-cn">
+<html lang="fr">
 	<head>
 		<title>${langues['addVirtual']}</title>
 		<meta charset="UTF-8">
@@ -617,10 +579,6 @@ $pageContents = <<< EOPAGE
 				text-decoration: none;
 			}
 
-			i, code {
-				font-style: normal;
-            }
-
 			code, code.option, code.requis {
 				color: #FFF;
 				text-shadow: 1px 1px 0 #000;
@@ -647,7 +605,7 @@ $pageContents = <<< EOPAGE
 	<header>
 		<h1><a href="add_vhost.php?lang={$langue}">{$langues['addVirtual']}</a> - <a href="index.php?lang={$langue}">{$langues['backHome']}</a></h1>
 		<ul class="utility">
-		  <li>版本： ${c_wampVersion} - ${c_wampMode}${langueswitcher}</li>
+		  <li>Version ${c_wampVersion} - ${c_wampMode}${langueswitcher}</li>
 	  </ul>
 	</header>
 EOPAGE;
@@ -661,7 +619,7 @@ else {
 		}
 	if($sub_menu_on === true) {
 	$pageContents .= <<< EOPAGEB
-		<p>Apache 虚拟主机配置文件 <code>{$c_apacheVhostConfFile}</code></p>
+		<p>Apache Virtual Hosts <code>{$c_apacheVhostConfFile}</code></p>
 EOPAGEB;
 	if(!empty($VhostDefine)) {
 	$pageContents .= <<< EOPAGEB
@@ -695,7 +653,7 @@ EOPAGEB;
 	$pageContents .= <<< EOPAGEB
 		</div>
 		<div style='clear:both;'></div>
-		<p>Windows hosts 文件 <code>{$c_hostsFile}</code></p>
+		<p>Windows hosts <code>{$c_hostsFile}</code></p>
 EOPAGEB;
 	$pageContents .= '<form method="post">';
 	if($errors_auto) {

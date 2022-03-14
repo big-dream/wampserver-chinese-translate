@@ -29,13 +29,22 @@ $c_wampVersion = $wampConf['wampserverVersion'];
 $wamp_versions_here += array('wamp_update' => $c_wampVersion);
 $c_wampMode = $wampConf['wampserverMode'];
 $c_wampserverID = ($c_wampMode == '32bit') ? '{wampserver32}' : '{wampserver64}';
-$c_wampVersionInstall = !empty($wampConf['installVersion']) ? $wampConf['installVersion'] : 'unknown';
 $c_navigator = $wampConf['navigator'];
+$c_wampVersionInstall = 'unknown';
+$c_wampVersionUpdate = '';
+if(!empty($wampConf['installVersion'])) {
+	$c_wampVersionInstall = $wampConf['installVersion'];
+	if(!empty($wampConf['installDate'])) $c_wampVersionInstall .= ' installed on '.$wampConf['installDate'];
+	if($c_wampVersion <> $wampConf['installVersion']) {
+		if(!empty($wampConf['update'.$c_wampVersion]))
+			$c_wampVersionUpdate .= 'Updated to '.$c_wampVersion.' on '.$wampConf['update'.$c_wampVersion];
+	}
+}
 
 // See Message For information items in configuration submenus
 $seeInfoMessage = true;
 
-//For Windows 10 and Edge it is not the same as for other browsers
+//For Windows 10?and Edge it is not the same as for other browsers
 //It is not complete path to browser with parameter http://website/
 //but by 'cmd.exe /c "start /b Microsoft-Edge:http://website/"'
 $c_edge = "";
@@ -189,8 +198,10 @@ $phpDllToCopy = array_merge(
 	'libpq.dll',
 	'libssh2.dll', //For php 5.5.17
 	'libsodium.dll', //For php 7.2.0
-	'libsqlite3.dll', //For php 7.4.0
-	'php5isapi.dll',
+
+	'libsqlite3.dll', //For php 7.4.0
+
+	'php5isapi.dll',
 	'php5nsapi.dll',
 	'php5ts.dll',
 	'php7ts.dll', //For PHP 7

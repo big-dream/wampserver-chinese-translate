@@ -7,8 +7,10 @@
 //3.1.1   $w_cmdWindows - $w_mysqlCommand - $w_mariadbCommand - $w_apacheCommand - $w_services_msc
 //3.2.0		$w_helpForums - $w_helpUse
 //3.2.1   $w_apacheSettings - $w_apacheDefaults
-//3.2.2 $w_helpFile modified
-//3.2.6 $w_startedOn - $w_restartWamp - $w_phpCommand
+//3.2.2   $w_helpFile modified
+//3.2.6   $w_startedOn - $w_restartWamp - $w_phpCommand
+//3.2.7   $w_changelog - $w_warning
+//        --- Suppress: $w_putOnline - $w_putOffline
 
 $w_allServicesRunning = '所有服务正常运行中';
 $w_oneServiceRunning = '%n / %t 个服务正在运行';
@@ -29,7 +31,7 @@ $w_services_msc = '服务控制面板';
 $w_doc = '文档';
 $w_cmdWindows = '命令行窗口（CMD）';
 
-$w_localhost = 'localhost';
+$w_localhost = 'Localhost';
 $w_phpmyadmin = 'phpMyAdmin';
 $w_sqlitemanager = 'SQLiteManager';
 $w_wwwDirectory = 'www 目录';

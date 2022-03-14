@@ -711,6 +711,38 @@ elseif(is_string($msgId)) {
 			$complete_result = $message['phpLoadedExtensions'];
 		}
 	}
+	elseif($msgId == "excludedportrange") {
+		Command_Windows("Show Excluded port by the System",40,30,0,'Show Excluded port by the System');
+		$command = 'netsh int ip show excludedportrange protocol=tcp';
+		$output = proc_open_output($command);
+		$message['excludedportrange'] = ($doReport ? "--------------------------------------------------\n" : '');
+		$message['excludedportrange'] .= "-- Show Excluded port by the System\n With command:\n netsh int ip show excludedportrange protocol=tcp\n\n";
+		if(preg_match_all("~^\s*([0-9]+)\s*([0-9]+)\s*\r?$~mi",$output,$matches) > 0) {
+			$nbbyline = 0;
+			foreach($matches[1] as $key => $value){
+				if($matches[2][$key] == $value) {
+					$message['excludedportrange'] .= str_pad(' '.$value,8);
+					if(++$nbbyline >= 6) {
+						$message['excludedportrange'] .= "\n";
+						$nbbyline = 0;
+					}
+				}
+				else {
+					$message['excludedportrange'] .= "From port ".$value." to port ".$matches[2][$key]."\n";
+				}
+			}
+		}
+		else {
+			$message['excludedportrange'] .= "No port found\n";
+		}
+		if($doReport){
+			write_file($c_installDir."/wampConfReportTemp.txt",$message['excludedportrange'],false,false,'ab');
+			exit;
+		}
+		$message_title = "Show Excluded port by the System";
+		$msg_index = 'excludedportrange';
+		$complete_result = $message['excludedportrange'];
+	}
 	elseif($msgId == "refreshLogs") {
 		$logToClean = array();
 		$message = "\nLog file(s) to be cleaned:\n\n";
