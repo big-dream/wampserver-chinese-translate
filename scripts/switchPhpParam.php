@@ -10,7 +10,18 @@ if(WAMPTRACE_PROCESS) {
 require 'config.inc.php';
 require 'wampserver.lib.php';
 
-$phpIniFileContents = @file_get_contents($c_phpConfFile) or die ("php.ini file not found");
+$PHP_fcgi = false;
+$PHP_version = $c_phpVersion;
+$PHP_ini_file = $c_phpConfFile;
+if(isset($_SERVER['argv'][3])) {
+	$PhpVersionType = trim($_SERVER['argv'][3]);
+	if(strpos($PhpVersionType,'FCGI') !== false) {
+		$PHP_fcgi = true;
+		$PHP_version = str_ireplace('FCGI','',$PhpVersionType);
+		$PHP_ini_file = $c_phpVersionDir.'/php'.$PHP_version.'/php.ini';
+	}
+}
+$phpIniFileContents = @file_get_contents($PHP_ini_file) or die ("php.ini file not found");
 
 if($_SERVER['argv'][2] == 'off') {
 	$findTxt  = $_SERVER['argv'][1].' = On';
@@ -38,6 +49,6 @@ if(preg_match('/^'.$_SERVER['argv'][1].'\s*=\s*'.$regex.'/im',$phpIniFileContent
 
 $phpIniFileContents = str_ireplace($findTxt,$replaceTxt,$phpIniFileContents);
 
-write_file($c_phpConfFile,$phpIniFileContents);
+write_file($PHP_ini_file,$phpIniFileContents);
 
 ?>

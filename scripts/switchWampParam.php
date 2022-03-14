@@ -179,6 +179,9 @@ else {
 	}
 
 	if($goodParam) {
+		if(array_key_exists($_SERVER['argv'][1],$WampParamServitude) && $_SERVER['argv'][2] == 'off') {
+			$wampIniNewContents[$WampParamServitude[$_SERVER['argv'][1]]['servitude']] = 'off';
+		}
 		$wampIniNewContents[$_SERVER['argv'][1]] = $_SERVER['argv'][2];
 		wampIniSet($configurationFile, $wampIniNewContents);
 		if($_SERVER['argv'][1] == 'apachePhpCurlDll') {

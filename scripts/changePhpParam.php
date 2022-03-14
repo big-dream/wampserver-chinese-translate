@@ -10,16 +10,29 @@ if(WAMPTRACE_PROCESS) {
 require 'config.inc.php';
 require 'wampserver.lib.php';
 
-$phpIniFileContents = @file_get_contents($c_phpConfFile) or die ("php.ini file not found");
+$PHP_fcgi = false;
+$PHP_version = $c_phpVersion;
+$PHP_ini_file = $c_phpConfFile;
+if(isset($_SERVER['argv'][5])) {
+	$PhpVersionType = trim($_SERVER['argv'][5]);
+	if(strpos($PhpVersionType,'FCGI') !== false) {
+		$PHP_fcgi = true;
+		$PHP_version = str_ireplace('FCGI','',$PhpVersionType);
+		$PHP_ini_file = $c_phpVersionDir.'/php'.$PHP_version.'/php.ini';
+	}
+}
+
+$phpIniFileContents = @file_get_contents($PHP_ini_file) or die ("php.ini file not found");
 
 $quoted = false;
 if($_SERVER['argv'][1] == 'quotes')
 	$quoted = true;
+
 $parameter = $_SERVER['argv'][2];
 $newvalue = $_SERVER['argv'][3];
 $changeError = '';
 
-if(!empty($_SERVER['argv'][4])) {
+if($_SERVER['argv'][4] != 'none') {
 	$choose = $_SERVER['argv'][4];
 	if($choose == 'Seconds') {
 		if(preg_match('/^[1-9][0-9]{1,3}$/m',$newvalue) != 1) {
@@ -43,9 +56,10 @@ EOF1ERROR;
 		$newvalue = '128M';
 		}
 	}
-	elseif($choose == 'Integer') {
+	elseif(strpos($choose,'Integer') !== false ) {
+		$choose = str_replace('Integer','',$choose);
 		$newvalue = intval($newvalue);
-		list($min, $max, $default) = explode("^",$_SERVER['argv'][5]);
+		list($min, $max, $default) = explode("^",$choose);
 		if($newvalue < $min || $newvalue > $max) {
 		$changeError = <<< EOF2ERROR
 The value you entered ({$newvalue}) is out of range.
@@ -63,31 +77,11 @@ if($quoted)
 $phpIniFileContents = preg_replace('|^'.$parameter.'[ \t]*=.*|m',$parameter.' = '.$newvalue,$phpIniFileContents, -1, $count);
 
 if($count > 0) {
-	write_file($c_phpConfFile,$phpIniFileContents);
-}
-
-// Check if we need to modify also CLI php.ini and $c_phpConfFileIni
-if(in_array($parameter,$phpCLIparams)) {
-	//error_log("aussi dans CLI=".$c_phpCliConfFile);
-	$phpIniCLIFileContents = @file_get_contents($c_phpCliConfFile) or die ("php.ini file not found");
-	$phpIniCLIFileContents = preg_replace('|^'.$parameter.'[ \t]*=.*|m',$parameter.' = '.$newvalue,$phpIniCLIFileContents, -1, $count);
-
-	if($count > 0) {
-		write_file($c_phpCliConfFile,$phpIniCLIFileContents);
-	}
-	if($c_phpConfFileIni <> $c_phpCliConfFile) {
-		//error_log("aussi dans CLI=".$c_phpConfFileIni);
-		$phpIniFileContentsIni = @file_get_contents($c_phpConfFileIni) or die ("php.ini file not found");
-		$phpIniFileContentsIni = preg_replace('|^'.$parameter.'[ \t]*=.*|m',$parameter.' = '.$newvalue,$phpIniFileContentsIni, -1, $count);
-
-		if($count > 0) {
-			write_file($c_phpConfFileIni,$phpIniFileContentsIni);
-		}
-	}
+	write_file($PHP_ini_file,$phpIniFileContents);
 }
 
 if(!empty($changeError)) {
-	$message = "********************* WARNING ********************\n\n";
+	$message = color('red',"********************* WARNING ********************\n\n");
 	$message .= $changeError;
 	$message .= "\nPress ENTER to continue...";
 	Command_Windows($message,-1,-1,0,'Change PHP parameter');

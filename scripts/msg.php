@@ -343,6 +343,7 @@ elseif(is_string($msgId)) {
 		}
 
 		// MySQL versions
+		$mysqlVersion = array();
 		if($wampConf['SupportMySQL'] == 'on') {
 			foreach($mysqlVersionList as $oneMysql) {
 				$oneMysqlVersion = str_ireplace('mysql','',$oneMysql);
@@ -361,6 +362,7 @@ elseif(is_string($msgId)) {
 			}
 		}
 		// MariaDB versions
+		$mariaVersion = array();
 		if($wampConf['SupportMariaDB'] == 'on') {
 			foreach($mariadbVersionList as $oneMaria) {
 				$oneMariaVersion = str_ireplace('mariadb','',$oneMaria);
@@ -589,6 +591,7 @@ elseif(is_string($msgId)) {
 				if($nb_static > 0) {
 					$message['apachemodules'] .= "- Core:\n";
 					$nbbyline = 0;
+					natcasesort($matches[1]);
 					foreach($matches[1] as $value) {
 						$message['apachemodules'] .= str_pad(' '.$value,18);
 						if(++$nbbyline >= 3) {
@@ -602,6 +605,7 @@ elseif(is_string($msgId)) {
 				if($nb_shared > 0) {
 					$message['apachemodules'] .= "\n- Shared modules:\n";
 					$nbbyline = 0;
+					natcasesort($matches[1]);
 					foreach($matches[1] as $value) {
 						$message['apachemodules'] .= str_pad(' '.$value,24);
 						if(++$nbbyline >= 3) {
@@ -682,34 +686,17 @@ elseif(is_string($msgId)) {
 	}
 	elseif($msgId == "phploadedextensions") {
 		Command_Windows("Show PHP Loaded Extensions",40,30,0,'Show PHP Loaded Extensions');
-		$command = $c_phpWebExe.' -c '.$c_phpConfFile.' -r print(var_export(get_loaded_extensions(),true));';
-		$output = proc_open_output($command);
-		$NewFileContents = '<?php'."\n\n".'$loaded_extensions = '.$output.';'."\n\n".'?>';
-		write_file('loaded_extensions.php',$NewFileContents);
-		include 'loaded_extensions.php';
-		unlink('loaded_extensions.php');
-		unset($NewFileContents,$output);
-		natcasesort($loaded_extensions);
-		$message['phpLoadedExtensions'] = ($doReport ? "--------------------------------------------------\n" : '');
-		if(count($loaded_extensions) > 0) {
-			$message['phpLoadedExtensions'] .= "-- PHP Loaded Extensions\n With function get_loaded_extensions()\n\n";
-			$nbbyline = 0;
-			foreach ($loaded_extensions as $extension) {
-				$message['phpLoadedExtensions'] .= str_pad(' '.$extension,14);
-				if(++$nbbyline >= 6) {
-					$message['phpLoadedExtensions'] .= "\n";
-					$nbbyline = 0;
-				}
-			}
-			$message['phpLoadedExtensions'] .= "\n";
-			if($doReport){
-				write_file($c_installDir."/wampConfReportTemp.txt",$message['phpLoadedExtensions'],false,false,'ab');
-				exit;
-			}
-			$message_title = "PHP Loaded Extensions";
-			$msg_index = 'phpLoadedExtensions';
-			$complete_result = $message['phpLoadedExtensions'];
-		}
+		$message['phpLoadedExtensions'] = GetPhpLoadedExtensions($c_phpVersion, 6, false, $doReport);
+		$message_title = "PHP Loaded Extensions";
+		$msg_index = 'phpLoadedExtensions';
+		$complete_result = $message['phpLoadedExtensions'];
+	}
+	elseif($msgId == "phpversionsusage") {
+		Command_Windows("Show use of PHP versions",40,30,0,'Show use of PHP versions');
+		$message['phpVersionsUsage'] = GetPhpVersionsUsage(false, $doReport);
+		$message_title = "Use of PHP versions";
+		$msg_index = 'phpVersionsUsage';
+		$complete_result = $message['phpVersionsUsage'];
 	}
 	elseif($msgId == "excludedportrange") {
 		Command_Windows("Show Excluded port by the System",40,30,0,'Show Excluded port by the System');
@@ -736,12 +723,12 @@ elseif(is_string($msgId)) {
 			$message['excludedportrange'] .= "No port found\n";
 		}
 		if($doReport){
-			write_file($c_installDir."/wampConfReportTemp.txt",$message['excludedportrange'],false,false,'ab');
+			write_file($c_installDir."/wampConfReportTemp.txt",$message['excludedportrange']."\n",false,false,'ab');
 			exit;
 		}
 		$message_title = "Show Excluded port by the System";
 		$msg_index = 'excludedportrange';
-		$complete_result = $message['excludedportrange'];
+		$complete_result = $message['excludedportrange']."\n";
 	}
 	elseif($msgId == "refreshLogs") {
 		$logToClean = array();
@@ -805,19 +792,19 @@ elseif(is_string($msgId)) {
 			if(($files = glob($c_phpVersionDir.'/'.$phpVersion.'/zend_ext/php_xdebug-*.dll')) !== false) {
 				if(count($files) > 1) {
 					// Get php_xdebug...dll used by php version
-					$phpIni = parse_ini_file($c_phpVersionDir.'/'.$phpVersion.'/phpForApache.ini',true);
-					if(!empty($phpIni['xdebug']['zend_extension'])) {
-						// Get files to delete
-						foreach($files as $value) {
-							if($value != $phpIni['xdebug']['zend_extension']) {
-								// Delete file
-								if(unlink($value) !== false) {
-									$message .= $value." deleted\n";
-									$Nbfiles++;
-								}
+					$phpForApacheIni = parse_ini_file($c_phpVersionDir.'/'.$phpVersion.'/phpForApache.ini',true);
+					$phpIni = parse_ini_file($c_phpVersionDir.'/'.$phpVersion.'/php.ini',true);
+					// Get files to delete
+					foreach($files as $value) {
+						if((!empty($phpForApacheIni['xdebug']['zend_extension']) && $value != $phpForApacheIni['xdebug']['zend_extension'])
+						&& (!empty($phpIni['xdebug']['zend_extension']) && $value != $phpIni['xdebug']['zend_extension'])) {
+							// Delete file
+							if(unlink($value) !== false) {
+								$message .= $value." deleted\n";
+								$Nbfiles++;
 							}
 						}
-					}
+						}
 				}
 			}
 		}

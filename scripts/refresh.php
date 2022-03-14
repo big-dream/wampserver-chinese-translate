@@ -19,6 +19,20 @@ if($doReport) {
 
 require 'config.inc.php';
 require 'wampserver.lib.php';
+
+//Retrieve Windows charset
+$Windows_Charset = '';
+$Windows_Charset_PHP = 'Windows-'.trim(strstr(setlocale(LC_CTYPE,''),'.'),'.');
+if(strlen($Windows_Charset_PHP) == 12) $Windows_Charset = $Windows_Charset_PHP;
+else {
+	$command = 'CMD /D /C powershell [System.Text.Encoding]::Default | FINDSTR /I /C:"WebName"';
+	$output = `$command`;
+	if(preg_match('/^WebName[\t ]+:[\t ]([a-zA-Z0-9\-]+)\r?$/i',$output,$matches) > 0) {
+		$Windows_Charset_PowerShell = $matches[1];
+	}
+	if(strlen($Windows_Charset_PowerShell) == 12) $Windows_Charset = $Windows_Charset_PowerShell;
+}
+
 // Get Aestan Tray Menu version
 $contents = file_get_contents($wampserverIniFile);
 preg_match('~^AeTrayVersion=([0-9\.]+)\r?$~mi',$contents,$matches);
@@ -116,6 +130,9 @@ else {
 $WampStartOnOri = $wampConf['wampStartDate'];
 // Wampserver last launched date and hour (formated)
 $WampStartOn = IntlDateFormatter::formatObject(new DateTime($WampStartOnOri),$w_FormatDate);
+if(!empty($Windows_Charset)) {
+	$WampStartOn = @iconv("UTF-8",$Windows_Charset."//TRANSLIT",$WampStartOn);
+}
 // Option to launch Homepage at startup
 $RunAtStart = ($wampConf['HomepageAtStartup'] == 'on' ? '' : ';');
 // Option to see www dir in menu
@@ -167,19 +184,11 @@ if($wampConf['apacheGracefulRestart'] == 'on') {
 }
 
 //Check some values about Apache VirtualHost
-$virtualHost = check_virtualhost(true);
+$virtualHost = check_virtualhost();
 //Option to show Edit httpd-vhosts.conf
 $EditVhostConf  = (($virtualHost['include_vhosts'] === false || $virtualHost['vhosts_exist'] === false) ? ';' : '');
 //Translated by in About
 $w_translated_by = (isset($w_translated_by )) ? $w_translated_by : '';
-
-//Retrieve Windows charset
-$Windows_Charset = '';
-$command = 'CMD /D /C powershell [System.Text.Encoding]::Default | FINDSTR /I /C:"WebName"';
-$output = `$command`;
-if(preg_match('/^WebName[\t ]+:[\t ]([a-zA-Z0-9\-]+)\r?$/i',$output,$matches) > 0) {
-	$Windows_Charset = $matches[1];
-}
 
 //Add value to Wampserver Report
 if($doReport) {
@@ -206,10 +215,7 @@ EOF;
 //PHP 5.3.0 Hash marks (#) should no longer be used as comments and will throw a deprecation warning if used.
 //PHP 7.0.0 Hash marks (#) are no longer recognized as comments.
 // Option to support MySQL
-$mysqlVersionList = listDir($c_mysqlVersionDir,'checkMysqlConf','mysql');
-array_walk($mysqlVersionList,function(&$value, $key){$value = str_replace('mysql','',$value);});
-// Sort in versions number order
-natcasesort($mysqlVersionList);
+$mysqlVersionList = listDir($c_mysqlVersionDir,'checkMysqlConf','mysql',true);
 if($wampConf['SupportMySQL'] == 'on' && count($mysqlVersionList) > 0) {
 	create_wamp_versions($mysqlVersionList,'mysql');
 	if($doReport)	$wampReport['gen3'] .= "MySQL versions seen by refresh listDir:\n".implode(' - ',$mysqlVersionList)."\n";
@@ -238,10 +244,7 @@ else {
 }
 
 // Option to support MariaDB
-$mariadbVersionList = listDir($c_mariadbVersionDir,'checkMariaDBConf','mariadb');
-array_walk($mariadbVersionList,function(&$value, $key){$value = str_replace('mariadb','',$value);});
-// Sort in versions number order
-natcasesort($mariadbVersionList);
+$mariadbVersionList = listDir($c_mariadbVersionDir,'checkMariaDBConf','mariadb',true);
 if($wampConf['SupportMariaDB'] == 'on' && count($mariadbVersionList) > 0) {
 	create_wamp_versions($mariadbVersionList,'mariadb');
 	if($doReport)	$wampReport['gen3'] .= "MariaDB versions seen by refresh listDir:\n".implode(' - ',$mariadbVersionList)."\n";
@@ -326,41 +329,39 @@ $WarningMenu = ';WAMPMENULEFTEND
 ';
 $WarningText = '';
 
-// Get PhpMyAdmin version's
-GetPhpMyAdminVersions();
+// Get Alias, PhpMyAdmin, Adminer, PhpSysInfo version's
+GetAliasVersions();
 if($phmyadOK) {
 	$temp = '0.0.0';
-	foreach($phpMyAdminAlias as $value) {
-		if(version_compare($value['version'], $temp, '>'))
-			$temp = $value['version'];
+	foreach($Alias_Contents['PMyAd'] as $value) {
+		if(version_compare($Alias_Contents[$value]['version'], $temp, '>'))
+			$temp = $Alias_Contents[$value]['version'];
 	}
 	$wamp_versions_here += array('wamp_phpmyadmin' => $temp);
 }
 
 // Get adminer version
-$adminerVersion = '';
-$adminerOK = false;
+$wamp_versions_here += array('wamp_adminer' => $Alias_Contents['adminer']['version']);
 
-if(file_exists($aliasDir.'adminer.conf')) {
-	$adminerOK = true;
-	$myalias = @file_get_contents($aliasDir.'adminer.conf');
-	//Alias /adminer "J:/wamp/apps/adminer4.3.1/"
-	if(preg_match('~^Alias\s*/adminer\s*".*apps/adminer([0-9\.]*)/"\s?$~m',$myalias,$matches) > 0 )
-	$adminerVersion = $matches[1];
-	$wamp_versions_here += array('wamp_adminer' => $matches[1]);
-}
 // Show Adminer in Wampmanager menu
-$adminerMenu = (($adminerOK && $wampConf['ShowadminerMenu'] == 'on') ? '' : ';');
+$adminerMenu = (($Alias_Contents['adminer']['OK'] && $wampConf['ShowadminerMenu'] == 'on') ? '' : ';');
 
-// Get phpsysinfo version
-if(file_exists($aliasDir.'phpsysinfo.conf')) {
-	$myalias = @file_get_contents($aliasDir.'phpsysinfo.conf');
-	if(preg_match('~^Alias\s*/phpsysinfo\s*".*apps/phpsysinfo([0-9\.]*)/"\s?$~m',$myalias,$matches) > 0 )
-	$phpsysinfoVersion = $matches[1];
-	$wamp_versions_here += array('wamp_phpsysinfo' => $matches[1]);
-}
-
+//At this point, $phpVersionList, $phpFcgiVersionList, $phpFcgiVersionListUsed
+//  $virtualHost, Alias_Contents are correct
+//error_log("Alias_Contents=".print_r($Alias_Contents,true));
+//error_log("phpFcgiVersionList=\n".print_r($phpFcgiVersionList,true));
+//error_log("phpFcgiVersionList unique=\n".print_r(array_unique($phpFcgiVersionList),true));
+//error_log("phpFcgiVersionListUsed=\n".print_r($phpFcgiVersionListUsed,true));
+//foreach($phpFcgiVersionListUsed as $key => $value) $phpFcgiVersionListUsed[$key] = array_unique($phpFcgiVersionListUsed[$key]);
+//error_log("phpFcgiVersionListUsed unique=\n".print_r($phpFcgiVersionListUsed,true));
+//error_log("phpVersionList=\n".print_r(array_unique($phpVersionList),true));
+//error_log("virtualHost=\n".print_r($virtualHost,true));
 //-------------------------------------------------
+
+//**** Check if there is any PHP version used as FCGI
+$phpFcgiVersionList = array_unique($phpFcgiVersionList);
+$NoPhpFCGI = (isset($c_ApacheDefine['PHPROOT']) && count($phpFcgiVersionList) > 0) ? '' : ';';
+
 //Warning if hosts file is not writable
 if(!$c_hostsFile_writable) {
 	$WarningsAtEnd = true;
@@ -400,7 +401,6 @@ else {
 			$rewriteHost = true;
 		}
 		if($rewriteHost) {
-			error_log("rewrite hosts");
 			//Try to do a backup of hosts file
 			if($wampConf['BackupHosts'] == 'on') {
 				@copy($c_hostsFile,$c_hostsFile."_wampsave.".$next_hosts_save);
@@ -710,14 +710,19 @@ unset($PromptCustom,$PromptTemp);
 // Create PhpMyAdmin menu item's
 // Show PhpMyAdmin in Wampmanager menu ?
 if($phmyadOK && $wampConf['ShowphmyadMenu'] == 'on') {
-	$ItemMenuPMA = $SubPhpMyAdmin = '';
-	foreach($phpMyAdminAlias as $value) {
-		$glyph = (($value['compat']) ? 39 : 23);
+	$ItemMenuPMA = '';
+	foreach($Alias_Contents['PMyAdVer'] as $key => $none) {
+		$value = $Alias_Contents['PMyAd'][$key];
+		$glyph = ($Alias_Contents[$value]['compat']) ? 39 : 23;
 		$ItemMenuPMA .= <<< EOF
-${SupportDBMS}Type: item; Caption: "${w_phpmyadmin}	${value['version']}"; Action: run; FileName: "${c_navigator}"; Parameters: "${c_edge}http://localhost${UrlPort}/${value['alias']}/"; Glyph: ${glyph}
+${SupportDBMS}Type: item; Caption: "${w_phpmyadmin}	{$Alias_Contents[$value]['version']}{$Alias_Contents[$value]['fcgiaff']}"; Action: run; FileName: "${c_navigator}"; Parameters: "${c_edge}http://localhost${UrlPort}/{$value}/"; Glyph: ${glyph}
 
 EOF;
 	}
+$ItemMenuPMA .= <<< EOF
+${SupportDBMS}Type: submenu; Caption: "${w_phpMyAdminHelp}"; Submenu: phpmyadmin-help; Glyph: 35
+
+EOF;
 	$subPhpMyAdmin = <<< EOF
 ${SupportDBMS}Type: submenu; Caption: "PhpMyAdmin"; Submenu: MultiplephpMyAdmin; Glyph: 39
 
@@ -793,46 +798,43 @@ unset($langText);
 
 //***************************
 // Creating PHP versions menu
-$phpVersionList = listDir($c_phpVersionDir,'checkPhpConf','php');
-array_walk($phpVersionList,function(&$value, $key){$value = str_replace('php','',$value);});
-// Sort in versions number order
-natcasesort($phpVersionList);
+$phpVersionList = listDir($c_phpVersionDir,'checkPhpConf','php',true);
 create_wamp_versions($phpVersionList,'php');
 if($doReport)	$wampReport['gen3'] .= "PHP versions seen by refresh listDir:\n".implode(' - ',$phpVersionList)."\n";
 $myPattern = ';WAMPPHPVERSIONSTART';
 $myreplace = $myPattern."
 ";
-$myreplacemenu = '';
-foreach ($phpVersionList as $onePhpVersion)
-{
+$myreplacemenu = $php_iniFCGI = '';
+foreach ($phpVersionList as $onePhpVersion) {
+	$php_iniFCGI .= <<< EOF
+Type: item; Caption: "php.ini PHP ${onePhpVersion} [FCGI-CLI]"; Glyph: 33; Action: run; FileName: "${c_editor}"; parameters: "${c_phpVersionDir}/php${onePhpVersion}/php.ini"
+
+EOF;
+
   $phpGlyph = '';
   //it checks if the PHP is compatible with the current version of apache
   unset($phpConf);
   include $c_phpVersionDir.'/php'.$onePhpVersion.'/'.$wampBinConfFiles;
 
   $apacheVersionTemp = $wampConf['apacheVersion'];
-  while (!isset($phpConf['apache'][$apacheVersionTemp]) && $apacheVersionTemp != '')
-  {
+  while (!isset($phpConf['apache'][$apacheVersionTemp]) && $apacheVersionTemp != '') {
     $pos = strrpos($apacheVersionTemp,'.');
     $apacheVersionTemp = substr($apacheVersionTemp,0,$pos);
   }
 
   // Is PHP incompatible with the current version of apache
   $incompatiblePhp = 0;
-  if(empty($apacheVersionTemp))
-  {
+  if(empty($apacheVersionTemp)) {
     $incompatiblePhp = -1;
     $phpGlyph = '; Glyph: 19';
 		$phpErrorMsg = "apacheVersion = empty in wampmanager.conf file";
   }
-  elseif(empty($phpConf['apache'][$apacheVersionTemp]['LoadModuleFile']))
-  {
+  elseif(empty($phpConf['apache'][$apacheVersionTemp]['LoadModuleFile'])) {
     $incompatiblePhp = -2;
     $phpGlyph = '; Glyph: 19';
 		$phpErrorMsg = "\$phpConf['apache']['".$apacheVersionTemp."']['LoadModuleFile'] does not exists or is empty in ".$c_phpVersionDir.'/php'.$onePhpVersion.'/'.$wampBinConfFiles;
   }
-  elseif(!file_exists($c_phpVersionDir.'/php'.$onePhpVersion.'/'.$phpConf['apache'][$apacheVersionTemp]['LoadModuleFile']))
-  {
+  elseif(!file_exists($c_phpVersionDir.'/php'.$onePhpVersion.'/'.$phpConf['apache'][$apacheVersionTemp]['LoadModuleFile'])) {
     $incompatiblePhp = -3;
     $phpGlyph = '; Glyph: 19';
 		$phpErrorMsg = $c_phpVersionDir.'/php'.$onePhpVersion.'/'.$phpConf['apache'][$apacheVersionTemp]['LoadModuleFile']." does not exists.";
@@ -843,8 +845,7 @@ foreach ($phpVersionList as $onePhpVersion)
 
     $myreplace .= 'Type: item; Caption: "'.$onePhpVersion.'"; Action: multi; Actions:switchPhp'.$onePhpVersion.$phpGlyph.'
 ';
-  if($incompatiblePhp == 0)
-  {
+  if($incompatiblePhp == 0) {
   $myreplacemenu .= <<< EOF
 [switchPhp${onePhpVersion}]
 Action: run; FileName: "${c_phpCli}";Parameters: "switchPhpVersion.php ${onePhpVersion}";WorkingDir: "${c_installDir}/scripts"; Flags: waituntilterminated
@@ -854,16 +855,21 @@ Action: readconfig
 
 EOF;
   }
-  else
-  {
+  else {
   $myreplacemenu .= '[switchPhp'.$onePhpVersion.']
 Action: run; FileName: "'.$c_phpExe.'";Parameters: "msg.php 1 '.base64_encode($onePhpVersion).' '.base64_encode($phpErrorMsg).'";WorkingDir: "'.$c_installDir.'/scripts"; Flags: waituntilterminated
 ';
   }
 }
-$myreplace .= 'Type: submenu; Caption: " "; Submenu: AddingVersions; Glyph: 1
 
-';
+$myreplace .= <<< EOF
+Type: submenu; Caption: " "; Submenu: AddingVersions; Glyph: 1
+
+[phpiniFCGICLI]
+Type: separator; Caption: "php.ini [FCGI - CLI]"
+${php_iniFCGI}
+
+EOF;
 
 $tpl = str_replace($myPattern,$myreplace.$myreplacemenu,$tpl);
 unset($myreplace,$myreplacemenu,$myPattern);
@@ -872,242 +878,316 @@ unset($myreplace,$myreplacemenu,$myPattern);
 
 // ********************************
 // Creating the PHP extensions menu
-$myphpini = file_get_contents_dos($c_phpConfFile);
-$myphpini = clean_file_contents($myphpini,array(2,1),false,true,$c_phpConfFile);
-$NBextPHPlines = 0;
-//recovering the extensions loading configuration
-preg_match_all('/^extension\s*=\s*"?([a-z0-9_]+)"?.*\r?$/im',$myphpini,$matchesON);
-preg_match_all('/^;extension\s*=\s*"?([a-z0-9_]+)"?.*\r$/im',$myphpini,$matchesOFF);
+$PHP_Apache_Module = false;
+$PHP_List_Versions = $phpVersionList;
+$PHP_FCGI_Mode = false;
+//To be able to manage php.ini and phpForApache.ini extensions
+//if a PHP version is used both as an Apache module and in FCGI mode.
+if(in_array($c_phpVersion,$phpFcgiVersionList)){
+	$PHP_List_Versions[] = $c_phpVersion;
+	natsort($PHP_List_Versions);
+}
+foreach($PHP_List_Versions as $php_version_value) {
+	$PHP_submenu_txt = '';
+	if(!$PHP_Apache_Module && $php_version_value == $c_phpVersion) {
+		//PHP used as Apache module
+		$PHP_FCGI_Mode = false;
+		$PHP_Apache_Module = true;
+		$PHP_ini_File = $c_phpConfFile;
+		$PHP_ext_Dir = $c_phpExtDir;
+		$PHP_version = $PHP_version_NoFCGI = $PHP_version_space = $c_phpVersion;
+		$PHP_extSubmenu = false;
+	}
+	else {
+		if(in_array($php_version_value,$phpFcgiVersionList)) {
+			//PHP used as FCGI
+			$PHP_FCGI_Mode = true;
+			$PHP_ini_File = $c_phpVersionDir.'/php'.$php_version_value.'/php.ini';
+			$PHP_ext_Dir = $c_phpVersionDir.'/php'.$php_version_value.'/ext/';
+			$PHP_version_NoFCGI = $php_version_value;
+			$PHP_version = 'FCGI'.$php_version_value;
+			$PHP_version_space = '[FCGI] '.$php_version_value;
+			$PHP_extSubmenu = true;
+		}
+		else {
+			continue;
+		}
+	}
+	$myphpini = file_get_contents_dos($PHP_ini_File);
+	$myphpini = clean_file_contents($myphpini,array(2,1),false,false,true,$PHP_ini_File);
+	$NBextPHPlines = 0;
+	//recovering the extensions loading configuration
+	preg_match_all('/^extension\s*=\s*"?([a-z0-9_]+)"?.*\r?$/im',$myphpini,$matchesON);
+	preg_match_all('/^;extension\s*=\s*"?([a-z0-9_]+)"?.*\r$/im',$myphpini,$matchesOFF);
 
-$ext = array_fill_keys($matchesON[1], '1') + array_fill_keys($matchesOFF[1], '0');
+	$ext = array_fill_keys($matchesON[1], '1') + array_fill_keys($matchesOFF[1], '0');
 
-//recovering the zend_extensions loading configuration
-preg_match_all('~^zend_extension\s*=\s*"([a-z0-9_:/\-\.]+)\.dll"?~im',$myphpini,$matchesON);
-preg_match_all('~^;zend_extension\s*=\s*"([a-z0-9_:/\-\.]+)\.dll"?~im',$myphpini,$matchesOFF);
-if(count($matchesON[0]) > 0 ) {
-	$i = 0 ;
-	foreach($matchesON[0] as $value) {
-		foreach($zend_extensions as $key => $zend_value) {
-			if(stripos($value,$key) !== false) {
-				$zend_extensions[$key]['loaded'] = '1';
-				$zend_extensions[$key]['content'] = $matchesON[1][$i];
-				$i++;
+	//recovering the zend_extensions loading configuration
+	preg_match_all('~^zend_extension\s*=\s*"([a-z0-9_:/\-\.]+)\.dll"?~im',$myphpini,$matchesON);
+	preg_match_all('~^;zend_extension\s*=\s*"([a-z0-9_:/\-\.]+)\.dll"?~im',$myphpini,$matchesOFF);
+	if(count($matchesON[0]) > 0 ) {
+		$i = 0 ;
+		foreach($matchesON[0] as $value) {
+			foreach($zend_extensions as $key => $zend_value) {
+				if(stripos($value,$key) !== false) {
+					$zend_extensions[$key]['loaded'] = '1';
+					$zend_extensions[$key]['content'] = $matchesON[1][$i];
+					$i++;
+				}
 			}
 		}
 	}
-}
 
-if(count($matchesOFF[0]) > 0 ) {
-	$i = 0 ;
-	foreach($matchesOFF[0] as $value) {
-		foreach($zend_extensions as $key => $zend_value) {
-			if(stripos($value,$key) !== false) {
-				$zend_extensions[$key]['loaded'] = '0';
-				$zend_extensions[$key]['content'] = $matchesOFF[1][$i];
-				$i++;
+	if(count($matchesOFF[0]) > 0 ) {
+		$i = 0 ;
+		foreach($matchesOFF[0] as $value) {
+			foreach($zend_extensions as $key => $zend_value) {
+				if(stripos($value,$key) !== false) {
+					$zend_extensions[$key]['loaded'] = '0';
+					$zend_extensions[$key]['content'] = $matchesOFF[1][$i];
+					$i++;
+				}
 			}
 		}
 	}
-}
 
-if(preg_match('/^.*php_xdebug\-([0-9\.]+[alpha|beta|rc1-9]*)\-.*\s?$/im',$zend_extensions['php_xdebug']['content'],$matches) > 0 )
-	$zend_extensions['php_xdebug']['version'] = $matches[1];
-foreach($zend_extensions as $key => $value) {
-	$ext[$key] = $zend_extensions[$key]['loaded'];
-}
-ksort($ext);
-$Extensions_in_php_ini = array_combine(array_keys($ext),array_keys($ext));
-// recovering the extensions list (.dll files) present in the directory ext
-$extDirContents = glob($c_phpExtDir.'/*.dll');
-array_walk($extDirContents,function(&$item){
-	$item = str_replace('.dll','',basename($item));
-	});
-$dll_in_php_ext_dir = array_combine($extDirContents,$extDirContents);
-//For PHP 7.2.0+ we have to add php_ at the beginning if not
-function add_php(&$item, $key) {
-	if(strpos($item,'php_') === false)
-		$item = 'php_'.$item;
-}
-array_walk($Extensions_in_php_ini,'add_php');
-$Extensions_in_php_ini = array_combine($Extensions_in_php_ini,$Extensions_in_php_ini);
-
-// both tables are "crossed"
-//DLL extension file exists but no extension= line in phpForApache.ini
-$noExtLine = array_diff_key($dll_in_php_ext_dir,$Extensions_in_php_ini);
-
-//extension= line exists in phpForApache.ini but no dll file
-$noDllFile = array_diff_key($Extensions_in_php_ini,$dll_in_php_ext_dir);
-
-foreach($noExtLine as $value) {
-	if(array_key_exists($value,$zend_extensions))
-		$ext[$value] = -4; //dll must be loaded by zend_extension
-	elseif(in_array($value,$phpNotLoadExt))
-		$ext[$value] = -3; //dll not to be loaded by extension = in php.ini
-	else
-		$ext[$value] = -1; //dll file exists but not extension line in php.ini
-}
-foreach($noDllFile as $value) {
-	if(array_key_exists($value,$zend_extensions))
-		$ext[$value] = -4; //dll must be loaded by zend_extension
-	else
-		$ext[$value] = -2; //extension line in php.ini but not dll file
-}
-
-// Check if it is a zend_extension
-foreach($ext as $key => $value) {
-	if(array_key_exists($key,$zend_extensions)) {
-		$ext[$key] = -4; //dll must be loaded by zend_extension
-		// Check if there is content
-		if(empty($zend_extensions[$key]['content']))
-			$ext[$key] = -5; //Does not exists
-		// Check if dll file exists
-		if(!file_exists($zend_extensions[$key]['content'].".dll"))
-			$ext[$key] = -6; //Dll not exists
+	if(preg_match('/^.*php_xdebug\-([0-9\.]+[alpha|beta|rc1-9]*)\-.*\s?$/im',$zend_extensions['php_xdebug']['content'],$matches) > 0 )
+		$zend_extensions['php_xdebug']['version'] = $matches[1];
+	foreach($zend_extensions as $key => $value) {
+		$ext[$key] = $zend_extensions[$key]['loaded'];
 	}
-}
-
-//we construct the corresponding menu
-$extText = ';WAMPPHP_EXTSTART
-';
-$extTextInfo = "";
-$notloadExt = false;
-$notloadExtZend = false;
-$extTextNoDll = "";
-$notDll = false;
-$extTextNoline = "";
-$notLine = false;
-
-foreach ($ext as $extname=>$extstatus)
-{
-  if($ext[$extname] == 1) {
-  	$NBextPHPlines++;
-    $extText .= 'Type: item; Caption: "'.$extname.'"; Glyph: 13; Action: multi; Actions: php_ext_'.$extname.'
-';
-	}
-  elseif($ext[$extname] == -1)
-  {
-		if(!$notLine) {
-			$extTextNoline .= 'Type: separator; Caption: "'.$w_ext_noline.'"
-';
-			$notLine = true;
+	ksort($ext);
+	$Extensions_in_php_ini = array_combine(array_keys($ext),array_keys($ext));
+	// recovering the extensions list (.dll files) present in the directory ext
+	$extDirContents = glob($PHP_ext_Dir.'/*.dll');
+	array_walk($extDirContents,function(&$item){$item = str_replace('.dll','',basename($item));});
+	$dll_in_php_ext_dir = array_combine($extDirContents,$extDirContents);
+	//For PHP 7.2.0+ we have to add php_ at the beginning if not
+	array_walk($Extensions_in_php_ini,function(&$item,$key){if(strpos($item,'php_') === false)$item = 'php_'.$item;});
+	$Extensions_in_php_ini = array_combine($Extensions_in_php_ini,$Extensions_in_php_ini);
+	// both tables are "crossed"
+	//DLL extension file exists but no extension= line in phpForApache.ini
+	$noExtLine = array_diff_key($dll_in_php_ext_dir,$Extensions_in_php_ini);
+	//extension= line exists in phpForApache.ini but no dll file
+	$noDllFile = array_diff_key($Extensions_in_php_ini,$dll_in_php_ext_dir);
+	foreach($noExtLine as $value) {
+		if(array_key_exists($value,$zend_extensions)) {
+			$ext[$value] = -4; //dll must be loaded by zend_extension
 		}
-   	//Warning icon to indicate problem with this extension: No extension line in php.ini
-    $extTextNoline .= 'Type: item; Caption: "'.$extname.'"; Action: multi; Actions: php_ext_'.$extname.' ; Glyph: 19;
-';
-	}
-  elseif($ext[$extname] == -2)
-  {
-		if(!$notDll) {
-			$extTextNoDll .= 'Type: separator; Caption: "'.$w_ext_nodll.'"
-';
-			$notDll = true;
+		elseif(in_array($value,$phpNotLoadExt)) {
+			$ext[$value] = -3; //dll not to be loaded by extension = in php.ini
 		}
-   	//Square red icon to indicate problem with this extension: no dll file in ext directory
-    $extTextNoDll .= 'Type: item; Caption: "'.$extname.'"; Action: multi; Actions: php_ext_'.$extname.' ; Glyph: 11;
-';
-	}
-  elseif($ext[$extname] == -3)
-  {
-		if(!$notloadExt) {
-			$extTextInfo .= 'Type: separator; Caption: "'.$w_ext_spec.'"
-';
-			$notloadExt = true;
+		else {
+			$ext[$value] = -1; //dll file exists but not extension line in php.ini
 		}
-   	//blue || icon to indicate that the dll must not be loaded by extension = in php.ini
-    $extTextInfo .= 'Type: item; Caption: "'.$extname.'"; Action: multi; Actions: php_ext_'.$extname.' ; Glyph: 22;
-';
 	}
-  elseif($ext[$extname] == -4) //Must be loaded by zend_extension
-  {
-		if(!$notloadExtZend) {
-			$extTextInfo .= 'Type: separator; Caption: "'.$w_ext_zend.'"
-';
-			$notloadExtZend = true;
+	foreach($noDllFile as $value) {
+		if(array_key_exists($value,$zend_extensions)) {
+			$ext[$value] = -4; //dll must be loaded by zend_extension
 		}
-		$GlyphZend = '';
-		if($zend_extensions[$extname]['loaded'] == '1')
-			$GlyphZend = "Glyph: 13;";
+		elseif(in_array($value,$phpNotLoadExt)) {
+			$ext[$value] = -3; //dll not to be loaded by extension = in php.ini
+		}
+		else {
+			$ext[$value] = -2; //extension line in php.ini but not dll file
+		}
+	}
+
+	// Check if it is a zend_extension
+	foreach($ext as $key => $value) {
+		if(array_key_exists($key,$zend_extensions)) {
+			$ext[$key] = -4; //dll must be loaded by zend_extension
+			// Check if there is content
+			if(empty($zend_extensions[$key]['content'])) {
+				$ext[$key] = -5; //Does not exists
+			}
+			// Check if dll file exists
+			elseif(!file_exists($zend_extensions[$key]['content'].".dll")) {
+				$ext[$key] = -6; //Dll not exists
+			}
+		}
+	}
+
+	//we construct the corresponding menu
+	$extText = <<< EOF
+;WAMPPHP_EXTSTART
+[php_ext_${PHP_version}]
+Type: separator; Caption: "${w_phpExtensions} ${PHP_version_space}"
+
+EOF;
+
+	$extTextInfo = $extTextNoDll = $extTextNoline = '';
+	$notloadExt = $notloadExtZend = $notDll = $notLine = false;
+	foreach ($ext as $extname=>$extstatus){
+	  if($ext[$extname] == 1) {
+	  	$NBextPHPlines++;
+	    $extText .= 'Type: item; Caption: "'.$extname.'"; Glyph: 13; Action: multi; Actions: php_ext_'.$PHP_version.$extname.'
+';
+		}
+	  elseif($ext[$extname] == -1) {
+			if(!$notLine) {
+				$extTextNoline .= 'Type: separator; Caption: "'.$w_ext_noline.'"
+';
+				$notLine = true;
+			}
+	   	//Warning icon to indicate problem with this extension: No extension line in php.ini
+	    $extTextNoline .= 'Type: item; Caption: "'.$extname.'"; Action: multi; Actions: php_ext_'.$PHP_version.$extname.' ; Glyph: 19;
+';
+		}
+	  elseif($ext[$extname] == -2) {
+			if(!$notDll) {
+				$extTextNoDll .= 'Type: separator; Caption: "'.$w_ext_nodll.'"
+';
+				$notDll = true;
+			}
+	   	//Square red icon to indicate problem with this extension: no dll file in ext directory
+	    $extTextNoDll .= 'Type: item; Caption: "'.$extname.'"; Action: multi; Actions: php_ext_'.$PHP_version.$extname.' ; Glyph: 11;
+';
+		}
+	  elseif($ext[$extname] == -3) {
+			if(!$notloadExt) {
+				$extTextInfo .= 'Type: separator; Caption: "'.$w_ext_spec.'"
+';
+				$notloadExt = true;
+			}
+	   	//blue || icon to indicate that the dll must not be loaded by extension = in php.ini
+	    $extTextInfo .= 'Type: item; Caption: "'.$extname.'"; Action: multi; Actions: php_ext_'.$PHP_version.$extname.' ; Glyph: 22;
+';
+		}
+	  elseif($ext[$extname] == -4) { //Must be loaded by zend_extension
+			if(!$notloadExtZend) {
+				$extTextInfo .= 'Type: separator; Caption: "'.$w_ext_zend.'"
+';
+				$notloadExtZend = true;
+			}
+			$GlyphZend = '';
+			if($zend_extensions[$extname]['loaded'] == '1')	$GlyphZend = "Glyph: 13;";
 			$extname_nophp = str_replace('php_','',$extname);
-   	$extTextInfo .= 'Type: item; Caption: "'.$extname_nophp.' '.$zend_extensions[$extname]['version'].'"; '.$GlyphZend.'Action: multi; Actions: php_ext_'.$extname.'
+	   	$extTextInfo .= 'Type: item; Caption: "'.$extname_nophp.' '.$zend_extensions[$extname]['version'].'"; '.$GlyphZend.'Action: multi; Actions: php_ext_'.$PHP_version.$extname.'
 ';
-	}
-  elseif($ext[$extname] == -5)
-  {
-  	 //Zend extension does not exixts - do nothing
-  }
-  elseif($ext[$extname] == -6)  //Zend extension dll file does not exixts - do nothing
-  {
-		if(!$notDll) {
-			$extTextNoDll .= 'Type: separator; Caption: "'.$w_ext_nodll.'"
-';
-			$notDll = true;
 		}
-   	//Square red icon to indicate problem with this extension: no dll file in ext directory
-    $extTextNoDll .= 'Type: item; Caption: "'.$extname.'"; Action: multi; Actions: php_ext_'.$extname.' ; Glyph: 11;
+	  elseif($ext[$extname] == -5) {
+	  	 //Zend extension does not exixts - do nothing
+	  }
+	  elseif($ext[$extname] == -6) { //Zend extension dll file does not exixts - do nothing
+			if(!$notDll) {
+				$extTextNoDll .= 'Type: separator; Caption: "'.$w_ext_nodll.'"
 ';
-  }
-  else
-  {
-  	$NBextPHPlines++;
-    $extText .= 'Type: item; Caption: "'.$extname.'"; Action: multi; Actions: php_ext_'.$extname.'
+				$notDll = true;
+			}
+	   	//Square red icon to indicate problem with this extension: no dll file in ext directory
+	    $extTextNoDll .= 'Type: item; Caption: "'.$extname.'"; Action: multi; Actions: php_ext_'.$PHP_version.$extname.' ; Glyph: 11;
 ';
+	  }
+	  else
+	  {
+	  	$NBextPHPlines++;
+	    $extText .= 'Type: item; Caption: "'.$extname.'"; Action: multi; Actions: php_ext_'.$PHP_version.$extname.'
+';
+		}
 	}
-}
-$extText .= $extTextNoline.$extTextNoDll.$extTextInfo;
+	$extText .= $extTextNoline.$extTextNoDll.$extTextInfo;
 
-foreach ($ext as $extname=>$extstatus)
-{
-	if($ext[$extname] == 1 || $ext[$extname] == 0) {
-		$SwitchAction = ($ext[$extname] == 1 ? 'off' : 'on');
-	$extText .= <<< EOF
-[php_ext_${extname}]
-Action: run; FileName: "${c_phpCli}";Parameters: "switchPhpExt.php ${extname} ${SwitchAction}";WorkingDir: "${c_installDir}/scripts"; Flags: waituntilterminated
+	foreach ($ext as $extname=>$extstatus)
+	{
+		if($ext[$extname] == 1 || $ext[$extname] == 0) {
+			$SwitchAction = ($ext[$extname] == 1 ? 'off' : 'on');
+		$extText .= <<< EOF
+[php_ext_${PHP_version}${extname}]
+Action: run; FileName: "${c_phpCli}";Parameters: "switchPhpExt.php ${extname} ${SwitchAction} ${PHP_version}";WorkingDir: "${c_installDir}/scripts"; Flags: waituntilterminated
 ${Apache_Restart}
 Action: run; FileName: "${c_phpCli}";Parameters: "refresh.php";WorkingDir: "${c_installDir}/scripts"; Flags: waituntilterminated
 Action: readconfig
 
 EOF;
-	}
-	elseif($ext[$extname] == -4) {
-		$SwitchAction = ($zend_extensions[$extname]['loaded'] == 1 ? 'zendoff' : 'zendon');
-		$extcontent = $zend_extensions[$extname]['content'];
-	$extText .= <<< EOF
+		}
+		elseif($ext[$extname] == -4) {
+			$SwitchAction = ($zend_extensions[$extname]['loaded'] == 1 ? 'zendoff' : 'zendon');
+			$extcontent = $zend_extensions[$extname]['content'];
+		$extText .= <<< EOF
 [php_ext_${extname}]
-Action: run; FileName: "${c_phpCli}";Parameters: "switchPhpExt.php ${extcontent} ${SwitchAction}";WorkingDir: "${c_installDir}/scripts"; Flags: waituntilterminated
+Action: run; FileName: "${c_phpCli}";Parameters: "switchPhpExt.php ${extcontent} ${SwitchAction} ${PHP_version}";WorkingDir: "${c_installDir}/scripts"; Flags: waituntilterminated
 ${Apache_Restart}
 Action: run; FileName: "${c_phpCli}";Parameters: "refresh.php";WorkingDir: "${c_installDir}/scripts"; Flags: waituntilterminated
 Action: readconfig
 
 EOF;
-	}
-	elseif($ext[$extname] == -1 || $ext[$extname] == -2 || $ext[$extname] == -3 || $ext[$extname] == -6) {
-		$extname_msg = $extname;
-		if($ext[$extname] == -1) $msgNum = 3;
-		elseif($ext[$extname] == -2) $msgNum = 4;
-		elseif($ext[$extname] == -3) $msgNum = 5;
-		elseif($ext[$extname] == -6) {
-			$msgNum = 16;
-			$extname_msg = $zend_extensions[$extname]['content'];
 		}
-    $extText .= '[php_ext_'.$extname.']
+		elseif($ext[$extname] == -1 || $ext[$extname] == -2 || $ext[$extname] == -3 || $ext[$extname] == -6) {
+			$extname_msg = $extname;
+			if($ext[$extname] == -1) $msgNum = 3;
+			elseif($ext[$extname] == -2) $msgNum = 4;
+			elseif($ext[$extname] == -3) $msgNum = 5;
+			elseif($ext[$extname] == -6) {
+				$msgNum = 16;
+				$extname_msg = $zend_extensions[$extname]['content'];
+			}
+	    $extText .= '[php_ext_'.$PHP_version.$extname.']
 Action: run; FileName: "'.$c_phpExe.'";Parameters: "msg.php '.$msgNum.' '.base64_encode($extname_msg).'";WorkingDir: "'.$c_installDir.'/scripts"; Flags: waituntilterminated
 ';
+		}
 	}
-}
-//error_log("NBext=".$NBextPHPlines);
-$NBextPHPlines = ceil(($NBextPHPlines)/2);
+	//error_log("NBext=".$NBextPHPlines);
+	$NBextPHPlines = ceil(($NBextPHPlines)/2);
+	if($PHP_extSubmenu) {
+		$AesBigMenu[] = array($w_phpExtensions.' '.$PHP_version_space,'$NBextPHPlines',1);
+		$PHP_submenu_txt .= <<< EOF
 
-$tpl = str_replace(';WAMPPHP_EXTSTART',$extText,$tpl);
-unset($extText,$extTextNoline,$extTextNoDll,$extTextInfo);
+Type: submenu; Caption: "${w_phpExtensions} ${PHP_version_space}"; SubMenu: php_ext_${PHP_version}; Glyph: 4
+
+EOF;
+	}
+	$tpl = str_replace(';WAMPPHP_EXTSTART',$extText,$tpl);
+	if(!empty($PHP_submenu_txt)) {
+		$tpl = str_replace(';WAMPPHPEXTALLSTART',';WAMPPHPEXTALLSTART'.$PHP_submenu_txt,$tpl);
+	}
+	unset($extText,$extTextNoline,$extTextNoDll,$extTextInfo,$PHP_submenu_txt);
+}//End foreach $phpVersionList
 // *** END of PHP extensions menu
 // ******************************
 
 // **********************************************
 // Creating the PHP parameters configuration menu
-$myphpini = parse_ini_file($c_phpConfFile,false,INI_SCANNER_RAW);
-$myphpinitxt = file_get_contents($c_phpConfFile);
+$PHP_Apache_Module = false;
+$PHP_List_Versions = $phpVersionList;
+$PHP_FCGI_Mode = false;
+//To be able to manage php.ini and phpForApache.ini extensions
+//if a PHP version is used both as an Apache module and in FCGI mode.
+if(in_array($c_phpVersion,$phpFcgiVersionList)){
+	$PHP_List_Versions[] = $c_phpVersion;
+	natsort($PHP_List_Versions);
+}
+foreach($PHP_List_Versions as $php_version_value) {
+	$PHP_submenu_txt = '';
+	if(!$PHP_Apache_Module && $php_version_value == $c_phpVersion) {
+		//PHP used as Apache module
+		$PHP_FCGI_Mode = false;
+		$PHP_Apache_Module = true;
+		$PHP_ini_File = $c_phpConfFile;
+		$PHP_ext_Dir = $c_phpExtDir;
+		$PHP_version = $PHP_version_NoFCGI = $PHP_version_space = $c_phpVersion;
+		$PHP_extSubmenu = false;
+	}
+	else {
+		if(in_array($php_version_value,$phpFcgiVersionList)) {
+			//PHP used as FCGI
+			$PHP_FCGI_Mode = true;
+			$PHP_ini_File = $c_phpVersionDir.'/php'.$php_version_value.'/php.ini';
+			$PHP_ext_Dir = $c_phpVersionDir.'/php'.$php_version_value.'/ext/';
+			$PHP_version_NoFCGI = $php_version_value;
+			$PHP_version = 'FCGI'.$php_version_value;
+			$PHP_version_space = '[FCGI] '.$php_version_value;
+			$PHP_extSubmenu = true;
+		}
+		else {
+			continue;
+		}
+	}
+
+$myphpini = parse_ini_file($PHP_ini_File,false,INI_SCANNER_RAW);
+$myphpinitxt = file_get_contents($PHP_ini_File);
 $phpReportConf = array();
-// values are recovered from the file phpForApache.ini
+
 $phpParams = array_combine($phpParams,$phpParams);
 foreach($phpParams as $next_param_name => $next_param_text) {
 	if(array_key_exists($next_param_name,$myphpini)) $phpReportConf[$next_param_name] = $myphpini[$next_param_name];
@@ -1120,7 +1200,7 @@ foreach($phpParams as $next_param_name => $next_param_text) {
   	elseif(array_key_exists($next_param_name, $phpParamsNotOnOff)) {
   		if($phpParamsNotOnOff[$next_param_name]['change'] !== true) {
   	  	$params_for_wampini[$next_param_name] = -2;
-  	  	$phpErrorMsg = "\nIf you want to change this value, you can do it directly in the file:\n".$c_phpConfFile."\nNot to change the wrong file, the best way to access this file is:\nWampmanager icon->PHP->php.ini\n";
+  	  	$phpErrorMsg = "\nIf you want to change this value, you can do it directly in the file php.ini\nNot to change the wrong file, the best way to access this file is:\nWampmanager icon->PHP->php.ini\n";
   		}
   		else {
   	  	$params_for_wampini[$next_param_name] = -3;
@@ -1148,7 +1228,7 @@ foreach($phpParams as $next_param_name => $next_param_text) {
   }
 }
 ksort($phpReportConf);
-if($doReport) {
+if($doReport && $PHP_version == $c_phpVersion) {
 	//PHP configuration values
 	$wampReport['phpConf'] .= "\n-- PHP Configuration values\n\n";
 	$nbbyline = 0;
@@ -1164,8 +1244,12 @@ if($doReport) {
 }
 unset($phpReportConf);
 
-$phpConfText = ";WAMPPHP_PARAMSSTART
-";
+$phpConfText = <<< EOF
+;WAMPPHP_PARAMSSTART
+[php_params_${PHP_version}]
+Type: separator; Caption: "${w_phpSettings} ${PHP_version_space}"
+
+EOF;
 $phpConfTextInfo = "";
 $phpConfTextComment = "";
 $action_sup = $seeInfoGlyphException = array();
@@ -1185,18 +1269,18 @@ foreach ($params_for_wampini as $paramname => $paramstatus) {
 	}
   if($params_for_wampini[$paramname] == '1' || $params_for_wampini[$paramname] == 'on') {
 		if(!$xdebugParam) $NBparamPHP++;
-	  $phpConfText .= 'Type: item; Caption: "'.$paramname.'"; Glyph: 13; Action: multi; Actions: '.$phpParams[$paramname].'
+	  $phpConfText .= 'Type: item; Caption: "'.$paramname.'"; Glyph: 13; Action: multi; Actions: '.$PHP_version.$phpParams[$paramname].'
 ';
 	}
   elseif($params_for_wampini[$paramname] == '0' || $params_for_wampini[$paramname] == 'off') { //It does not display non-existent settings in php.ini
 		if(!$xdebugParam) $NBparamPHP++;
-    $phpConfText .= 'Type: item; Caption: "'.$paramname.'"; Action: multi; Actions: '.$phpParams[$paramname].'
+    $phpConfText .= 'Type: item; Caption: "'.$paramname.'"; Action: multi; Actions: '.$PHP_version.$phpParams[$paramname].'
 ';
 	}
 	elseif($params_for_wampini[$paramname] == -3) { // Indicate different from 0 or 1 or On or Off but can be changed
 		if(!$xdebugParam) $NBparamPHP++;
 		$action_sup[] = $paramname;
-		$phpConfText .= 'Type: submenu; Caption: "'.$paramname.' = '.$myphpini[$paramname].'"; Submenu: '.$paramname.'; Glyph: 9
+		$phpConfText .= 'Type: submenu; Caption: "'.$paramname.' = '.$myphpini[$paramname].'"; Submenu: '.$PHP_version.$paramname.'; Glyph: 9
 ';
 	}
 	elseif($params_for_wampini[$paramname] == -2) { // Information to indicate different from 0 or 1 or On or Off
@@ -1215,7 +1299,7 @@ foreach ($params_for_wampini as $paramname => $paramstatus) {
 			$firstReportErr = true;
 			foreach($report_err as $key => $value) {
 				if($firstReportErr) {
-    			$phpConfTextInfo .= 'Type: item; Caption: "'.$paramname.' = '.$report_err[$key]['str'].'"; Glyph: 22; Action: multi; Actions: '.$phpParams[$paramname].'
+    			$phpConfTextInfo .= 'Type: item; Caption: "'.$paramname.' = '.$report_err[$key]['str'].'"; Glyph: 22; Action: multi; Actions: '.$PHP_version.$phpParams[$paramname].'
 ';
 					$firstReportErr = false;
 				}
@@ -1238,7 +1322,7 @@ foreach ($params_for_wampini as $paramname => $paramstatus) {
 		} // End tests for 'error_reporting'
 		else {
 			if($seeInfoMessage) {
-    		$phpConfTextInfo .= 'Type: item; Caption: "'.$paramname.' = '.$myphpini[$paramname].'"; Action: multi; Actions: '.$phpParams[$paramname].' ;
+    		$phpConfTextInfo .= 'Type: item; Caption: "'.$paramname.' = '.$myphpini[$paramname].'"; Action: multi; Actions: '.$PHP_version.$phpParams[$paramname].' ;
 ';
 			}
 			else {
@@ -1278,7 +1362,7 @@ if(count($action_sup) > 0) {
 				$quoted = 'quotes';
 			else
 				$quoted = 'noquotes';
-			$MenuSup[$i] .= '['.$action.']
+			$MenuSup[$i] .= '['.$PHP_version.$action.']
 Type: separator; Caption: "'.$phpParamsNotOnOff[$action]['title'].'"
 ';
 			$tzs = timezone_identifiers_list();
@@ -1287,7 +1371,7 @@ Type: separator; Caption: "'.$phpParamsNotOnOff[$action]['title'].'"
 			$group = '';
 			foreach ($regions as $value) {
 					$Glyph = ($value == $RegionSelected ? '; Glyph: 9' : '');
-			    $MenuSup[$i] .= 'Type: submenu; Caption: "'.$value.'"; Submenu: tz'.$value.$Glyph.'
+			    $MenuSup[$i] .= 'Type: submenu; Caption: "'.$value.'"; Submenu: '.$PHP_version.'tz'.$value.$Glyph.'
 ';
 			}
 			foreach ($tzs as $tz) {
@@ -1296,17 +1380,17 @@ Type: separator; Caption: "'.$phpParamsNotOnOff[$action]['title'].'"
 			  if($group != $z[0]) {
 			    $group = $z[0];
 			    $MenuSup[$i] .= <<< EOF
-[tz${z[0]}]
+[${PHP_version}tz${z[0]}]
 Type: Separator; Caption: "${z[0]}"
 
 EOF;
 			  }
 			  $Glyph = ($tz == $RegionCitySelected ? '; Glyph: 9' : '');
-				$MenuSup[$i] .= 'Type: item; Caption: "'.$tz.'"; Action: multi; Actions: time_'.$tz.$Glyph.'
+				$MenuSup[$i] .= 'Type: item; Caption: "'.$tz.'"; Action: multi; Actions: '.$PHP_version.'time_'.$tz.$Glyph.'
 ';
 				$SubMenuSup[$i] .= <<< EOF
-[time_${tz}]
-Action: run; FileName: "${c_phpCli}";Parameters: "changePhpParam.php ${quoted} ${action} ${tz}";WorkingDir: "${c_installDir}/scripts"; Flags: waituntilterminated
+[${PHP_version}time_${tz}]
+Action: run; FileName: "${c_phpCli}";Parameters: "changePhpParam.php ${quoted} ${action} ${tz} none ${PHP_version}";WorkingDir: "${c_installDir}/scripts"; Flags: waituntilterminated
 ${Apache_Restart}
 Action: run; FileName: "${c_phpCli}";Parameters: "refresh.php";WorkingDir: "${c_installDir}/scripts"; Flags: waituntilterminated
 Action: readconfig
@@ -1323,7 +1407,7 @@ EOF;
 					break;
 				}
 			}
-			$MenuSup[$i] .= '['.$action.']
+			$MenuSup[$i] .= '['.$PHP_version.$action.']
 Type: separator; Caption: "'.$phpParamsNotOnOff[$action]['title'].'"
 ';
 			$c_values = $c_infos = $phpParamsNotOnOff[$action]['values'];
@@ -1335,23 +1419,23 @@ Type: separator; Caption: "'.$phpParamsNotOnOff[$action]['title'].'"
 			foreach($c_values as $key => $value) {
 				$value_caption = $value;
 				if($c_infos[$key] != $value) $value_caption .= ' - '.$c_infos[$key];
-				$MenuSup[$i] .= 'Type: item; Caption: "'.$value_caption.'"; Action: multi; Actions: '.$action.$value.'
+				$MenuSup[$i] .= 'Type: item; Caption: "'.$value_caption.'"; Action: multi; Actions: '.$PHP_version.$action.$value.'
 ';
 				if(strtolower($value) == 'choose') {
 					$param_value = '%'.$phpParamsNotOnOff[$action]['title'].'%';
-					$param_third = ' '.$phpParamsNotOnOff[$action]['title'];
+					$param_third = $phpParamsNotOnOff[$action]['title'];
 					if($phpParamsNotOnOff[$action]['title'] == 'Integer')
-						$param_third .= ' '.$phpParamsNotOnOff[$action]['min'].'^'.$phpParamsNotOnOff[$action]['max'].'^'.$phpParamsNotOnOff[$action]['default'];
+						$param_third .= $phpParamsNotOnOff[$action]['min'].'^'.$phpParamsNotOnOff[$action]['max'].'^'.$phpParamsNotOnOff[$action]['default'];
 					$c_phpRun = $c_phpExe;
 				}
 				else {
 					$param_value = $value;
-					$param_third = '';
+					$param_third = 'none';
 					$c_phpRun = $c_phpCli;
 				}
 				$SubMenuSup[$i] .= <<< EOF
-[${action}${value}]
-Action: run; FileName: "${c_phpRun}";Parameters: "changePhpParam.php ${quoted} ${action} ${param_value}${param_third}";WorkingDir: "${c_installDir}/scripts"; Flags: waituntilterminated
+[${PHP_version}${action}${value}]
+Action: run; FileName: "${c_phpRun}";Parameters: "changePhpParam.php ${quoted} ${action} ${param_value} ${param_third} ${PHP_version}";WorkingDir: "${c_installDir}/scripts"; Flags: waituntilterminated
 ${Apache_Restart_Php_Conf}
 Action: run; FileName: "${c_phpCli}";Parameters: "refresh.php";WorkingDir: "${c_installDir}/scripts"; Flags: waituntilterminated
 Action: readconfig
@@ -1366,10 +1450,10 @@ EOF;
 // Is there commented php.ini directives ?
 $phpConfTextCommentSub = $phpConfTextCommentSubMenu = "";
 if(!empty($phpConfTextComment)) {
-	$phpConfTextCommentSub .= 'Type: submenu; Caption: "'.$w_settings['iniCommented'].'"; Submenu: phpinicommented; Glyph: 9
+	$phpConfTextCommentSub .= 'Type: submenu; Caption: "'.$w_settings['iniCommented'].'"; Submenu: '.$PHP_version.'phpinicommented; Glyph: 9
 ';
 	$phpConfTextCommentSubMenu .= <<< EOF
-[phpinicommented]
+[${PHP_version}phpinicommented]
 ${phpConfTextComment}
 
 EOF;
@@ -1383,8 +1467,8 @@ foreach ($params_for_wampini as $paramname=>$paramstatus) {
 		else
 			$SwitchAction = ($params_for_wampini[$paramname] == 'on' ? 'off' : 'on');
   	$phpConfText .= <<< EOF
-[${phpParams[$paramname]}]
-Action: run; FileName: "${c_phpCli}";Parameters: "switchPhpParam.php ${phpParams[$paramname]} ${SwitchAction}";WorkingDir: "${c_installDir}/scripts"; Flags: waituntilterminated
+[${PHP_version}${phpParams[$paramname]}]
+Action: run; FileName: "${c_phpCli}";Parameters: "switchPhpParam.php ${phpParams[$paramname]} ${SwitchAction} ${PHP_version}";WorkingDir: "${c_installDir}/scripts"; Flags: waituntilterminated
 ${Apache_Restart}
 Action: run; FileName: "${c_phpCli}";Parameters: "refresh.php";WorkingDir: "${c_installDir}/scripts"; Flags: waituntilterminated
 Action: readconfig
@@ -1393,7 +1477,7 @@ EOF;
 	}
   elseif($params_for_wampini[$paramname] == -2)  {//Parameter is neither 'on' nor 'off'
   	if($seeInfoMessage || $seeInfoGlyphException[$paramname]) {
-  		$phpConfText .= '['.$phpParams[$paramname].']
+  		$phpConfText .= '['.$PHP_version.$phpParams[$paramname].']
 Action: run; FileName: "'.$c_phpExe.'";Parameters: "msg.php 6 '.base64_encode($paramname).' '.base64_encode($phpErrorMsg).'";WorkingDir: "'.$c_installDir.'/scripts"; Flags: waituntilterminated
 ';
 		}
@@ -1405,17 +1489,26 @@ if(count($MenuSup) > 0) {
 }
 $phpConfText .= $phpConfTextCommentSubMenu;
 
+if($PHP_extSubmenu) {
+	$AesBigMenu[] = array($w_phpSettings.' '.$PHP_version_space,'$NBparamPHPlines',1);
+	$PHP_submenu_txt .= <<< EOF
+
+Type: submenu; Caption: "${w_phpSettings} ${PHP_version_space}"; SubMenu:php_params_${PHP_version}; Glyph: 4
+
+EOF;
+}
 $tpl = str_replace(';WAMPPHP_PARAMSSTART',$phpConfText,$tpl);
-unset($phpConfText,$phpConfTextCommentSubMenu);
+if(!empty($PHP_submenu_txt)) {
+	$tpl = str_replace(';WAMPPHPPARAMSALLSTART',';WAMPPHPPARAMSALLSTART'.$PHP_submenu_txt,$tpl);
+}
+unset($phpConfText,$phpConfTextCommentSubMenu,$PHP_submenu_txt);
+}//End foreach
 // **** END of PHP parameters configuration menu ****
 // **************************************************
 
 // *****************************
 // Creating Apache versions menu
-$apacheVersionList = listDir($c_apacheVersionDir,'checkApacheConf','apache');
-array_walk($apacheVersionList,function(&$value, $key){$value = str_replace('apache','',$value);});
-// Sort in versions number order
-natcasesort($apacheVersionList);
+$apacheVersionList = listDir($c_apacheVersionDir,'checkApacheConf','apache',true);
 create_wamp_versions($apacheVersionList,'apache');
 if($doReport)	$wampReport['gen3'] .= "Apache versions seen by refresh listDir:\n".implode(' - ',$apacheVersionList)."\n";
 $myPattern = ';WAMPAPACHEVERSIONSTART';
@@ -1459,23 +1552,7 @@ foreach ($apacheVersionList as $oneApacheVersion)
   }
 
   //File wamp/bin/apache/apachex.y.z/wampserver.conf
-  //Update apache service name if it is modified.
   $ApacheConfFile = $c_apacheVersionDir.'/apache'.$oneApacheVersion.'/'.$wampBinConfFiles;
-  $myApacheContents = file_get_contents($ApacheConfFile);
-	if(substr_count($myApacheContents, " ".$c_apacheService." ") < 2) {
-		$pattern = array(
-			"/^.*apacheServiceInstallParams.*\n/m",
-			"/^.*apacheServiceRemoveParams.*\n/m");
-		$replace = array(
-			"\$apacheConf['apacheServiceInstallParams'] = '-n ".$c_apacheService." -k install';\n",
-			"\$apacheConf['apacheServiceRemoveParams'] = '-n ".$c_apacheService." -k uninstall';\n");
-		$myApacheContents = preg_replace($pattern,$replace,$myApacheContents, 1, $count);
-		if(!is_null($myApacheContents) && $count > 0) {
-			if(WAMPTRACE_PROCESS) error_log("write ".$c_apacheConfFile." in ".__FILE__." line ". __LINE__."\n",3,WAMPTRACE_FILE);
-			write_file($ApacheConfFile,$myApacheContents);
-		}
-	}
-
   unset($apacheConf);
   include $ApacheConfFile;
 
@@ -1525,7 +1602,7 @@ $tpl = str_replace($myPattern,$myreplace.$myreplacemenu,$tpl);
 $myhttpdContents = @file_get_contents($c_apacheConfFile);
 // Recovering the extensions loading configuration
 preg_match_all('~^LoadModule\s+([0-9a-z_]+)\s+(?:modules/|)(.+)\r?$~im',$myhttpdContents,$matchesON);
-preg_match_all('~^#LoadModule\s+([0-9a-z_]+)\s+(?:modules/|)(.+)\\r?$~im',$myhttpdContents,$matchesOFF);
+preg_match_all('~^\#LoadModule\s+([0-9a-z_]+)\s+(?:modules/|)(.+)\\r?$~im',$myhttpdContents,$matchesOFF);
 // Key = module_name - Value = Module loaded = 1, not loaded = 0
 $mod = array_fill_keys($matchesON[1], '1') + array_fill_keys($matchesOFF[1], '0');
 // Key = module_name - Value = file name in modules/ folder
@@ -1701,6 +1778,7 @@ Type: item; Caption: "'.$w_restore.' '.$info['basename'].'"; Action: multi; Acti
 [apache_rest_${info['basename']}]
 Action: run; Filename:"${c_apacheExe}"; Parameters: "-n ${c_apacheService} -k stop"; ShowCmd: hidden; Flags: waituntilterminated
 Action: run; FileName: "CMD";Parameters: "${command}"; ShowCmd: hidden; Flags: ignoreerrors waituntilterminated
+Action: run; FileName: "${c_phpCli}";Parameters: "switchPhpVersion.php ${wampConf['phpVersion']}";WorkingDir: "${c_installDir}/scripts"; Flags: waituntilterminated
 Action: run; Filename:"${c_apacheExe}"; Parameters: "-n ${c_apacheService} -k start"; ShowCmd: hidden; Flags: waituntilterminated
 Action: run; FileName: "${c_phpCli}";Parameters: "refresh.php";WorkingDir: "${c_installDir}/scripts"; Flags: waituntilterminated
 Action: readconfig
@@ -1996,8 +2074,7 @@ EOF;
 
 //***********************
 // Creating Alias submenu
-if($wampConf['AliasSubmenu'] == "on")
-{
+if($wampConf['AliasSubmenu'] == "on") {
 	//Add item for submenu
 	$myPattern = ';WAMPALIASSUBMENU';
 	$myreplace = $myPattern."
@@ -2036,14 +2113,19 @@ Type: separator; Caption: \"".$w_aliasSubMenu."\"
     closedir($handle);
 	}
 	$myreplacesubmenuAlias = '';
+
 	if(count($AliasContents) > 0)	{
+		$Alias_Contents['alias'] = array_unique($Alias_Contents['alias']);
+		//error_log("Alias_Contents=".print_r($Alias_Contents,true));
 		foreach($AliasContents as $AliasValue) {
-			$glyph = '5';
-			if(strpos($AliasValue,'phpmyadmin') !== false || strpos($AliasValue,'adminer') !== false)
-				$glyph = '28';
+			$glyph = (strpos($AliasValue,'phpmyadmin') !== false || strpos($AliasValue,'adminer') !== false) ? '28' : '5';
 			$myreplacesubmenuAlias .= 'Type: item; Caption: "'.$AliasValue.'"; Action: run; FileName: "'.$c_navigator.'"; Parameters: "';
 			$myreplacesubmenuAlias .= $c_edge.'http://localhost'.$UrlPort.'/'.$AliasValue.'/"; Glyph: '.$glyph.'
 ';
+			if(!empty($Alias_Contents[$AliasValue]['fcgiaff'])) {
+				$myreplacesubmenuAlias .= 'Type: item; Caption: "'.$Alias_Contents[$AliasValue]['fcgiaff'].'"; Action: multi; Actions: none
+';
+			}
 		}
 		$tpl = str_replace($myPattern,$myreplace.$myreplacesubmenuAlias,$tpl);
 	}
@@ -2226,32 +2308,38 @@ Action: run; FileName: "'.$c_phpExe.'";Parameters: "msg.php 15 '.base64_encode($
 ';
 							$server_name[$value] = -13;
 						}
-						elseif($virtualHost['ServerNameIp'][$value] !== false) {
-							$vh_ip = $virtualHost['ServerNameIp'][$value];
-							if($virtualHost['ServerNameIpValid'][$value] !== false) {
-								$myreplacesubmenuVhosts .= 'Type: item; Caption: "'.$vh_ip.' ('.$value.')"; Action: run; FileName: "'.$c_navigator.'"; Parameters: "'.$c_edge.'http://'.$vh_ip.$UrlPortVH.'/"; Glyph: 5
-';
-								$server_name[$value] = 1;
-							}
-							else {
-								$myreplacesubmenuVhosts .= 'Type: item; Caption: "'.$vh_ip.' ('.$value.')"; Action: multi; Actions: server_'.$value.'; Glyph: 20
-';
-								$server_name[$value] = -11;
-							}
-						}
 						else {
 							$glyph = ($value == 'localhost') ? '27' : '5';
 							$value_url = ((strpos($value, ':') !== false) ? strstr($value,':',true) : $value);
-							$myreplacesubmenuVhosts .= 'Type: item; Caption: "'.$value.'"; Action: run; FileName: "'.$c_navigator.'"; Parameters: "'.$c_edge.'http://'.$value_url.$UrlPortVH.'/"; Glyph: '.$glyph.'
+							$value_link = $value;
+							$vh_action = 'Action: run; FileName: "'.$c_navigator.'"; Parameters: "'.$c_edge.'http://'.$value_url.$UrlPortVH.'/"; Glyph: '.$glyph;
+							$server_name[$value] = 1;
+							if($virtualHost['ServerNameIp'][$value] !== false) {
+								$vh_ip = $virtualHost['ServerNameIp'][$value];
+								$value_link = $vh_ip.' ('.$value.')';
+								$vh_action = 'Action: run; FileName: "'.$c_navigator.'"; Parameters: "'.$c_edge.'http://'.$vh_ip.$UrlPortVH.'/"; Glyph: '.$glyph;
+								if($virtualHost['ServerNameIpValid'][$value] === false) {
+									$vh_action = "Action: multi; Actions: server_${value}; Glyph: 20";
+									$server_name[$value] = -11;
+								}
+							}
+							$myreplacesubmenuVhosts .= 'Type: item; Caption: "'.$value_link.'"; '.$vh_action.'
 ';
 							if($virtualHost['ServerNameIDNA'][$value] === true && !empty($Windows_Charset)) {
 								$value_trans = @iconv("UTF-8",$Windows_Charset."//TRANSLIT",$virtualHost['ServerNameUTF8'][$value]);
 								if($value_trans !== false ) {
-									$myreplacesubmenuVhosts .= 'Type: item; Caption: "IDNA-> '.$value_trans.'"; Action: run; FileName: "'.$c_navigator.'"; Parameters: "'.$c_edge.'http://'.$value_url.$UrlPortVH.'/"
+									$myreplacesubmenuVhosts .= 'Type: item; Caption: "[IDNA-> '.$value_trans.']"; Action: Multi; Actions: none
 ';
 								}
 							}
-							$server_name[$value] = 1;
+							if(isset($c_ApacheDefine['PHPROOT']) && $virtualHost['ServerNameFcgid'][$value] === true){
+								$myreplacesubmenuVhosts .= 'Type: item; Caption: "[FCGI-> PHP '.$virtualHost['ServerNameFcgidPHP'][$value].']"; Action: Multi; Actions: none
+';
+							}
+							if($virtualHost['ServerNameFcgid'][$value] === true && $virtualHost['ServerNameFcgidPHPOK'][$value] !== true) {
+								$myreplacesubmenuVhosts .= 'Type: item; Caption: "FCGI -> PHP '.$virtualHost['ServerNameFcgidPHP'][$value].' '.$w_phpNotExists.'"; Action: run; FileName: "'.$c_navigator.'"; Parameters: "'.$c_edge.'http://'.$value_url.$UrlPortVH.'/"
+';
+							}
 						}
 					}
 					else {
@@ -2351,7 +2439,17 @@ foreach($wamp_Param as $value) {
   		 	$wampErrorMsg = "\nIf you want to change this value, you can do it directly in the file:\n".$c_installDir."/wampmanager.conf file\n";
   		}
   		else {
-	  	 	$params_for_wampconf[$value] = -3;
+  			if($wampParamsNotOnOff[$value]['title'] == 'OnOff') {
+    			if($wampConf[$value] == 'on')
+      			$params_for_wampconf[$value] = '1';
+    			elseif($wampConf[$value] == 'off')
+      			$params_for_wampconf[$value] = '0';
+    			else
+      			$params_for_wampconf[$value] = '-5';
+  			}
+	  	 	else {
+	  	 		$params_for_wampconf[$value] = -3;
+	  	 	}
   		}
   	}
   }
@@ -2486,13 +2584,13 @@ unset($wampConfText,$wampConfSub,$wampConfActions);
 
 //******************************************
 // Creating tool change php CLI version menu
-//All versions with USED or CLI added to version number
+//All versions with USED or CLI or FCGI added to version number
 $Versions = ListAllVersions();
 $PHP_versions = $Versions['php'];
 //Delete item with CLI added to PHP version number
 $PHP_versions = array_filter($PHP_versions,function($value){return (strpos($value,'CLI') === false);});
-//Replace USED by '' for all items
-array_walk($PHP_versions,function(&$value, $key){$value = str_replace('USED','',$value);});
+//Replace USED or FCGI by '' for all items
+array_walk($PHP_versions,function(&$value, $key){$value = str_replace(array('USED','FCGI'),'',$value);});
 $versionsPHP = array();
 foreach($PHP_versions as $value) {
   if(version_compare($value,$phpCliMinVersion,'>='))
@@ -2535,9 +2633,9 @@ $delOldVer = ";WAMPDELETEOLDVERSIONSSTART
 Type: separator; Caption: \"".$w_deleteVer."\"
 ";
 $delOldVerMenu = $delOldVerSub = '';
-//All versions but USED or CLI
+//All versions but USED or CLI OR FCGI
 $Versions = ListAllVersions();
-$VersionsNotUsed = array_filter_recursive($Versions,function($value){return (strpos($value,'CLI') === false && strpos($value,'USED') === false);});
+$VersionsNotUsed = array_filter_recursive($Versions,function($value){return (strpos($value,'CLI') === false && strpos($value,'USED') === false && strpos($value,'FCGI') === false);});
 foreach(array_keys($VersionsNotUsed) as $appli) {
 	if(count($VersionsNotUsed[$appli]) > 0) {
 		$delOldVerMenu .= "Type: separator; Caption: \" ".strtoupper($appli)." \"

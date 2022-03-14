@@ -159,7 +159,7 @@ foreach ($mysqlVersionList as $oneMysqlVersion) {
 
 	if(strpos($myIniContents, "[".$c_mysqlService."]") === false) {
 		$myIniContents = preg_replace("/^\[wamp.*\].*\n/m", "[".$c_mysqlService."]\r\n", $myIniContents, 1, $count);
-		if(!is_null($myIniContents) && $count == 1) {
+		if(!empty($myIniContents) && $count == 1) {
 			write_file($myIniFile,$myIniContents);
 			$mysqlServer[$oneMysqlVersion] = 0;
 		}

@@ -23,7 +23,7 @@ if(is_dir($aliasDir)) {
 			$alias_contents = @file_get_contents($aliasDir.$file);
 	  	if(preg_match('~^Alias\s+/(.+)\s+"(.+)"\r?$~m',$alias_contents,$matches) > 0) {
     		$aliasList[$i]['alias'] = $matches[1];
-	  		$aliasList[$i]['dir'] = $matches[2];
+	  		$aliasList[$i]['dir'] = replace_apache_var($matches[2]);
 	  		$i++;
 	  	}
   	}

@@ -79,7 +79,7 @@ if($count > 0) {
 	write_file($c_mariadbConfFile,$myIniFileContents);
 }
 if(!empty($changeError)) {
-	$message = "********************* WARNING ********************\n\n";
+	$message = color('red',"********************* WARNING ********************\n\n");
 	$message .= $changeError;
 	$message .= "\nPress ENTER to continue...";
 	Command_Windows($message,-1,-1,0,'Change MariaDB parameter');

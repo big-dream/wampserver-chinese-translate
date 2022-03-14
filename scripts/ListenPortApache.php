@@ -68,7 +68,7 @@ elseif($action == 'delete') {
 	$replace = '';
 	$httpdFileContents = preg_replace($search,$replace,$httpdFileContents, -1, $count);
 	if($count > 0) {
-		$httpdFileContents = clean_file_contents($httpdFileContents,array(3,2));
+		$httpdFileContents = clean_file_contents($httpdFileContents,array(2,1));
 		write_file($c_apacheConfFile,$httpdFileContents);
 	}
 	//httpd-vhosts.conf file
@@ -77,7 +77,7 @@ elseif($action == 'delete') {
 	$replace = $c_UsedPort;
 	$httpdVhostFileContents = preg_replace($search,$replace,$httpdVhostFileContents, -1, $count);
 	if($count > 0) {
-		$c_apacheVhostConfFile = clean_file_contents($c_apacheVhostConfFile,array(3,2));
+		$c_apacheVhostConfFile = clean_file_contents($c_apacheVhostConfFile,array(2,1));
 		write_file($c_apacheVhostConfFile,$httpdVhostFileContents);
 	}
 }

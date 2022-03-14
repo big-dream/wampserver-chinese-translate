@@ -152,7 +152,7 @@ foreach ($mariadbVersionList as $oneMariaDBVersion) {
 
 	if(strpos($maIniContents, "[".$c_mariadbService."]") === false) {
 		$maIniContents = preg_replace("/^\[wamp.*\].*\n/m", "[".$c_mariadbService."]\r\n", $maIniContents, 1, $count);
-		if(!is_null($maIniContents) && $count == 1) {
+		if(!empty($maIniContents) && $count == 1) {
 			write_file($maIniFile,$maIniContents);
 			$mariaServer[$oneMariaDBVersion] = 0;
 		}

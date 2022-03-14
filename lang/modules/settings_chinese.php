@@ -27,6 +27,8 @@
 //                    ApacheWampParams - apachePhpCurlDll
 //       Suppress : $w_enterServiceNameApache - $w_enterServiceNameMysql - $w_enterServiceNameAll
 // 3.2.7 $w_showExcludedPorts
+// 3.2.8 $w_phpNotExists - LinksOnProjectsHomeByIp - CheckVirtualHost - $w_PHPversionsUse - $w_All_Versions
+//       $w_settings 	ScrollListsHomePage
 
 // 项目子菜单
 $w_projectsSubMenu = '项目列表';
@@ -55,6 +57,7 @@ $w_settings = array(
     'HomepageAtStartup' => '启动时打开主页',
     'MenuItemOnline' => '显示切换在线/离线菜单',
     'ItemServicesNames' => '工具菜单项: 更改服务名称',
+	'CheckVirtualHost' => 'Check VirtualHost definitions',
     'NotCheckVirtualHost' => '不检查虚拟主机是否已定义',
     'NotCheckDuplicate' => '不检查 ServerName 是否重复',
     'VhostAllLocalIp' => '允许在虚拟主机中使用本地IP（非 127.* ）',
@@ -83,7 +86,9 @@ $w_settings = array(
     'apacheRestoreFiles' => '允许恢复 Apache 文件',
     'apacheGracefulRestart' => '允许 Apache 平滑重启',
     'LinksOnProjectsHomePage' => '允许链接到项目主页',
+	'LinksOnProjectsHomeByIp' => 'Link on projects by \'local link IP\'',
     'apachePhpCurlDll' => '允许 Apache 使用 PHP 中的 libcrypto-*.dll 和 libssl-*.dll',
+	'ScrollListsHomePage' => 'Allow scrolling of lists on home page',
 );
 
 // 右键子菜单-工具
@@ -135,6 +140,7 @@ $w_restore = '重置';
 $w_checkUpdates = '检查更新';
 $w_apacheTools = 'Apache 工具';
 $w_PHPloadedExt = '显示 PHP 已加载扩展';
+$w_PHPversionsUse = 'Show the use of PHP versions';
 
 // 杂项
 $w_ext_spec = '专用扩展';
@@ -156,6 +162,8 @@ $w_Size = "大小";
 $w_Time = "时间";
 $w_Integer = "整数数值";
 $w_phpMyAdminHelp = "PHPMyAdmin 帮助";
+$w_phpNotExists = 'PHP version doesn\'t exist';
+$w_All_Versions = 'All versions';
 
 // Aestan Tray 菜单 PromptText 的 输入提示
 // 换行符请使用 \r\n
@@ -202,4 +210,5 @@ $w_PhpMyAdminBigFileTxt = "\r\n-- 导入大文件\r\n导入大文件时，可能会超出最大内存
 $w_ApacheRestoreInfo = "--- 恢复 Apache 文件\r\n从 Apache 2.4.41 开始，在完成安装时，会复制 httpd.conf 和 httpd-vhosts.conf 文件到备份文件夹中。\r\n如果 Apache 出现问题或不需要的修改，你可以将这两个还原回去。\r\n当前，这么操作之后，你可能会丢失安装之后所修改的配置。";
 $w_ApacheCompareInfo = "--- 比较 Apache 版本\r\n如果你两个及以上版本的 Apache，则可以将当前版本与其它版本进行对比.\r\n可比较内容如下:\r\n- LoadModule\r\n- Include\r\n- httpd-vhosts.conf 文件\r\n- httpd-ssl.conf 文件\r\n- openssl.cnf 文件\r\n- Certs 文件夹及里面的文件\r\n你可以将旧版本的配置复制到当前版本.\r\n*** 警告 *** 软件不会自动进行备份, 需要你在复制配置之前自行备份现有配置.";
 $w_Refresh_Restart_Info = "--- '{$w_refresh}' 和 '{$w_restartWamp}' 之间的差异\r\n-- ".$w_refresh.":\r\n- 执行各种检查,\r\n- 重新读取 Wampserver, Apache, PHP, MySQL 和 MariaDB 的配置文件,\r\n- 相应的修改 Wampmanager 配置文件并更新菜单,\r\n- 执行 '平滑重启 Apache',\r\n- 重新加载 Aestan Tray 菜单.\r\nApache, PHP, MySQL 和 MariaDB 连接不中断.\r\n\r\n-- ".$w_restartWamp.":\r\n- 停止服务 :".$c_apacheService.", ".$c_mysqlService." 和 ".$c_mariadbService.",\r\n- 清空日志文件,\r\n- 清空临时文件目录,\r\n- 退出 Wampserver,\r\n- 正常启动 Wampserver.\r\n通过这样的方式切断 Apache, PHP, MySQL 和 MariaDB 的连接，然后重新恢复运行";
+
 ?>
