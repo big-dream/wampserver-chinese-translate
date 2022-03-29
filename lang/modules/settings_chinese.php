@@ -57,7 +57,7 @@ $w_settings = array(
     'HomepageAtStartup' => '启动时打开主页',
     'MenuItemOnline' => '显示切换在线/离线菜单',
     'ItemServicesNames' => '工具菜单项: 更改服务名称',
-	'CheckVirtualHost' => 'Check VirtualHost definitions',
+	'CheckVirtualHost' => '检查虚拟主机定义',
     'NotCheckVirtualHost' => '不检查虚拟主机是否已定义',
     'NotCheckDuplicate' => '不检查 ServerName 是否重复',
     'VhostAllLocalIp' => '允许在虚拟主机中使用本地IP（非 127.* ）',
@@ -85,10 +85,10 @@ $w_settings = array(
     'apacheCompareVersion' => '允许比较 Apache 设置',
     'apacheRestoreFiles' => '允许恢复 Apache 文件',
     'apacheGracefulRestart' => '允许 Apache 平滑重启',
-    'LinksOnProjectsHomePage' => '允许链接到项目主页',
-	'LinksOnProjectsHomeByIp' => 'Link on projects by \'local link IP\'',
+    'LinksOnProjectsHomePage' => '链接到项目主页',
+	'LinksOnProjectsHomeByIp' => '通过本地 IP 链接项目',
     'apachePhpCurlDll' => '允许 Apache 使用 PHP 中的 libcrypto-*.dll 和 libssl-*.dll',
-	'ScrollListsHomePage' => 'Allow scrolling of lists on home page',
+	'ScrollListsHomePage' => '允许主页的列表滚动',
 );
 
 // 右键子菜单-工具
@@ -140,7 +140,7 @@ $w_restore = '重置';
 $w_checkUpdates = '检查更新';
 $w_apacheTools = 'Apache 工具';
 $w_PHPloadedExt = '显示 PHP 已加载扩展';
-$w_PHPversionsUse = 'Show the use of PHP versions';
+$w_PHPversionsUse = '显示使用的 PHP 版本';
 
 // 杂项
 $w_ext_spec = '专用扩展';
@@ -162,8 +162,8 @@ $w_Size = "大小";
 $w_Time = "时间";
 $w_Integer = "整数数值";
 $w_phpMyAdminHelp = "PHPMyAdmin 帮助";
-$w_phpNotExists = 'PHP version doesn\'t exist';
-$w_All_Versions = 'All versions';
+$w_phpNotExists = 'PHP 版本不存在';
+$w_All_Versions = '所有版本';
 
 // Aestan Tray 菜单 PromptText 的 输入提示
 // 换行符请使用 \r\n

@@ -1,7 +1,7 @@
 <?php
 //3.2.8 - New file
 
-$langues['fcgi_mode_link'] = 'FCGI mode help';
+$langues['fcgi_mode_link'] = 'FCGI 模式帮助';
 $langues['fcgi_not_loaded'] = 'PHP cannot be used in FCGI mode because the Apache module fcgid_module is not loaded';
 $langues['fcgi_mode_help'] = <<< 'FCGIEOT'
 <h4>How to use PHP in Fast CGI mode with Wampserver</h4>
