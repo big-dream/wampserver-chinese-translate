@@ -14,7 +14,7 @@ if(count($mariadbVersionList) == 0) {
 	error_log("No version of MariaDB is installed.");
 	$glyph = '19';
 	$WarningsAtEnd = true;
-	$WarningText .= 'Type: item; Caption: "No version of MariaDB is installed"; Glyph: '.$glyph.'; Action: multi; Actions: none
+	$WarningText .= 'Type: item; Caption: "No version of MariaDB is installed"; Glyph: '.$glyph.'; Action:  none
 ';
 }
 else {
@@ -60,9 +60,8 @@ $myreplace = <<< EOF
 ;WAMPMARIADBSERVICESTART
 [MariaDBService]
 Type: separator; Caption: "MariaDB"
-Type: item; Caption: "${w_startResume}"; Action: service; Service: ${c_mariadbService}; ServiceAction: startresume; Glyph: 9 ;Flags: ignoreerrors
-;Type: item; Caption: "${w_pauseService}"; Action: service; Service: mariadb; ServiceAction: pause; Glyph: 10
-Type: item; Caption: "${w_stopService}"; Action: service; Service: ${c_mariadbService}; ServiceAction: stop; Glyph: 11
+Type: item; Caption: "${w_startResume}"; Action: service; Service: ${c_mariadbService}; ServiceAction: startresume; Flags: ignoreerrors waituntilterminated; Glyph: 9
+Type: item; Caption: "${w_stopService}"; Action: service; Service: ${c_mariadbService}; ServiceAction: stop; Flags: ignoreerrors waituntilterminated; Glyph: 11
 Type: item; Caption: "${w_restartService}"; Action: service; Service: ${c_mariadbService}; ServiceAction: restart; Flags: ignoreerrors waituntilterminated; Glyph: 12
 Type: separator
 Type: item; Caption: "${w_installService}"; Action: multi; Actions: MariaDBServiceInstall; Glyph: 8
@@ -102,8 +101,7 @@ Action: service; Service: ${c_mariadbService}; ServiceAction: stop; Flags: ignor
 Action: run; FileName: "${c_phpExe}"; Parameters: "switchMariaPort.php %MariaPort%";WorkingDir: "${c_installDir}/scripts"; Flags: waituntilterminated
 ${Apache_Restart}
 Action: service; Service: ${c_mariadbService}; ServiceAction: startresume; Flags: ignoreerrors waituntilterminated
-Action: run; FileName: "${c_phpCli}"; Parameters: "refresh.php";WorkingDir: "${c_installDir}/scripts"; Flags: waituntilterminated
-Action: readconfig
+Action: multi; Actions: refresh_readconfig; Flags:appendsection
 EOF;
 $tpl = str_replace($myPattern,$myreplace,$tpl);
 
@@ -114,9 +112,7 @@ if($MysqlMariaPromptBool) {
 ;WAMPMARIADBUSECONSOLEPROMPTSTART
 [mariadbUseConsolePrompt]
 Action: run; FileName: "${c_phpExe}";Parameters: "switchWampParam.php mariadbUseConsolePrompt ${mariadbConsolePromptChange}"; WorkingDir: "$c_installDir/scripts"; Flags: waituntilterminated
-${Apache_Restart}
-Action: run; FileName: "${c_phpExe}";Parameters: "refresh.php"; WorkingDir: "$c_installDir/scripts"; Flags: waituntilterminated
-Action: readconfig
+Action: multi; Actions: apache_restart_refresh; Flags:appendsection
 EOF;
 	$tpl = str_replace($myPattern,$myreplace,$tpl);
 }
@@ -177,11 +173,11 @@ foreach ($mariadbVersionList as $oneMariaDBVersion) {
 
     $mareplacemenu .= <<< EOF
 [switchMariaDB${oneMariaDBVersion}]
+Action: closeservices; Flags: ignoreerrors
 Action: service; Service: ${c_mariadbService}; ServiceAction: stop; Flags: ignoreerrors waituntilterminated
 Action: run; FileName: "CMD"; Parameters: "/D /C net stop ${c_mariadbService}"; ShowCmd: hidden; Flags: ignoreerrors waituntilterminated
 {$mariaMysqlService}Action: run; FileName: "${c_mariadbExe}"; Parameters: "${c_mariadbServiceRemoveParams}"; ShowCmd: hidden; Flags: ignoreerrors waituntilterminated
 {$mariaCmdScService}Action: run; FileName: "CMD"; Parameters: "/D /C sc delete ${c_mariadbService}"; ShowCmd: hidden; Flags: ignoreerrors waituntilterminated
-Action: closeservices;
 Action: run; FileName: "{$c_phpCli}";Parameters: "switchMariaDBVersion.php ${oneMariaDBVersion}";WorkingDir: "${c_installDir}/scripts"; Flags: waituntilterminated
 Action: run; FileName: "{$c_phpCli}";Parameters: "switchMariaPort.php ${c_UsedMariaPort}";WorkingDir: "${c_installDir}/scripts"; Flags: waituntilterminated
 
@@ -201,10 +197,7 @@ Action: run; FileName: "${c_mariadbVersionDir}/mariadb${oneMariaDBVersion}/${mar
 EOF;
 		}
 		$mareplacemenu .= <<< EOF
-Action: run; FileName: "CMD"; Parameters: "/D /C net start ${c_mariadbService}"; ShowCmd: hidden; Flags: waituntilterminated
-Action: run; FileName: "{$c_phpCli}";Parameters: "refresh.php";WorkingDir: "${c_installDir}/scripts"; Flags: waituntilterminated
-Action: resetservices
-Action: readconfig
+Action: multi; Actions: mariadb_refresh_start; Flags:appendsection
 
 EOF;
 	}
@@ -213,7 +206,25 @@ $mareplace .= 'Type: submenu; Caption: " "; Submenu: AddingVersions; Glyph: 1
 
 ';
 $tpl = str_replace($maPattern,$mareplace.$mareplacemenu,$tpl);
-
+// ************************
+// Before configuring MariaDB, we need to make sure that all directives
+// in the my.ini file have the same syntax.
+// Although we can use - or _ in any directive, to be able to handle
+// them efficiently, it is better that in the my.ini file
+// all directives use _ as in default_storage_engine=
+$myIniFileContents = @file_get_contents($c_mariadbConfFile) or die ("my.ini file not found");
+//Replace all - by _ in my.ini directives
+if(preg_match_all('~^;?[a-z]+-[a-z]+(?:-[a-z]*)*.*\r?$~mi',$myIniFileContents,$matches) > 0) {
+	$counts = 0;
+	foreach($matches[0] as $value) {
+		$myIniFileContents = str_replace($value,str_replace('-','_',$value),$myIniFileContents,$count);
+		$counts += $count;
+	}
+	if($counts > 0) {
+		write_file($c_mariadbConfFile,$myIniFileContents);
+	}
+}
+// ************************
 // Configuration of MariaDB
 // Retrieves the values of the [wampmariadb] or [wampmariadb64] section
 $mariadbiniS = parse_ini_file($c_mariadbConfFile, true,INI_SCANNER_RAW);
@@ -249,16 +260,16 @@ else {
 	$mariadbPrompt = false;
 }
 
-//Check if default sql-mode
-if(!array_key_exists('sql-mode', $mariadbini))
-	$mariadbini = $mariadbini + array('sql-mode' => 'default');
+//Check if default sql_mode
+if(!array_key_exists('sql_mode', $mariadbini))
+	$mariadbini = $mariadbini + array('sql_mode' => 'default');
 
-$myIniFileContents = @file_get_contents($c_mariadbConfFile) or die ("my.ini file not found");
-//Check if there is a commented or not user sql-mode
-$UserSqlMode = (preg_match('/^[;]?sql-mode[ \t]*=[ \t]*"[^"].*$/m',$myIniFileContents) > 0 ? true : false);
-//Check if skip-grant-tables is on (uncommented)
-if(preg_match('/^skip-grant-tables[\r]?$/m',$myIniFileContents) > 0) {
-	$mariadbini = $mariadbini + array('skip-grant-tables' => 'MariaDB On - !! WARNING !!');
+//Previously loaded $myIniFileContents = @file_get_contents($c_mariadbConfFile) or die ("my.ini file not found");
+//Check if there is a commented or not user sql_mode
+$UserSqlMode = (preg_match('/^[;]?sql_mode[ \t]*=[ \t]*"[^"].*$/m',$myIniFileContents) > 0 ? true : false);
+//Check if skip_grant_tables is on (uncommented)
+if(preg_match('/^skip_grant_tables[\r]?$/m',$myIniFileContents) > 0) {
+	$mariadbini = $mariadbini + array('skip_grant_tables' => 'MariaDB On - !! WARNING !!');
 }
 if($wampConf['mariadbUseConsolePrompt'] == 'on') {
 	if(!$mariadbPrompt) {
@@ -308,12 +319,12 @@ foreach($mariadbParams as $next_param_name=>$next_param_text)
   	  		$params_for_mariadb[$next_param_name] = -4;
   		}
   	}
-  	elseif($mariadbini[$next_param_text] == "Off")
-  		$params_for_mariadb[$next_param_name] = '0';
+  	elseif(strtolower($mariadbini[$next_param_text]) == "off")
+  		$params_for_mariadb[$next_param_name] = 'off';
+  	elseif(strtolower($mariadbini[$next_param_text]) == "on")
+  		$params_for_mariadb[$next_param_name] = 'on';
   	elseif($mariadbini[$next_param_text] == 0)
   		$params_for_mariadb[$next_param_name] = '0';
-  	elseif($mariadbini[$next_param_text] == "On")
-  		$params_for_mariadb[$next_param_name] = '1';
   	elseif($mariadbini[$next_param_text] == 1)
   		$params_for_mariadb[$next_param_name] = '1';
   	else
@@ -328,11 +339,13 @@ $mariadbConfText = ";WAMPMARIADB_PARAMSSTART
 $mariadbConfTextInfo = $mariadbConfForInfo = "";
 $action_sup = array();
 $information_only = false;
-foreach ($params_for_mariadb as $paramname=>$paramstatus)
-{
-	if($params_for_mariadb[$paramname] == 0 || $params_for_mariadb[$paramname] == 1) {
-		$glyph = ($params_for_mariadb[$paramname] == 1 ? '13' : '22');
-    $mariadbConfText .= 'Type: item; Caption: "'.$paramname.'"; Glyph: '.$glyph.'; Action: multi; Actions: maria_'.$mariadbParams[$paramname].'
+foreach ($params_for_mariadb as $paramname=>$paramstatus) {
+	if($params_for_mariadb[$paramname] == '1' || $params_for_mariadb[$paramname] == 'on') {
+    $mariadbConfText .= 'Type: item; Caption: "'.$paramname.'"; Glyph: 13; Action: multi; Actions: maria_'.$mariadbParams[$paramname].'
+';
+	}
+	elseif($params_for_mariadb[$paramname] == '0' || $params_for_mariadb[$paramname] == 'off') {
+    $mariadbConfText .= 'Type: item; Caption: "'.$paramname.'"; Action: multi; Actions: maria_'.$mariadbParams[$paramname].'
 ';
 	}
 	elseif($params_for_mariadb[$paramname] == -2) { // I blue to indicate different from 0 or 1 or On or Off
@@ -341,7 +354,7 @@ foreach ($params_for_mariadb as $paramname=>$paramstatus)
 ';
 			$information_only = true;
 		}
-		if($paramname == 'skip-grant-tables') {
+		if($paramname == 'skip_grant_tables') {
 			$WarningsAtEnd = true;
 			$WarningText .= 'Type: item; Caption: "'.$paramname.' = '.$mariadbini[$paramname].'"; Glyph: 19; Action: multi; Actions: maria_'.$mariadbParams[$paramname].'
 ';
@@ -351,7 +364,7 @@ foreach ($params_for_mariadb as $paramname=>$paramstatus)
 ';
 		}
 		else {
-    	$mariadbConfForInfo .= 'Type: item; Caption: "'.$paramname.' = '.$mariadbini[$paramname].'"; Action: multi; Actions: none
+    	$mariadbConfForInfo .= 'Type: item; Caption: "'.$paramname.' = '.$mariadbini[$paramname].'"; Action:  none
 ';
 		}
 		if($doReport && ($paramname == 'basedir' || $paramname == 'datadir')) $wampReport['mariadb'] .= "\nMariaDB ".$paramname." = ".$mariadbini[$paramname];
@@ -364,7 +377,7 @@ foreach ($params_for_mariadb as $paramname=>$paramstatus)
 	}
 	elseif($params_for_mariadb[$paramname] == -4) { // Indicate different from 0 or 1 or On or Off but can be changed with Special treatment
 		$action_sup[] = $paramname;
-		if($paramname == 'sql-mode') {
+		if($paramname == 'sql_mode') {
 			$mariadbConfTextMode = '';
 			$default_modes = array(
 				'10.1' => array('NONE'),
@@ -380,25 +393,25 @@ foreach ($params_for_mariadb as $paramname=>$paramstatus)
 				else
 					$default_valeurs = $default_modes['10.2.3'];
 
-			if(empty($mariadbini['sql-mode'])) {
+			if(empty($mariadbini['sql_mode'])) {
 				$valeurs[0] = 'NONE';
 				$m_valeur = 'none';
-				$mariadbini['sql-mode'] = 'none';
-      	$mariadbConfTextInfo .= 'Type: separator; Caption: "sql-mode: '.$w_mysql_none.'"
+				$mariadbini['sql_mode'] = 'none';
+      	$mariadbConfTextInfo .= 'Type: separator; Caption: "sql_mode: '.$w_mysql_none.'"
 ';
-				$mariadbConfTextInfo .= 'Type: submenu; Caption: "'.$w_mysql_mode.'"; Submenu: mysql-mode; Glyph: 22
+				$mariadbConfTextInfo .= 'Type: submenu; Caption: "'.$w_mysql_mode.'"; Submenu: mysql_mode; Glyph: 22
 ';
 				$mariadbConfTextMode = 'Type: submenu; Caption: "'.$paramname.'"; Submenu: '.$paramname.$typebase.'; Glyph: 9
 ';
 			}
-			elseif($mariadbini['sql-mode'] == 'default') {
+			elseif($mariadbini['sql_mode'] == 'default') {
 				$valeurs = $default_valeurs;
-      	$mariadbConfTextInfo .= 'Type: separator; Caption: "sql-mode:  '.$w_mysql_default.'"
+      	$mariadbConfTextInfo .= 'Type: separator; Caption: "sql_mode:  '.$w_mysql_default.'"
 ';
-				$mariadbConfTextInfo .= 'Type: submenu; Caption: "'.$w_mysql_mode.'"; Submenu: mysql-mode; Glyph: 22
+				$mariadbConfTextInfo .= 'Type: submenu; Caption: "'.$w_mysql_mode.'"; Submenu: mysql_mode; Glyph: 22
 ';
 				foreach($valeurs as $val) {
-					$mariadbConfTextInfo .= 'Type: item; Caption: "'.$val.'"; Action: multi; Actions: none
+					$mariadbConfTextInfo .= 'Type: item; Caption: "'.$val.'"; Action:  none
 ';
 				}
 				$m_valeur = 'default';
@@ -406,11 +419,11 @@ foreach ($params_for_mariadb as $paramname=>$paramstatus)
 ';
 			}
 			else {
-				$valeurs = explode(',',$mariadbini['sql-mode']);
+				$valeurs = explode(',',$mariadbini['sql_mode']);
 				$valeurs = array_map('trim',$valeurs);
-     		$mariadbConfTextInfo .= 'Type: separator; Caption: "sql-mode: '.$w_mysql_user.'"
+     		$mariadbConfTextInfo .= 'Type: separator; Caption: "sql_mode: '.$w_mysql_user.'"
 ';
-				$mariadbConfTextInfo .= 'Type: submenu; Caption: "'.$w_mysql_mode.'"; Submenu: mysql-mode; Glyph: 22
+				$mariadbConfTextInfo .= 'Type: submenu; Caption: "'.$w_mysql_mode.'"; Submenu: mysql_mode; Glyph: 22
 ';
 				$MyUserError = false;
 				foreach($valeurs as $val) {
@@ -424,11 +437,11 @@ foreach ($params_for_mariadb as $paramname=>$paramstatus)
 						$UserGlyph = '; Glyph: 19';
 						$notValid = ' - Not valid mode';
 					}
-					$mariadbConfTextInfo .= 'Type: item; Caption: "'.$val.$notValid.'"; Action: multi; Actions: none'.$UserGlyph.'
+					$mariadbConfTextInfo .= 'Type: item; Caption: "'.$val.$notValid.'"; Action:  none'.$UserGlyph.'
 ';
 				}
 				$m_valeur = 'user';
-				$mariadbini['sql-mode'] = 'user';
+				$mariadbini['sql_mode'] = 'user';
 				$mariadbConfTextMode = 'Type: submenu; Caption: "'.$paramname.'"; Submenu: '.$paramname.$typebase.'; Glyph: 9
 ';
 			}
@@ -447,9 +460,9 @@ if(count($action_sup) > 0) {
 	foreach($action_sup as $action) {
 		$MenuSup[$i] = $SubMenuSup[$i] = '';
 		if($mariadbParamsNotOnOff[$action]['title'] == 'Special') {
-			if($action == 'sql-mode') {
+			if($action == 'sql_mode') {
 				$actionToDo = $actionName = $param_value = array();
-				if($mariadbini['sql-mode'] == 'default') {
+				if($mariadbini['sql_mode'] == 'default') {
 					if($UserSqlMode) {
 						$actionToDo[] = 'user';
 						$actionName[] = $w_mysql_user;
@@ -459,7 +472,7 @@ if(count($action_sup) > 0) {
 					$actionName[] = $w_mysql_none;
 					$param_value[] = 'none';
 				}
-				elseif($mariadbini['sql-mode'] == 'none') {
+				elseif($mariadbini['sql_mode'] == 'none') {
 					if($UserSqlMode) {
 						$actionToDo[] = 'user';
 						$actionName[] = $w_mysql_user;
@@ -469,7 +482,7 @@ if(count($action_sup) > 0) {
 					$actionName[] = $w_mysql_default;
 					$param_value[] = 'default';
 				}
-				if($mariadbini['sql-mode'] == 'user') {
+				if($mariadbini['sql_mode'] == 'user') {
 					$actionToDo[] = 'none';
 					$actionName[] = $w_mysql_none;
 					$param_value[] = 'none';
@@ -477,34 +490,31 @@ if(count($action_sup) > 0) {
 					$actionName[] = $w_mysql_default;
 					$param_value[] = 'default';
 				}
-				$MenuSup[$i] .= '[sql-mode'.$typebase.']
-Type: separator; Caption: "sql-mode"
+				$MenuSup[$i] .= '[sql_mode'.$typebase.']
+Type: separator; Caption: "sql_mode"
 ';
 				for($j = 0 ; $j < count($actionToDo) ; $j++) {
 					if($actionToDo[$j] == 'default') {
 						$MenuSup[$i] .= <<< EOF
 
 Type: separator; Caption: "MariaDB ${c_mariadbVersion}"
-Type: separator; Caption: "sql-mode ${actionName[$j]} = "
+Type: separator; Caption: "sql_mode ${actionName[$j]} = "
 
 EOF;
 						foreach($default_valeurs as $val) {
-						$MenuSup[$i] .= 'Type: item; Caption: "'.$val.'"; Action: multi; Actions: none
+						$MenuSup[$i] .= 'Type: item; Caption: "'.$val.'"; Action:  none
 ';
 						}
 						$MenuSup[$i] .= 'Type: separator
 ';
 					}
-				$MenuSup[$i] .= 'Type: item; Caption: "sql-mode -> '.$actionName[$j].'"; Action: multi; Actions: '.$action.$actionToDo[$j].$typebase.'
+				$MenuSup[$i] .= 'Type: item; Caption: "sql_mode -> '.$actionName[$j].'"; Action: multi; Actions: '.$action.$actionToDo[$j].$typebase.'
 ';
 					$SubMenuSup[$i] .= <<< EOF
 [${action}${actionToDo[$j]}${typebase}]
 Action: service; Service: ${c_mariadbService}; ServiceAction: stop; Flags: waituntilterminated
 Action: run; FileName: "${c_phpExe}";Parameters: "changeMariadbParam.php noquotes ${action} ${param_value[$j]}";WorkingDir: "${c_installDir}/scripts"; Flags: waituntilterminated
-Action: run; FileName: "${c_phpCli}";Parameters: "refresh.php";WorkingDir: "${c_installDir}/scripts"; Flags: waituntilterminated
-Action: run; FileName: "CMD"; Parameters: "/D /C net start ${c_mariadbService}"; ShowCmd: hidden; Flags: waituntilterminated
-Action: resetservices
-Action: readconfig
+Action: multi; Actions: mariadb_refresh_start; Flags:appendsection
 
 EOF;
 				}
@@ -520,6 +530,7 @@ Type: separator; Caption: "'.$mariadbParamsNotOnOff[$action]['title'].'"
 			else
 				$quoted = 'noquotes';
 			foreach($c_values as $value) {
+				if($value == $mariadbini[$action]) continue;
 				$text = ($mariadbParamsNotOnOff[$action]['title'] == 'Number' ? " - ".$mariadbParamsNotOnOff[$action]['text'][$value] : "");
 				$MenuSup[$i] .= 'Type: item; Caption: "'.$value.$text.'"; Action: multi; Actions: maria_'.$action.$value.'
 ';
@@ -537,10 +548,7 @@ Type: separator; Caption: "'.$mariadbParamsNotOnOff[$action]['title'].'"
 [maria_${action}${value}]
 Action: service; Service: ${c_mariadbService}; ServiceAction: stop; Flags: waituntilterminated
 Action: run; FileName: "${c_phpRun}";Parameters: "changeMariadbParam.php ${quoted} ${action} ${param_value}${param_third}";WorkingDir: "${c_installDir}/scripts"; Flags: waituntilterminated
-Action: run; FileName: "${c_phpCli}";Parameters: "refresh.php";WorkingDir: "${c_installDir}/scripts"; Flags: waituntilterminated
-Action: run; FileName: "CMD"; Parameters: "/D /C net start ${c_mariadbService}"; ShowCmd: hidden; Flags: waituntilterminated
-Action: resetservices
-Action: readconfig
+Action: multi; Actions: mariadb_refresh_start; Flags:appendsection
 
 EOF;
 			}
@@ -551,16 +559,16 @@ EOF;
 $mariadbConfText .= $mariadbConfTextInfo.$mariadbConfForInfo;
 
 foreach ($params_for_mariadb as $paramname=>$paramstatus) {
-	if($params_for_mariadb[$paramname] == 1 || $params_for_mariadb[$paramname] == 0) {
-		$SwitchAction = ($params_for_mariadb[$paramname] == 1 ? 'off' : 'on');
+	if($params_for_mariadb[$paramname] == '1' || $params_for_mariadb[$paramname] == '0' || $params_for_mariadb[$paramname] == 'on' || $params_for_mariadb[$paramname] == 'off') {
+		if($params_for_mariadb[$paramname] == '1' || $params_for_mariadb[$paramname] == '0')
+			$SwitchAction = ($params_for_mariadb[$paramname] == '1' ? '0' : '1');
+		else
+			$SwitchAction = ($params_for_mariadb[$paramname] == 'on' ? 'off' : 'on');
   	$mariadbConfText .= <<< EOF
 [maria_${mariadbParams[$paramname]}]
 Action: service; Service: ${c_mariadbService}; ServiceAction: stop; Flags: waituntilterminated
 Action: run; FileName: "${c_phpCli}";Parameters: "switchMariadbParam.php ${mariadbParams[$paramname]} ${SwitchAction}";WorkingDir: "${c_installDir}/scripts"; Flags: waituntilterminated
-Action: run; FileName: "${c_phpCli}";Parameters: "refresh.php";WorkingDir: "${c_installDir}/scripts"; Flags: waituntilterminated
-Action: run; FileName: "CMD"; Parameters: "/D /C net start ${c_mariadbService}"; ShowCmd: hidden; Flags: waituntilterminated
-Action: resetservices
-Action: readconfig
+Action: multi; Actions: mariadb_refresh_start; Flags:appendsection
 
 EOF;
 	}

@@ -14,7 +14,7 @@ if(count($mysqlVersionList) == 0) {
 	error_log("No version of MySQL is installed.");
 	$glyph = '19';
 	$WarningsAtEnd = true;
-	$WarningText .= 'Type: item; Caption: "No version of MySQL is installed"; Glyph: '.$glyph.'; Action: multi; Actions: none
+	$WarningText .= 'Type: item; Caption: "No version of MySQL is installed"; Glyph: '.$glyph.'; Action:  none
 ';
 }
 else {
@@ -61,9 +61,8 @@ $myreplace = <<< EOF
 ;WAMPMYSQLSERVICESTART
 [MySqlService]
 Type: separator; Caption: "${w_mysql}"
-Type: item; Caption: "${w_startResume}"; Action: service; Service: ${c_mysqlService}; ServiceAction: startresume; Glyph: 9; Flags: ignoreerrors
-;Type: item; Caption: "${w_pauseService}"; Action: service; Service: mysql; ServiceAction: pause; Glyph: 10
-Type: item; Caption: "${w_stopService}"; Action: service; Service: ${c_mysqlService}; ServiceAction: stop; Glyph: 11
+Type: item; Caption: "${w_startResume}"; Action: service; Service: ${c_mysqlService}; ServiceAction: startresume; Flags: ignoreerrors waituntilterminated; Glyph: 9
+Type: item; Caption: "${w_stopService}"; Action: service; Service: ${c_mysqlService}; ServiceAction: stop; Flags: ignoreerrors waituntilterminated; Glyph: 11
 Type: item; Caption: "${w_restartService}"; Action: service; Service: ${c_mysqlService}; ServiceAction: restart; Flags: ignoreerrors waituntilterminated; Glyph: 12
 Type: separator
 Type: item; Caption: "${w_installService}"; Action: multi; Actions: MySQLServiceInstall; Glyph: 8
@@ -103,8 +102,7 @@ Action: service; Service: ${c_mysqlService}; ServiceAction: stop; Flags: ignoree
 Action: run; FileName: "${c_phpExe}"; Parameters: "switchMysqlPort.php %MysqlPort%";WorkingDir: "${c_installDir}/scripts"; Flags: waituntilterminated
 ${Apache_Restart}
 Action: service; Service: ${c_mysqlService}; ServiceAction: startresume; Flags: ignoreerrors waituntilterminated
-Action: run; FileName: "${c_phpCli}"; Parameters: "refresh.php";WorkingDir: "${c_installDir}/scripts"; Flags: waituntilterminated
-Action: readconfig
+Action: multi; Actions: refresh_readconfig; Flags:appendsection
 EOF;
 $tpl = str_replace($myPattern,$myreplace,$tpl);
 
@@ -115,9 +113,7 @@ if($MysqlMariaPromptBool) {
 ;WAMPMYSQLUSECONSOLEPROMPTSTART
 [mysqlUseConsolePrompt]
 Action: run; FileName: "${c_phpExe}";Parameters: "switchWampParam.php mysqlUseConsolePrompt ${mysqlConsolePromptChange}"; WorkingDir: "$c_installDir/scripts"; Flags: waituntilterminated
-${Apache_Restart}
-Action: run; FileName: "${c_phpExe}";Parameters: "refresh.php"; WorkingDir: "$c_installDir/scripts"; Flags: waituntilterminated
-Action: readconfig
+Action: multi; Actions: apache_restart_refresh; Flags:appendsection
 EOF;
 	$tpl = str_replace($myPattern,$myreplace,$tpl);
 }
@@ -183,11 +179,11 @@ foreach ($mysqlVersionList as $oneMysqlVersion) {
 ';
   	$myreplacemenu .= <<< EOF
 [switchMysql${oneMysqlVersion}]
+Action: closeservices; Flags: ignoreerrors
 Action: service; Service: ${c_mysqlService}; ServiceAction: stop; Flags: ignoreerrors waituntilterminated
 Action: run; FileName: "CMD"; Parameters: "/D /C net stop ${c_mysqlService}"; ShowCmd: hidden; Flags: ignoreerrors waituntilterminated
 {$mysqlMysqlService}Action: run; FileName: "${c_mysqlExe}"; Parameters: "${c_mysqlServiceRemoveParams}"; ShowCmd: hidden; Flags: ignoreerrors waituntilterminated
 {$mysqlCmdScService}Action: run; FileName: "CMD"; Parameters: "/D /C sc delete ${c_mysqlService}"; ShowCmd: hidden; Flags: ignoreerrors waituntilterminated
-Action: closeservices;
 Action: run; FileName: "${c_phpCli}";Parameters: "switchMysqlVersion.php ${oneMysqlVersion}";WorkingDir: "${c_installDir}/scripts"; Flags: waituntilterminated
 Action: run; FileName: "${c_phpExe}";Parameters: "switchMysqlPort.php ${c_UsedMysqlPort}";WorkingDir: "${c_installDir}/scripts"; Flags: waituntilterminated
 
@@ -207,10 +203,7 @@ Action: run; FileName: "${c_mysqlVersionDir}/mysql${oneMysqlVersion}/${mysqlConf
 EOF;
 		}
 		$myreplacemenu .= <<< EOF
-Action: run; FileName: "CMD"; Parameters: "/D /C net start ${c_mysqlService}"; ShowCmd: hidden; Flags: waituntilterminated
-Action: run; FileName: "${c_phpCli}";Parameters: "refresh.php";WorkingDir: "${c_installDir}/scripts"; Flags: waituntilterminated
-Action: resetservices
-Action: readconfig
+Action: multi; Actions: mysql_refresh_start; Flags:appendsection
 
 EOF;
 	}
@@ -230,11 +223,28 @@ $myreplace .= 'Type: submenu; Caption: " "; Submenu: AddingVersions; Glyph: 1
 $tpl = str_replace($myPattern,$myreplace.$myreplacemenu,$tpl);
 
 // **********************
+// Before configuring MySQL, we need to make sure that all directives
+// in the my.ini file have the same syntax.
+// Although we can use - or _ in any directive, to be able to handle
+// them efficiently, it is better that in the my.ini file
+// all directives use _ as in default_storage_engine=
+$myIniFileContents = @file_get_contents($c_mysqlConfFile) or die ("my.ini file not found");
+//Replace all - by _ in my.ini directives
+if(preg_match_all('~^;?[a-z]+-[a-z]+(?:-[a-z]*)*.*\r?$~mi',$myIniFileContents,$matches) > 0) {
+	$counts = 0;
+	foreach($matches[0] as $value) {
+		$myIniFileContents = str_replace($value,str_replace('-','_',$value),$myIniFileContents,$count);
+		$counts += $count;
+	}
+	if($counts > 0) {
+		write_file($c_mysqlConfFile,$myIniFileContents);
+	}
+}
+// **********************
 // Configuration of MySQL
 // Retrieves the values of the [wampmysqld] or [wampmysqld64] section
 $mysqliniS = parse_ini_file($c_mysqlConfFile, true,INI_SCANNER_RAW);
-//To correct MySQL 8.0 bug
-$mysqlini = (count($mysqliniS[$c_mysqlService]) > 0) ? $mysqliniS[$c_mysqlService] : $mysqliniS['mysqld'];
+$mysqlini = $mysqliniS[$c_mysqlService];
 // Retrieve the three values of port used
 $MysqlPort['client'] = $mysqliniS['client']['port'];
 $MysqlPort[$c_mysqlService] = $mysqliniS[$c_mysqlService]['port'];
@@ -266,16 +276,16 @@ else {
 	$mysqlPrompt = false;
 }
 
-//Check if default sql-mode
-if(!array_key_exists('sql-mode', $mysqlini))
-	$mysqlini += array('sql-mode' => 'default');
+//Check if default sql_mode
+if(!array_key_exists('sql_mode', $mysqlini))
+	$mysqlini += array('sql_mode' => 'default');
 
-$myIniFileContents = @file_get_contents($c_mysqlConfFile) or die ("my.ini file not found");
-//Check if there is a commented or not user sql-mode
-$UserSqlMode = (preg_match('/^[;]?sql-mode[ \t]*=[ \t]*"[^"].*$/m',$myIniFileContents) > 0 ? true : false);
-//Check if skip-grant-tables is on (uncommented)
-if(preg_match('/^skip-grant-tables[\r]?$/m',$myIniFileContents) > 0) {
-	$mysqlini += array('skip-grant-tables' => 'MySQL On - !! WARNING !!');
+//Previously loaded $myIniFileContents = @file_get_contents($c_mysqlConfFile) or die ("my.ini file not found");
+//Check if there is a commented or not user sql_mode
+$UserSqlMode = (preg_match('/^[;]?sql_mode[ \t]*=[ \t]*"[^"].*$/m',$myIniFileContents) > 0 ? true : false);
+//Check if skip_grant_tables is on (uncommented)
+if(preg_match('/^skip_grant_tables[\r]?$/m',$myIniFileContents) > 0) {
+	$mysqlini += array('skip_grant_tables' => 'MySQL On - !! WARNING !!');
 }
 if($wampConf['mysqlUseConsolePrompt'] == 'on') {
 	if(!$mysqlPrompt) {
@@ -307,10 +317,8 @@ unset($myIniFileContents);
 
 $mysqlErrorMsg = array();
 $mysqlParams = array_combine($mysqlParams,$mysqlParams);
-foreach($mysqlParams as $next_param_name=>$next_param_text)
-{
-  if(isset($mysqlini[$next_param_text]))
-  {
+foreach($mysqlParams as $next_param_name=>$next_param_text) {
+  if(isset($mysqlini[$next_param_text])) {
   	if(array_key_exists($next_param_name, $mysqlParamsNotOnOff)) {
   		if($mysqlParamsNotOnOff[$next_param_name]['change'] !== true) {
   	  	$params_for_mysqlini[$next_param_name] = -2;
@@ -325,12 +333,12 @@ foreach($mysqlParams as $next_param_name=>$next_param_text)
   	  	$params_for_mysqlini[$next_param_name] = -4;
   		}
   	}
-  	elseif($mysqlini[$next_param_text] == "Off")
-  		$params_for_mysqlini[$next_param_name] = '0';
+  	elseif(strtolower($mysqlini[$next_param_text]) == "off")
+  		$params_for_mysqlini[$next_param_name] = 'off';
+  	elseif(strtolower($mysqlini[$next_param_text]) == "on")
+  		$params_for_mysqlini[$next_param_name] = 'on';
   	elseif($mysqlini[$next_param_text] == 0)
   		$params_for_mysqlini[$next_param_name] = '0';
-  	elseif($mysqlini[$next_param_text] == "On")
-  		$params_for_mysqlini[$next_param_name] = '1';
   	elseif($mysqlini[$next_param_text] == 1)
   		$params_for_mysqlini[$next_param_name] = '1';
   	else
@@ -345,11 +353,13 @@ $mysqlConfText = ";WAMPMYSQL_PARAMSSTART
 $mysqlConfTextInfo = $mysqlConfForInfo = "";
 $action_sup = array();
 $information_only = false;
-foreach ($params_for_mysqlini as $paramname=>$paramstatus)
-{
-	if($params_for_mysqlini[$paramname] == 0 || $params_for_mysqlini[$paramname] == 1) {
-		$glyph = ($params_for_mysqlini[$paramname] == 1 ? '13' : '22');
-    $mysqlConfText .= 'Type: item; Caption: "'.$paramname.'"; Glyph: '.$glyph.'; Action: multi; Actions: '.$mysqlParams[$paramname].'
+foreach ($params_for_mysqlini as $paramname=>$paramstatus) {
+	if($params_for_mysqlini[$paramname] == '1' || $params_for_mysqlini[$paramname] == 'on') {
+    $mysqlConfText .= 'Type: item; Caption: "'.$paramname.'"; Glyph: 13; Action: multi; Actions: '.$mysqlParams[$paramname].'
+';
+	}
+	elseif($params_for_mysqlini[$paramname] == '0' || $params_for_mysqlini[$paramname] == 'off') {
+    $mysqlConfText .= 'Type: item; Caption: "'.$paramname.'"; Action: multi; Actions: '.$mysqlParams[$paramname].'
 ';
 	}
 	elseif($params_for_mysqlini[$paramname] == -2) { // I blue to indicate different from 0 or 1 or On or Off
@@ -358,7 +368,7 @@ foreach ($params_for_mysqlini as $paramname=>$paramstatus)
 ';
 			$information_only = true;
 		}
-		if($paramname == 'skip-grant-tables') {
+		if($paramname == 'skip_grant_tables') {
 			$WarningsAtEnd = true;
 			$WarningText .= 'Type: item; Caption: "'.$paramname.' = '.$mysqlini[$paramname].'"; Glyph: 19; Action: multi; Actions: '.$mysqlParams[$paramname].'
 ';
@@ -368,7 +378,7 @@ foreach ($params_for_mysqlini as $paramname=>$paramstatus)
 ';
 		}
 		else {
-    	$mysqlConfForInfo .= 'Type: item; Caption: "'.$paramname.' = '.$mysqlini[$paramname].'"; Action: multi; Actions: none
+    	$mysqlConfForInfo .= 'Type: item; Caption: "'.$paramname.' = '.$mysqlini[$paramname].'"; Action: none
 ';
 		}
 		if($doReport && ($paramname == 'basedir' || $paramname == 'datadir')) $wampReport['mysql'] .= "\nMySQL ".$paramname." = ".$mysqlini[$paramname];
@@ -381,7 +391,7 @@ foreach ($params_for_mysqlini as $paramname=>$paramstatus)
 	}
 	elseif($params_for_mysqlini[$paramname] == -4) { // Indicate different from 0 or 1 or On or Off but can be changed with Special treatment
 		$action_sup[] = $paramname;
-		if($paramname == 'sql-mode') {
+		if($paramname == 'sql_mode') {
 			$mysqlConfTextMode = '';
 			$default_modes = array(
 				'5.5' => array('NONE'),
@@ -402,25 +412,25 @@ foreach ($params_for_mysqlini as $paramname=>$paramstatus)
 				else
 					$default_valeurs = $default_modes['5.5'];
 
-			if(empty($mysqlini['sql-mode'])) {
+			if(empty($mysqlini['sql_mode'])) {
 				$valeurs[0] = 'NONE';
 				$m_valeur = 'none';
-				$mysqlini['sql-mode'] = 'none';
-      	$mysqlConfTextInfo .= 'Type: separator; Caption: "sql-mode: '.$w_mysql_none.'"
+				$mysqlini['sql_mode'] = 'none';
+      	$mysqlConfTextInfo .= 'Type: separator; Caption: "sql_mode: '.$w_mysql_none.'"
 ';
-				$mysqlConfTextInfo .= 'Type: submenu; Caption: "'.$w_mysql_mode.'"; Submenu: mysql-mode; Glyph: 22
+				$mysqlConfTextInfo .= 'Type: submenu; Caption: "'.$w_mysql_mode.'"; Submenu: mysql_mode; Glyph: 22
 ';
 				$mysqlConfTextMode = 'Type: submenu; Caption: "'.$paramname.'"; Submenu: '.$paramname.$typebase.'; Glyph: 9
 ';
 			}
-			elseif($mysqlini['sql-mode'] == 'default') {
+			elseif($mysqlini['sql_mode'] == 'default') {
 				$valeurs = $default_valeurs;
-      	$mysqlConfTextInfo .= 'Type: separator; Caption: "sql-mode:  '.$w_mysql_default.'"
+      	$mysqlConfTextInfo .= 'Type: separator; Caption: "sql_mode:  '.$w_mysql_default.'"
 ';
-				$mysqlConfTextInfo .= 'Type: submenu; Caption: "'.$w_mysql_mode.'"; Submenu: mysql-mode; Glyph: 22
+				$mysqlConfTextInfo .= 'Type: submenu; Caption: "'.$w_mysql_mode.'"; Submenu: mysql_mode; Glyph: 22
 ';
 				foreach($valeurs as $val) {
-					$mysqlConfTextInfo .= 'Type: item; Caption: "'.$val.'"; Action: multi; Actions: none
+					$mysqlConfTextInfo .= 'Type: item; Caption: "'.$val.'"; Action:  none
 ';
 				}
 				$m_valeur = 'default';
@@ -428,11 +438,11 @@ foreach ($params_for_mysqlini as $paramname=>$paramstatus)
 ';
 			}
 			else {
-				$valeurs = explode(',',$mysqlini['sql-mode']);
+				$valeurs = explode(',',$mysqlini['sql_mode']);
 				$valeurs = array_map('trim',$valeurs);
-     		$mysqlConfTextInfo .= 'Type: separator; Caption: "sql-mode: '.$w_mysql_user.'"
+     		$mysqlConfTextInfo .= 'Type: separator; Caption: "sql_mode: '.$w_mysql_user.'"
 ';
-				$mysqlConfTextInfo .= 'Type: submenu; Caption: "'.$w_mysql_mode.'"; Submenu: mysql-mode; Glyph: 22
+				$mysqlConfTextInfo .= 'Type: submenu; Caption: "'.$w_mysql_mode.'"; Submenu: mysql_mode; Glyph: 22
 ';
 				$MyUserError = false;
 				foreach($valeurs as $val) {
@@ -446,11 +456,11 @@ foreach ($params_for_mysqlini as $paramname=>$paramstatus)
 						$UserGlyph = '; Glyph: 19';
 						$notValid = ' - Not valid mode';
 					}
-					$mysqlConfTextInfo .= 'Type: item; Caption: "'.$val.$notValid.'"; Action: multi; Actions: none'.$UserGlyph.'
+					$mysqlConfTextInfo .= 'Type: item; Caption: "'.$val.$notValid.'"; Action:  none'.$UserGlyph.'
 ';
 				}
 				$m_valeur = 'user';
-				$mysqlini['sql-mode'] = 'user';
+				$mysqlini['sql_mode'] = 'user';
 				$mysqlConfTextMode = 'Type: submenu; Caption: "'.$paramname.'"; Submenu: '.$paramname.$typebase.'; Glyph: 9
 ';
 			}
@@ -469,9 +479,9 @@ if(count($action_sup) > 0) {
 	foreach($action_sup as $action) {
 		$MenuSup[$i] = $SubMenuSup[$i] = '';
 		if($mysqlParamsNotOnOff[$action]['title'] == 'Special') {
-			if($action == 'sql-mode') {
+			if($action == 'sql_mode') {
 				$actionToDo = $actionName = $param_value = array();
-				if($mysqlini['sql-mode'] == 'default') {
+				if($mysqlini['sql_mode'] == 'default') {
 					if($UserSqlMode) {
 						$actionToDo[] = 'user';
 						$actionName[] = $w_mysql_user;
@@ -481,7 +491,7 @@ if(count($action_sup) > 0) {
 					$actionName[] = $w_mysql_none;
 					$param_value[] = 'none';
 				}
-				elseif($mysqlini['sql-mode'] == 'none') {
+				elseif($mysqlini['sql_mode'] == 'none') {
 					if($UserSqlMode) {
 						$actionToDo[] = 'user';
 						$actionName[] = $w_mysql_user;
@@ -491,7 +501,7 @@ if(count($action_sup) > 0) {
 					$actionName[] = $w_mysql_default;
 					$param_value[] = 'default';
 				}
-				if($mysqlini['sql-mode'] == 'user') {
+				if($mysqlini['sql_mode'] == 'user') {
 					$actionToDo[] = 'none';
 					$actionName[] = $w_mysql_none;
 					$param_value[] = 'none';
@@ -499,34 +509,31 @@ if(count($action_sup) > 0) {
 					$actionName[] = $w_mysql_default;
 					$param_value[] = 'default';
 				}
-				$MenuSup[$i] .= '[sql-mode'.$typebase.']
-Type: separator; Caption: "sql-mode"
+				$MenuSup[$i] .= '[sql_mode'.$typebase.']
+Type: separator; Caption: "sql_mode"
 ';
 				for($j = 0 ; $j < count($actionToDo) ; $j++) {
 					if($actionToDo[$j] == 'default') {
 						$MenuSup[$i] .= <<< EOF
 
 Type: separator; Caption: "MySQL ${c_mysqlVersion}"
-Type: separator; Caption: "sql-mode ${actionName[$j]} = "
+Type: separator; Caption: "sql_mode ${actionName[$j]} = "
 
 EOF;
 						foreach($default_valeurs as $val) {
-						$MenuSup[$i] .= 'Type: item; Caption: "'.$val.'"; Action: multi; Actions: none
+						$MenuSup[$i] .= 'Type: item; Caption: "'.$val.'"; Action:  none
 ';
 						}
 						$MenuSup[$i] .= 'Type: separator
 ';
 					}
-				$MenuSup[$i] .= 'Type: item; Caption: "sql-mode -> '.$actionName[$j].'"; Action: multi; Actions: '.$action.$actionToDo[$j].$typebase.'
+				$MenuSup[$i] .= 'Type: item; Caption: "sql_mode -> '.$actionName[$j].'"; Action: multi; Actions: '.$action.$actionToDo[$j].$typebase.'
 ';
 					$SubMenuSup[$i] .= <<< EOF
 [${action}${actionToDo[$j]}${typebase}]
 Action: service; Service: ${c_mysqlService}; ServiceAction: stop; Flags: waituntilterminated
 Action: run; FileName: "${c_phpExe}";Parameters: "changeMysqlParam.php noquotes ${action} ${param_value[$j]}";WorkingDir: "${c_installDir}/scripts"; Flags: waituntilterminated
-Action: run; FileName: "${c_phpCli}";Parameters: "refresh.php";WorkingDir: "${c_installDir}/scripts"; Flags: waituntilterminated
-Action: run; FileName: "CMD"; Parameters: "/D /C net start ${c_mysqlService}"; ShowCmd: hidden; Flags: waituntilterminated
-Action: resetservices
-Action: readconfig
+Action: multi; Actions: mysql_refresh_start; Flags:appendsection
 
 EOF;
 				}
@@ -542,6 +549,7 @@ Type: separator; Caption: "'.$mysqlParamsNotOnOff[$action]['title'].'"
 			else
 				$quoted = 'noquotes';
 			foreach($c_values as $value) {
+				if($value == $mysqlini[$action]) continue;
 				$text = ($mysqlParamsNotOnOff[$action]['title'] == 'Number' ? " - ".$mysqlParamsNotOnOff[$action]['text'][$value] : "");
 				$MenuSup[$i] .= 'Type: item; Caption: "'.$value.$text.'"; Action: multi; Actions: '.$action.$value.'
 ';
@@ -559,10 +567,7 @@ Type: separator; Caption: "'.$mysqlParamsNotOnOff[$action]['title'].'"
 [${action}${value}]
 Action: service; Service: ${c_mysqlService}; ServiceAction: stop; Flags: waituntilterminated
 Action: run; FileName: "${c_phpRun}";Parameters: "changeMysqlParam.php ${quoted} ${action} ${param_value}${param_third}";WorkingDir: "${c_installDir}/scripts"; Flags: waituntilterminated
-Action: run; FileName: "${c_phpCli}";Parameters: "refresh.php";WorkingDir: "${c_installDir}/scripts"; Flags: waituntilterminated
-Action: run; FileName: "CMD"; Parameters: "/D /C net start ${c_mysqlService}"; ShowCmd: hidden; Flags: waituntilterminated
-Action: resetservices
-Action: readconfig
+Action: multi; Actions: mysql_refresh_start; Flags:appendsection
 
 EOF;
 			}
@@ -573,16 +578,16 @@ EOF;
 $mysqlConfText .= $mysqlConfTextInfo.$mysqlConfForInfo;
 
 foreach ($params_for_mysqlini as $paramname=>$paramstatus) {
-	if($params_for_mysqlini[$paramname] == 1 || $params_for_mysqlini[$paramname] == 0) {
-		$SwitchAction = ($params_for_mysqlini[$paramname] == 1 ? 'off' : 'on');
+	if($params_for_mysqlini[$paramname] == '1' || $params_for_mysqlini[$paramname] == '0' || $params_for_mysqlini[$paramname] == 'on' || $params_for_mysqlini[$paramname] == 'off') {
+		if($params_for_mysqlini[$paramname] == '1' || $params_for_mysqlini[$paramname] == '0')
+			$SwitchAction = ($params_for_mysqlini[$paramname] == '1' ? '0' : '1');
+		else
+			$SwitchAction = ($params_for_mysqlini[$paramname] == 'on' ? 'off' : 'on');
   	$mysqlConfText .= <<< EOF
 [${mysqlParams[$paramname]}]
 Action: service; Service: ${c_mysqlService}; ServiceAction: stop; Flags: waituntilterminated
 Action: run; FileName: "${c_phpCli}";Parameters: "switchMysqlParam.php ${mysqlParams[$paramname]} ${SwitchAction}";WorkingDir: "${c_installDir}/scripts"; Flags: waituntilterminated
-Action: run; FileName: "${c_phpCli}";Parameters: "refresh.php";WorkingDir: "${c_installDir}/scripts"; Flags: waituntilterminated
-Action: run; FileName: "CMD"; Parameters: "/D /C net start ${c_mysqlService}"; ShowCmd: hidden; Flags: waituntilterminated
-Action: resetservices
-Action: readconfig
+Action: multi; Actions: mysql_refresh_start; Flags:appendsection
 
 EOF;
 	}

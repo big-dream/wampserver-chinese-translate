@@ -1,4 +1,6 @@
 <?php
+//3.2.9 - PHP parameters deprecated, suppressed or new since PHP version
+//        Options to choose 'default-storage-engine' MySQL and MariaDB
 
 if(!defined('WAMPTRACE_PROCESS')) require 'config.trace.php';
 if(WAMPTRACE_PROCESS) {
@@ -30,6 +32,7 @@ $c_wampVersion = $wampConf['wampserverVersion'];
 $wamp_versions_here += array('wamp_update' => $c_wampVersion);
 $c_wampMode = $wampConf['wampserverMode'];
 $c_wampserverID = ($c_wampMode == '32bit') ? '{wampserver32}' : '{wampserver64}';
+$c_wampserverBase = 'TWFkZSBpbiBGcmFuY2UgYnkgRG9taW5pcXVlIE90dGVsbG8=';
 $c_navigator = $wampConf['navigator'];
 $c_wampVersionInstall = 'unknown';
 $c_wampVersionUpdate = '';
@@ -268,6 +271,7 @@ $phpParams = array (
 	'request_order',
 	'session.save_path',
 	'short_open_tag',
+	'track_errors',
 	'upload_max_filesize',
 	'upload_tmp_dir',
 	'variables_order',
@@ -359,7 +363,7 @@ $phpParamsNotOnOff = array(
 		'change' => true,
 		'title' => 'xDebug Mode',
 		'quoted' => false,
-		'values' => array('off', 'develop', 'coverage', 'debug', 'gcstats', 'profile', 'trace', 'develop,debug'),
+		'values' => array('off', 'develop', 'coverage', 'debug', 'gcstats', 'profile', 'trace'),
 		),
 	'xdebug.overload_var_dump' => array('change' => false),
 	'xdebug.log_level' => array(
@@ -371,9 +375,18 @@ $phpParamsNotOnOff = array(
 	),
 );
 //PHP parameters that doesn't support Apache Graceful Restart but only Apache Service Restart
-$phpParamsNotGraceful = array(
-	'xdebug.', //All xdebug parameters
+$phpParamsApacheRestart = array(
+	'xdebug.mode',
+	'xdebug.remote_enable',
+	'xdebug.profiler_enable',
+	'xdebug.profiler_enable_trigger',
+	'xdebug.show_local_vars',
+	'xdebug.log_level',
 );
+
+//PHP parameters Deprecated, Suppressed or New since version
+//Load $phpParamDepSupNew array
+include 'phpParamDSN.php';
 
 // Extensions can not be loaded by extension =
 // for example zend_extension
@@ -388,23 +401,26 @@ $zend_extensions = array(
 	);
 
 //MySQL parameters
+// All parameters must be defined with underscores (_) and not dashes (-)
 $mysqlParams = array (
 	'basedir',
 	'datadir',
 	'key_buffer_size',
-	'lc-messages',
+	'lc_messages',
 	'log_error_verbosity',
 	'max_allowed_packet',
-	'innodb-lock-wait-timeout',
-	'innodb-buffer-pool-size',
-	'innodb-log-file-size',
-	'innodb-default-row-format',
+	'default_storage_engine',
+	'innodb_lock_wait_timeout',
+	'innodb_buffer_pool_size',
+	'innodb_log_file_size',
+	'innodb_default_row_format',
+	'innodb_strict_mode',
 	'myisam_sort_buffer_size',
 	'query_cache_size',
-	'sql-mode',
+	'sql_mode',
 	'sort_buffer_size',
 	'prompt',
-	'skip-grant-tables',
+	'skip_grant_tables',
 	'table_definition_cache',
 	'default_authentication_plugin',
 	'local_infile',
@@ -429,7 +445,7 @@ $mysqlParamsNotOnOff = array(
 		'quoted' => false,
 		'values' => array('16M', '32M', '64M', 'Choose'),
 		),
-	'lc-messages' => array(
+	'lc_messages' => array(
 		'change' => false,
 		'msg' => "\nTo set the Error Message Language see:\n\nhttp://dev.mysql.com/doc/refman/5.7/en/error-message-language.html\n",
 		),
@@ -446,25 +462,31 @@ $mysqlParamsNotOnOff = array(
 		'quoted' => false,
 		'values' => array('16M', '32M', '64M', 'Choose'),
 		),
-	'innodb-lock-wait-timeout' => array(
+	'default_storage_engine' => array(
+		'change' => true,
+		'title' => 'Text',
+		'quoted' => false,
+		'values' => array('MYISAM','InnoDB'),
+		),
+	'innodb_lock_wait_timeout' => array(
 		'change' => true,
 		'title' => 'Seconds',
 		'quoted' => false,
 		'values' => array('20', '30', '50', '120', 'Choose'),
 		),
-	'innodb-buffer-pool-size' => array(
+	'innodb_buffer_pool_size' => array(
 		'change' => true,
 		'title' => 'Size',
 		'quoted' => false,
 		'values' => array('16M', '32M', '64M', '128M', '256M', 'Choose'),
 		),
-	'innodb-log-file-size' => array(
+	'innodb_log_file_size' => array(
 		'change' => true,
 		'title' => 'Size',
 		'quoted' => false,
 		'values' => array('4M', '8M', '16M', '32M', '64M', 'Choose'),
 		),
-	'innodb-default-row-format' => array(
+	'innodb_default_row_format' => array(
 		'change' => true,
 		'title' => 'Text',
 		'quoted' => false,
@@ -482,7 +504,7 @@ $mysqlParamsNotOnOff = array(
 		'quoted' => false,
 		'values' => array('4M', '8M', '16M', 'Choose'),
 		),
-	'sql-mode' => array(
+	'sql_mode' => array(
 		'change' => true,
 		'title' => 'Special',
 		'quoted' => true,
@@ -501,9 +523,9 @@ $mysqlParamsNotOnOff = array(
 		'change' => false,
 		'msg' => "\nTo set the table_definition_cache see:\n\nhttps://dev.mysql.com/doc/refman/8.0/en/server-system-variables.html#sysvar_table_definition_cache\n",
 		),
-	'skip-grant-tables' => array(
+	'skip_grant_tables' => array(
 		'change' => false,
-		'msg' => "\n\nWARNING!! WARNING!!\nMySQL my.ini file directive 'skip-grant tables' is uncommented\nThis option causes the server to start without using the privilege system at all,\nWHICH GIVES ANYONE WITH ACCESS TO THE SERVER UNRESTRICTED ACCESS TO ALL DATABASES.\nThis option also causes the server to suppress during its startup sequence the loading of:\nuser-defined functions (UDFs), scheduled events, and plugins that were installed.\n\nYou should leave this option 'uncommented' ONLY for the time required\nto perform certain operations such as the replacement of a lost password for 'root'.\n",
+		'msg' => "\n\nWARNING!! WARNING!!\nMySQL my.ini file directive 'skip_grant tables' is uncommented\nThis option causes the server to start without using the privilege system at all,\nWHICH GIVES ANYONE WITH ACCESS TO THE SERVER UNRESTRICTED ACCESS TO ALL DATABASES.\nThis option also causes the server to suppress during its startup sequence the loading of:\nuser-defined functions (UDFs), scheduled events, and plugins that were installed.\n\nYou should leave this option 'uncommented' ONLY for the time required\nto perform certain operations such as the replacement of a lost password for 'root'.\n",
 		),
 	'default_authentication_plugin' => array('change' => false,),
 	'local_infile' => array('change' => false,
@@ -513,23 +535,26 @@ $mysqlParamsNotOnOff = array(
 );
 
 //MariaDB parameters
+// All parameters must be defined with underscores (_) and not dashes (-)
 $mariadbParams = array (
 	'basedir',
 	'datadir',
 	'key_buffer_size',
-	'lc-messages',
+	'lc_messages',
 	'log_warnings',
 	'max_allowed_packet',
-	'innodb-lock-wait-timeout',
-	'innodb-buffer-pool-size',
-	'innodb-default-row-format',
-	'innodb-log-file-size',
+	'default_storage_engine',
+	'innodb_lock_wait_timeout',
+	'innodb_buffer_pool_size',
+	'innodb_default_row_format',
+	'innodb_log_file_size',
+	'innodb_strict_mode',
 	'myisam_sort_buffer_size',
 	'query_cache_size',
-	'sql-mode',
+	'sql_mode',
 	'sort_buffer_size',
 	'prompt',
-	'skip-grant-tables',
+	'skip_grant_tables',
 	'secure_file_priv',
 );
 //MariaDB parameters with values not On or Off cannot be switched on or off
@@ -551,7 +576,7 @@ $mariadbParamsNotOnOff = array(
 		'quoted' => false,
 		'values' => array('16M', '32M', '64M', '128M', '256M', 'Choose'),
 		),
-	'lc-messages' => array(
+	'lc_messages' => array(
 		'change' => false,
 		'msg' => "\nTo set the Error Message Language see:\n\nhttps://mariadb.com/kb/en/mariadb/server-system-variables/#lc_messages\n",
 		),
@@ -569,25 +594,31 @@ $mariadbParamsNotOnOff = array(
 		'quoted' => false,
 		'values' => array('16M', '32M', '64M', 'Choose'),
 		),
-	'innodb-lock-wait-timeout' => array(
+	'default_storage_engine' => array(
+		'change' => true,
+		'title' => 'Text',
+		'quoted' => false,
+		'values' => array('MYISAM','InnoDB'),
+		),
+	'innodb_lock_wait_timeout' => array(
 		'change' => true,
 		'title' => 'Seconds',
 		'quoted' => false,
 		'values' => array('20', '30', '50', '120', 'Choose'),
 		),
-	'innodb-buffer-pool-size' => array(
+	'innodb_buffer_pool_size' => array(
 		'change' => true,
 		'title' => 'Size',
 		'quoted' => false,
 		'values' => array('16M', '32M', '64M', '128M', '256M', 'Choose'),
 		),
-	'innodb-log-file-size' => array(
+	'innodb_log_file_size' => array(
 		'change' => true,
 		'title' => 'Size',
 		'quoted' => false,
 		'values' => array('4M', '8M', '16M', '32M', '64M', 'Choose'),
 		),
-	'innodb-default-row-format' => array(
+	'innodb_default_row_format' => array(
 		'change' => true,
 		'title' => 'Text',
 		'quoted' => false,
@@ -611,7 +642,7 @@ $mariadbParamsNotOnOff = array(
 		'quoted' => false,
 		'values' => array('4M', '8M', '16M', 'Choose'),
 		),
-	'sql-mode' => array(
+	'sql_mode' => array(
 		'change' => true,
 		'title' => 'Special',
 		'quoted' => 'true',
@@ -622,10 +653,10 @@ $mariadbParamsNotOnOff = array(
 		'quoted' => false,
 		'values' => array('2M', '4M', '16M', 'Choose'),
 		),
-	'skip-grant-tables' => array(
+	'skip_grant_tables' => array(
 		'change' => false,
-		'msg' => "\n\nWARNING!! WARNING!!\nmariaDB my.ini file directive 'skip-grant tables' is uncommented\nThis option causes the server to start without using the privilege system at all,\nWHICH GIVES ANYONE WITH ACCESS TO THE SERVER UNRESTRICTED ACCESS TO ALL DATABASES.\nThis option also causes the server to suppress during its startup sequence the loading of:\nuser-defined functions (UDFs), scheduled events, and plugins that were installed.\n\nYou should leave this option 'uncommented' ONLY for the time required\nto perform certain operations such as the replacement of a lost password for 'root'.\n"),
-		'secure_file_priv' => array(
+		'msg' => "\n\nWARNING!! WARNING!!\nmariaDB my.ini file directive 'skip_grant_tables' is uncommented\nThis option causes the server to start without using the privilege system at all,\nWHICH GIVES ANYONE WITH ACCESS TO THE SERVER UNRESTRICTED ACCESS TO ALL DATABASES.\nThis option also causes the server to suppress during its startup sequence the loading of:\nuser-defined functions (UDFs), scheduled events, and plugins that were installed.\n\nYou should leave this option 'uncommented' ONLY for the time required\nto perform certain operations such as the replacement of a lost password for 'root'.\n"),
+	'secure_file_priv' => array(
 		'change' => false,
 		'msg' => "\nsecure_file_priv: LOAD DATA, SELECT ... INTO and LOAD FILE() will only work with files in the specified path.\nIf not set, the default, or set to empty string, the statements will work with any files that can be accessed."),
 );
@@ -635,6 +666,7 @@ $mariadbParamsNotOnOff = array(
 // Needs $w_settings['parameter'] in wamp\lang\modules\settings_english.php
 // #  	At the beginning = Separator only
 // ##   	               = Separator + SubMenu
+// #-                    = Separator no Caption + Submenu
 // ###  	               = Last item in SubMenu
 $wamp_Param = array(
 	'VirtualHostSubMenu',
@@ -662,7 +694,7 @@ $wamp_Param = array(
 	'AutoCleanLogsMin',
 	'AutoCleanTmp',
 	'###AutoCleanTmpMax',
-	'##DaredevilOptions',
+	'#-DaredevilOptions',
 	'NotVerifyPATH',
 	'NotVerifyTLD',
 	'NotVerifyHosts',
@@ -755,10 +787,10 @@ $apacheParamsDefault = array(
 	'ThreadLimit' => 1920,
 );
 
-// BigMenu -> Aestan Tray Menu column menus since 3.2.2.6
-// Meaning of the items in the order:
-// 1 = Name of menu (Caption), 2 = number of items by column, 3 =separator 0 or 1
-// Items 1 & 2 may be a variable
+/* BigMenu -> Aestan Tray Menu column menus since 3.2.2.6
+   Meaning of the items in the order:
+   1 = Name of menu (Caption), 2 = number of items by column, 3 =separator 0 or 1
+   Items 1 & 2 may be a variable name into single quote (not array) */
 $AesBigMenu = array(
 	array('$w_apacheModules','$NBmodApacheLines',1),
 	array('Africa',18,1),
@@ -770,44 +802,96 @@ $AesBigMenu = array(
 	array('$w_phpExtensions','$NBextPHPlines',1),
 );
 
-// TextMenus -> Aestan Tray Menu text menu items since 3.2.2.9
-// Font size, color since 3.2.3.0
-// Meaning of the items in the order:
-// Indice 0 : Submenu Name -+- Indice 1 Caption submenu
-// Indice 2 : Type 0=info 1=custom 2=Warning 3=Confirm 4=Error
-// Indice 3 : Font size -+- Indice 4 : Font color RGB delphi mode (Example $00D77800)
-// Indice 5 : Background color -+- Indice 6 : Title
-// Indice 7 : Text = only one line (Write \r\n for line feed)
-//   End-of-line and comma conversions (#13 for line feed ; &#44; for comma)
-//   are done by the php script refresh.php
-// Indice 8 : number of characters per line max (wordwrap) 0 = no limit
-// Indice 9 : indice of Glyph - -1 for none
-// ----------
-// All indices except Type, Font size, Font color, Background color and WordWrap
-//     may be variable names into single quotes
-// Indice 7 may be the concatenation of the contents of several variables
-//          in which case it must be an array of variable names into single quotes
+/* TextMenus -> Aestan Tray Menu text menu items since 3.2.2.9
+   Font size, color since 3.2.3.0
+   Meaning of the items in the order:
+   Indice 0 : Submenu Name -+- Indice 1 Caption submenu
+   Indice 2 : Type 0=info 1=custom 2=Warning 3=Confirm 4=Error
+   Indice 3 : Font size -+- Indice 4 : Font color RGB delphi mode (Example $D77800)
+   Indice 5 : Background color -+- Indice 6 : Title
+   Indice 7 : Text = only one line (Write \r\n for line feed)
+     End-of-line and comma conversions (#13 for line feed ; &#44; for comma)
+     are done by the php script refresh.php
+   Indice 8 : number of characters per line max (wordwrap) 0 = no limit
+   Indice 9 : indice of Glyph - -1 for none
+   ----------
+   All indices except Type, Font size, Font color, Background color and WordWrap
+       may be variable names into single quotes (not array) like '$w_mysql_mode'
+   Indice 7 may be the concatenation of the contents of several variables
+            in which case it must be an array of variable names into single quotes */
 $AesTextMenus = array(
 	// Add Apache, PHP, MySQL, MariaDB, etc. versions.
-	array('AddingVersions','$w_addingVer',0,10,'$00000000','$00EEEEEE','$w_addingVer','$w_addingVerTxt',96,22),
-	array('mysql-mode','$w_mysql_mode',0,10,'$00000000','$00EEEEEE','$w_mysql_mode','$w_MySQLsqlmodeInfo',96,22),
-	array('phpmyadmin-help','$w_phpMyAdminHelp',0,10,'$00000000','$00EEEEEE','$w_phpMyAdminHelp',array('$w_PhpMyAdMinHelpTxt','$w_PhpMyAdminBigFileTxt'),112,22),
-	array('apacherestore-help','$w_apache_restore',2,10,'$00000000','$00EEEEEE','$w_apache_restore','$w_ApacheRestoreInfo',96,23),
-	array('apachecompare-help','$w_apache_compare',2,10,'$00000000','$00EEEEEE','$w_apache_compare','$w_ApacheCompareInfo',96,23),
-	array('refresh-restart-help','$w_Refresh_Restart',0,10,'$00000000','$00EEEEEE','$w_Refresh_Restart','$w_Refresh_Restart_Info',96,22),
+	array('AddingVersions','$w_addingVer',0,10,'$000000','$EEEEEE','$w_addingVer','$w_addingVerTxt',96,22),
+	array('mysql_mode','$w_mysql_mode',0,10,'$000000','$EEEEEE','$w_mysql_mode','$w_MySQLsqlmodeInfo',96,22),
+	array('phpmyadmin-help','$w_phpMyAdminHelp',0,10,'$000000','$EEEEEE','$w_phpMyAdminHelp',array('$w_PhpMyAdMinHelpTxt','$w_PhpMyAdminBigFileTxt'),112,22),
+	array('apacherestore-help','$w_apache_restore',2,10,'$000000','$EEEEEE','$w_apache_restore','$w_ApacheRestoreInfo',96,23),
+	array('apachecompare-help','$w_apache_compare',2,10,'$000000','$EEEEEE','$w_apache_compare','$w_ApacheCompareInfo',96,23),
+	array('refresh-restart-help','$w_Refresh_Restart',0,10,'$000000','$EEEEEE','$w_Refresh_Restart','$w_Refresh_Restart_Info',96,22),
 );
 
-// PromptCustom -> Aestan Tray Menu Variable type prompt since 3.2.3.0
-// Section [PromptCustom] Name PromptKeyx=
-// Indices = 0 : Prompt Name, 1 : Font Size, 2 : Background Color
-//           3 : Font Color,  4 : Value BackGround Color, 5 : Value Text Color
-// Example : PromptKey1=Prompt1,12,$00D77800,$00FCFDFE,$00FFFFFF,$000000FF
-// PromptKey0 are default values for all Prompt
-// PromptKey0=Default,12,$00EEEEEE,$00000000
+/* TextMenuColor -> Aestan Tray Menu since 3.2.4.6
+   Meaning of the items in the order:
+   Indice 0 : Caption text to find, case sensitive.
+   Indice 1 : Background color gradient start
+   Indice 2 : Background color gradient end
+   Indice 3 : Text color
+   Indice 4 : Text style. 0 none ; 1 bold ; 2 italic ; 3 bold italic
+   Example : TextKeyColor0=[FCGI,$EEEEEE,$EEEEEF,$FF0000,2
+   Indice 0 may be variable name (not array) into single quotes like '$w_restartDNS'
+            may be array index without simple quotes in index like
+            '$w_settings[DaredevilOptions]' or '$myarray[56]' */
+
+$AesTextMenuColor = array(
+	array('[FCGI-','$F8F8F8','$F8F8F7','$FF0000',2),
+	array('[IDNA-','$F8F8F8','$F8F8F7','$FF0000',2),
+	array('[HTTPS]','$F8F8F8','$F8F8F7','$FF0000',2),
+	array('[FCGI - CLI]','$F8F8F8','$F8F8F7','$FF0000',0),
+	array('$w_settings[DaredevilOptions]','$FFFFFF','$FFFFFE','$0000FF',0),
+	array('$w_apache_restore','$FFFFFF','$EEEEEE','$FF0000',2),
+	array('$w_apache_compare','$FFFFFF','$EEEEEE','$FF0000',2),
+	array('$w_startedOn','$F2A626','$C57F0B','$FFFFFF',0),
+	array('$w_ApacheCompiledIn','$EEEEEE','$EEEEEF','$FF0000',0),
+	array('$w_mod_not_disable','$F8F8F8','$F8F8F7','$FF0000',0),
+	array('$w_ApacheDoesNotIf','$F8F8F8','$F8F8F7','$FF0000',0),
+);
+
+/* SeparatorMenuColor -> Aestan Tray Menu since 3.2.4.7
+   Different for Left and Right menu
+   Meaning of the itmes in the order:
+   Indice 0 : Caption text to find, case sensitive.
+   Indice 1 : Background color gradient start
+   Indice 2 : Background color gradient end
+   Indice 3 : Text color
+   Indice 4 : Text style. 0 none ; 1 bold ; 2 italic ; 3 bold italic
+   Indice 5 : Font name
+   Indice 6 : Font size
+   Example : LeftSeparatorKeyColor0=Text to show,$EEEEEE,$EEEEED,$FF0000,2,Tahoma,10
+             RightSeparatorKeyColor0=Text to show,$EEEEEE,$EEEEED,$FF0000,2,Tahoma,10
+   Indice 0 may be variable name (not array) into single quotes like '$w_restartDNS'
+            may be array index without simple quotes in index like
+            '$w_settings[DaredevilOptions]' or '$myarray[56]' */
+$AesSeparatorLeftMenuColor = array(
+	array('Wampserver -','$F2A626','$C57F0B','$FFFFFF',0,'Arial',11),
+	array('$w_noDBMS','$F1F1F1','$F1F1F0','$000000',2,'Arial',10),
+	array('$w_NoDefaultDBMS','$BBBBFF','$BBBBFE','$000000',0,'Arial',10),
+	array('$w_warning','$BBBBFF','$BBBBFE','$000000',0,'Arial',10),
+);
+$AesSeparatorRightMenuColor = array(
+	array('Wampserver -','$F2A626','$C57F0B','$FFFFFF',0,'Arial',11),
+);
+
+/* PromptCustom -> Aestan Tray Menu Variable type prompt since 3.2.3.0
+   Section [PromptCustom] Name PromptKeyx=
+   Indices = 0 : Prompt Name, 1 : Font Size, 2 : Background Color
+             3 : Font Color,  4 : Value BackGround Color, 5 : Value Text Color
+   Example : PromptKey1=Prompt1,12,$D77800,$FCFDFE,$FFFFFF,$0000FF
+   PromptKey0 are default values for all Prompt
+   PromptKey0=Default,12,$EEEEEE,$000000
+   Indice 0 may be variable name (not array) into single quotes like '$w_restartDNS' */
 $AesPromptCustom = array(
-	array('Default',10,'$00EEEEEE','$00000000','$00FFFFFF','$000000FF'),
-	array('MariaUser',10,'$00FFFFF0','$00890000','$00FFFFFF','$000000FF'),
-	array('MysqlUser',10,'$00FFFFF0','$00890000','$00FFFFFF','$000000FF'),
+	array('Default',10,'$EEEEEE','$000000','$FFFFFF','$0000FF'),
+	array('MariaUser',10,'$FFFFF0','$890000','$FFFFFF','$0000FF'),
+	array('MysqlUser',10,'$FFFFF0','$890000','$FFFFFF','$0000FF'),
 );
 
 ?>

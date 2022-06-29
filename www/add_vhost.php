@@ -276,7 +276,18 @@ if(isset($_POST['vhostmodify'])
 				if(preg_match('~^[ \t]*<Directory.*"(.*)">.*\r?$~mi',$VhostToMod['original'],$matches) === 1) {
 					$VhostToMod['directory'] = $matches[1];
 				}
+				//Does this VirtualHost use https ?
+				if(in_array($VhostToMod['name'], $virtualHost['ServerNameHttps'])) {
+					$httpdsslFileContents = file_get_contents($c_apacheConfDir.'/extra/httpd-ssl.conf');
+					//Extract Define SERVERNAMEVHOSTSSL ServerName </VirtualHost>
+					$mask = "~^Define SERVERNAMEVHOSTSSL ${p_value}.*?</VirtualHost>\r?$~mis";
+					if(preg_match($mask,$httpdsslFileContents,$matches) === 1) {
+						$VhostToMod['originalhttps'] = $matches[0];
+					}
+				}
+				//error_log("VhostToMod=\n".print_r($VhostToMod,true));
 				$serialModify = json_encode($VhostToMod);
+				unset($myVhostsContents,$httpdsslFileContents);
 			}
 		}
 	}
@@ -319,7 +330,7 @@ if(isset($_POST['submit'])
 	&& isset($_POST['addmodify'])) {
 	if(strip_tags(trim($_POST['addmodify'])) == 'modify') { //Modify VirtualHost
 		//Modify VirtualHost - add FCGI mode - change FCGI PHP version - Suppress FCGI mode
-		$VhostModified = false;
+		$VhostModified = $VhostHttpsModified = false;
 		$vh_name = strip_tags(trim($_POST['vh_name']));
 		$vh_fcgi_on = false;
 		$vh_fcgi_php = '';
@@ -350,6 +361,23 @@ if(isset($_POST['submit'])
 							}
 						}
 					}
+					//Change FCGI PHP version in HTTPS
+					if(!empty($VhostToMod['originalhttps'])) {
+						//Get line Define FCGIPHPVERSION "x.y.z"
+						if(preg_match('~^\s*Define\s+FCGIPHPVERSION\s+"([0-9.]+)"\r?$~mi',$VhostToMod['originalhttps'],$matches) === 1){
+							if($matches[1] == $VhostToMod['fcgi']) {
+								$count = $counts = 0;
+								$VhostToMod['newphp'] = str_replace($VhostToMod['fcgi'],$vh_fcgi_php,$matches[0],$count);
+								$counts += $count;
+								$VhostToMod['newhttps'] = str_replace($matches[0],$VhostToMod['newphp'],$VhostToMod['originalhttps'],$count);
+								$counts += $count;
+								if($counts == 2) {
+									$VhostToMod['newhttps'] = clean_string_var($VhostToMod['newhttps']);
+									$VhostHttpsModified = true;
+								}
+							}
+						}
+					}
 				}
 			}
 			else {
@@ -372,6 +400,15 @@ EOFFCGIPHP;
 						$VhostToMod['new'] = clean_string_var($VhostToMod['new']);
 						$VhostModified = true;
 					}
+					if(!empty($VhostToMod['originalhttps'])) {
+						if(preg_match('~^\s*\</VirtualHost\>\r?$~mi',$VhostToMod['originalhttps'],$matches) === 1) {
+							$VhostToMod['newhttps'] = str_replace($matches[0],$httpd_vhosts_fcgi.$matches[0],$VhostToMod['originalhttps'],$count);
+							if($count > 0) {
+								$VhostToMod['newhttps'] = clean_string_var($VhostToMod['newhttps']);
+								$VhostHttpsModified = true;
+							}
+						}
+					}
 				}
 			}
 		}
@@ -385,18 +422,38 @@ EOFFCGIPHP;
 						$VhostToMod['new'] = clean_string_var($VhostToMod['new']);
 						$VhostModified = true;
 					}
+					if(!empty($VhostToMod['originalhttps'])) {
+						if(preg_match('~^[ \t]*\<IfModule fcgid_module\>.*\</IfModule\>\r?$~ism',$VhostToMod['originalhttps'],$matches) === 1) {
+							$VhostToMod['newhttps'] = str_replace($matches[0],'',$VhostToMod['originalhttps'],$count);
+							if($count > 0 ) {
+								$VhostToMod['newhttps'] = clean_string_var($VhostToMod['newhttps']);
+								$VhostHttpsModified = true;
+							}
+						}
+					}
 				}
 			}
 		}
-		if($VhostModified) {
-			$httpVhostsContents = file_get_contents($c_apacheVhostConfFile);
-			$httpVhostsContents = str_replace($VhostToMod['original'],$VhostToMod['new'],$httpVhostsContents,$count);
-			if($count > 0) {
-				if(write_file($c_apacheVhostConfFile,$httpVhostsContents)) {
-					$message_ok = '<p class="ok">'.sprintf($langues['VirtualCreated'],$VhostToMod['name']).'</p>';
-					$message_ok .= '<p class="ok_plus">'.$langues['However'].'</p>';
-					$vhost_created = true;
+		if($VhostModified || $VhostHttpsModified) {
+			$count = $counts = 0;
+			if($VhostModified) {
+				$httpVhostsContents = file_get_contents($c_apacheVhostConfFile);
+				$httpVhostsContents = str_replace($VhostToMod['original'],$VhostToMod['new'],$httpVhostsContents,$count);
+				if($count > 0) {
+					if(write_file($c_apacheVhostConfFile,$httpVhostsContents)) $counts++;
 				}
+			}
+			if($VhostHttpsModified) {
+				$httpdsslFileContents = file_get_contents($c_apacheConfDir.'/extra/httpd-ssl.conf');
+				$httpdsslFileContents = str_replace($VhostToMod['originalhttps'],$VhostToMod['newhttps'],$httpdsslFileContents,$count);
+				if($count > 0) {
+					if(write_file($c_apacheConfDir.'/extra/httpd-ssl.conf',$httpdsslFileContents)) $counts++;
+				}
+			}
+			if($counts > 0) {
+				$message_ok = '<p class="ok">'.sprintf($langues['VirtualCreated'],$VhostToMod['name']).'</p>';
+				$message_ok .= '<p class="ok_plus">'.$langues['However'].'</p>';
+				$vhost_created = true;
 			}
 		}
 		else {
@@ -752,7 +809,7 @@ if($virtualHost['nb_Server'] > 0) {
 			$ip = " - VirtualHost ip = <span style='color:blue;'>".$virtualHost['virtual_ip'][$i].'</span>';
 		$UrlPortVH = ($virtualHost['ServerNamePort'][$value] != '80') ? " - Port = <span style='color:red;'>".$virtualHost['ServerNamePort'][$value]."</span>" : "";
 		$value_url = ((strpos($value, ':') !== false) ? strstr($value,':',true) : $value);
-		$value_aff = $value_fcgi = '';
+		$value_aff = $value_fcgi = $value_https = '';
 		$new_line = false;
 		if($virtualHost['ServerNameIDNA'][$value] === true) {
 			$value_aff .= "<br>";
@@ -763,14 +820,20 @@ if($virtualHost['nb_Server'] > 0) {
 		if(isset($c_ApacheDefine['PHPROOT']) && $virtualHost['ServerNameFcgid'][$value] === true){
 			if(!$new_line) {
 				$value_aff .= "<br>";
+				$new_line = true;
 				$nbVhostLines++;
 			}
 			$value_aff .= "<span class='greenpad'><small>FCGI -> PHP ".$virtualHost['ServerNameFcgidPHP'][$value].'</small></span>';
 			$value_fcgi .= "<br><span class='greenpad'><small>FCGI -> PHP ".$virtualHost['ServerNameFcgidPHP'][$value].'</small></span>';
 		}
 		if($virtualHost['ServerNameFcgid'][$value] === true && $virtualHost['ServerNameFcgidPHPOK'][$value] !== true) {
-			if(!$new_line) $value_aff .= "<br>";
+			if(!$new_line) {$value_aff .= "<br>";;$new_line=true;}
 			$value_aff .= "<span style='color:red;padding-left:1em;'><small>FCGI -> PHP ".$virtualHost['ServerNameFcgidPHP'][$value].' - '.$langues['phpNotExists'].'</small></span>';
+		}
+		if(in_array($value,$virtualHost['ServerNameHttps'])) {
+			if(!$new_line) {$value_aff .= "<br>";$new_line=true;}
+			$value_aff .= "<span class='greenpad'><small>HTTPS</small></span>";
+			$value_https .= "<br><span class='greenpad'><small>HTTPS</small></span>";
 		}
 		if($virtualHost['ServerNameValid'][$value] === false)
 			$VhostDefine .= "<li><i>ServerName : </i><span style='color:red;'>".$value." - ServerName syntax error</span></li>\n";
@@ -780,7 +843,7 @@ if($virtualHost['nb_Server'] > 0) {
 			}
 		if($value != 'localhost') {
 			$VhostDelete .= "<li><i>ServerName : </i><input type='checkbox' name='virtual_del[]' value='".$value."'/> <span style='color:blue;'>".$value."</span></li>\n";
-			$VhostModify .= "<li><i>ServerName : </i><input type='radio' name='virtual_modify' value='".$value."'/> <span style='color:blue;'>".$value.$value_fcgi."</span></li>\n";
+			$VhostModify .= "<li><i>ServerName : </i><input type='radio' name='virtual_modify' value='".$value."'/> <span style='color:blue;'>".$value.$value_fcgi.$value_https."</span></li>\n";
 		}
 		$i++;
 	}

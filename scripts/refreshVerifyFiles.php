@@ -243,12 +243,23 @@ if(!$mod_fcgid_exists && $copy_OK) {
 	$httpdFileContents = str_replace('#LoadModule fcgid_module modules/mod_fcgid.so','LoadModule fcgid_module modules/mod_fcgid.so',$httpdFileContents,$count);
 	$counts += $count;
 }
+
+//Verify PHPIniDir "${APACHE_DIR}/bin into httpd.conf
+if(strpos($httpdFileContents,'PHPIniDir "${APACHE_DIR}/bin"') === false) {
+	$insert = 'PHPIniDir "${APACHE_DIR}/bin"
+';
+	$replace = 'LoadModule php';
+	$httpdFileContents = str_replace($replace,$insert.$replace,$httpdFileContents,$count);
+	$counts += $count;
+}
+
 if($counts > 0) {
 	if(WAMPTRACE_PROCESS) error_log("write ".$c_apacheConfFile." in ".__FILE__." line ". __LINE__."\n",3,WAMPTRACE_FILE);
  	write_file($c_apacheConfFile,$httpdFileContents);
 }
 
 //Retrieve Apache variables from file wamp(64)\bin\apache\apache2.4.xx\wampdefineapache.conf
+$w_wampbase = base64_decode($c_wampserverBase);
 $c_ApacheDefine = retrieve_apache_define($c_apacheDefineConf);
 //Retrieve Apache variables from Apache itself (Define)
 $c_ApacheDefineVerif = retrieve_apache_define($c_apacheDefineConf,true);

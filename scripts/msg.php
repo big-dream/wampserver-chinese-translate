@@ -13,7 +13,7 @@ if(WAMPTRACE_PROCESS) {
 require 'config.inc.php';
 require 'wampserver.lib.php';
 
-if(is_numeric($msgId) && $msgId > 0 && $msgId < 17) {
+if(is_numeric($msgId) && $msgId > 0 && $msgId < 18) {
 	$msgExtName = '';
 	if($nb_arg >= 2)
 		$msgExtName = base64_decode($_SERVER['argv'][2]);
@@ -50,7 +50,8 @@ if(is_numeric($msgId) && $msgId > 0 && $msgId < 17) {
  14 => "To have the VirtualHost, the line:\n\n#Include conf/extra/httpd-vhosts.conf\n\nmust be uncommented in httpd.conf file",
  15 => "The file:\n\n".$msgExtName."\n\ndoes not exists.",
  16 => "The line 'zend_extension=".$msgExtName.".dll' exists in php.ini file but there is no ".$msgExtName.".dll' file",
-	);
+ 17 => "PHP Directive: ".$msgExtName." should not be used.\n\n".$msgExplain."\n",
+);
 
 function message_add(&$array) {
 	$array = $array."\nPress ENTER to continue ";
@@ -243,8 +244,8 @@ elseif(is_string($msgId)) {
 		foreach($apacheVersionList as $oneApache) {
     	$oneApacheVersion = str_ireplace('apache','',$oneApache);
 			echo "Apache ".$oneApacheVersion." to check\n";
-    	$pos = strrpos($oneApacheVersion,'.');
-    	$apacheVersion[] = substr($oneApacheVersion,0,$pos);
+    	//First three characters i.e 2.4
+    	$apacheVersion[] = substr($oneApacheVersion,0,3);
     	$apacheVersionTot[] = $oneApacheVersion;
 			unset($result);
 			$command = 'CMD /D /C '.$c_apacheVersionDir.'/apache'.$oneApacheVersion.'/'.$wampConf['apacheExeDir'].'/'.$wampConf['apacheExeFile'].' -V';
@@ -686,7 +687,11 @@ elseif(is_string($msgId)) {
 	}
 	elseif($msgId == "phploadedextensions") {
 		Command_Windows("Show PHP Loaded Extensions",40,30,0,'Show PHP Loaded Extensions');
-		$message['phpLoadedExtensions'] = GetPhpLoadedExtensions($c_phpVersion, 6, false, $doReport);
+		$php_version_ext = $c_phpVersion;
+		if(isset($_SERVER['argv'][2]) && strpos($_SERVER['argv'][2],'FCGI') !== false) {
+			$php_version_ext = str_replace('FCGI','',$_SERVER['argv'][2]);
+		}
+		$message['phpLoadedExtensions'] = GetPhpLoadedExtensions($php_version_ext, 6, false, $doReport);
 		$message_title = "PHP Loaded Extensions";
 		$msg_index = 'phpLoadedExtensions';
 		$complete_result = $message['phpLoadedExtensions'];

@@ -1,11 +1,12 @@
 <?php
+// 3.2.9 - Alias view modified (PhpMyAdmin not compat)
 
 // Page created by Shepard [Fabian Pijcke] <Shepard8@laposte.net>
 // Arno Esterhuizen <arno.esterhuizen@gmail.com>
 // and Romain Bourdon <rromain@romainbourdon.com>
 // and Hervé Leclerc <herve.leclerc@alterway.fr>
 // Icons by Mark James <http://www.famfamfam.com/lab/icons/silk/>
-// Version 2.5 -> 3.2.8 by Dominique Ottello alias Otomatic
+// Version 2.5 -> 3.2.9 by Dominique Ottello alias Otomatic
 
 $server_dir = "../";
 
@@ -402,6 +403,10 @@ if($VirtualHostMenu == "on") {
 								$vhostErrorCorrected = false;
 								$error_message[] = '<b>Error</b> --- VirtualHost '.$value.' - Fast CGI PHP '.$virtualHost['ServerNameFcgidPHP'][$value].' - '.$langues['phpNotExists'];
 							}
+							if(in_array($value,$virtualHost['ServerNameHttps'])) {
+								$value_aff .= "<p style='margin:-11px 0 -2px 25px;color:green;'><small>HTTPS </small></p>";
+								$nbVirtualHostLines++;
+							}
 							$vhostsContents .= '<li><a href="http://'.$value_url.$UrlPortVH.'">'.$value_link.'</a>'.$value_aff.'</li>';
 						}
 					}
@@ -563,7 +568,6 @@ if($wampConf['ScrollListsHomePage'] == 'on') {
 $phpini = strtolower(trim(str_replace("\\","/",php_ini_loaded_file())));
 $c_phpConfFileOri = strtolower($c_phpVersionDir.'/php'.$wampConf['phpVersion'].'/'.$phpConfFileForApache);
 $c_phpCliConf = strtolower($c_phpVersionDir.'/php'.$wampConf['phpVersion'].'/'.$wampConf['phpConfFile']);
-
 if($phpini != strtolower($c_phpConfFile) && $phpini != $c_phpConfFileOri) {
 	$error_content .= "<p style='color:red;'>*** ERROR *** The PHP configuration loaded file is: ".$phpini." - should be: ".$c_phpConfFile." or ".$c_phpConfFileOri;
 	$error_content .= "<br>You must perform: <span style='color:green;'>Right-click icon Wampmanager -> Refresh</span><br>";
