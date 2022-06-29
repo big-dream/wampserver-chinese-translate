@@ -29,6 +29,8 @@
 // 3.2.7 $w_showExcludedPorts
 // 3.2.8 $w_phpNotExists - LinksOnProjectsHomeByIp - CheckVirtualHost - $w_PHPversionsUse - $w_All_Versions
 //       $w_settings 	ScrollListsHomePage
+// 3.2.9 $w_phpparam_obs - $w_ApacheCompiledIn - $w_ApacheDoesNotIf - $w_mod_not_disable
+//       $w_NoDefaultDBMS
 
 // 项目子菜单
 $w_projectsSubMenu = '项目列表';
@@ -86,9 +88,9 @@ $w_settings = array(
     'apacheRestoreFiles' => '允许恢复 Apache 文件',
     'apacheGracefulRestart' => '允许 Apache 平滑重启',
     'LinksOnProjectsHomePage' => '允许链接到项目主页',
-	'LinksOnProjectsHomeByIp' => 'Link on projects by \'local link IP\'',
+	'LinksOnProjectsHomeByIp' => '通过本地 IP 链接项目',
     'apachePhpCurlDll' => '允许 Apache 使用 PHP 中的 libcrypto-*.dll 和 libssl-*.dll',
-	'ScrollListsHomePage' => 'Allow scrolling of lists on home page',
+	'ScrollListsHomePage' => '允许在主页上滚动列表',
 );
 
 // 右键子菜单-工具
@@ -125,6 +127,7 @@ $w_addingVer = '添加 Apache, PHP, MySQL, MariaDB 等版本';
 $w_deleteListenPort = '删除 Apache 监听端口';
 $w_delete = '删除';
 $w_defaultDBMS = '默认 DBMS:';
+$w_NoDefaultDBMS = '默认 DBMS : 无';
 $w_invertDefault = '调换默认 DBMS ';
 $w_changeCLI = '更改 PHP CLI 版本';
 $w_reinstallServices = '重新安装所有服务';
@@ -149,6 +152,7 @@ $w_phpparam_info = '仅供参考';
 $w_ext_nodll = '无 dll 文件';
 $w_ext_noline = "无 'extension='";
 $w_mod_fixed = "固定模块";
+$w_mod_not_disable = "不可禁用模块";
 $w_no_module = '无模块文件';
 $w_no_moduleload = "无 'LoadModule'";
 $w_mysql_none = "none";
@@ -162,8 +166,11 @@ $w_Size = "大小";
 $w_Time = "时间";
 $w_Integer = "整数数值";
 $w_phpMyAdminHelp = "PHPMyAdmin 帮助";
-$w_phpNotExists = 'PHP version doesn\'t exist';
-$w_All_Versions = 'All versions';
+$w_phpNotExists = 'PHP 版本不存在';
+$w_All_Versions = '所有版本';
+$w_phpparam_obs = '废弃 | 删除 | 新 的设置';
+$w_ApacheCompiledIn = '内置模块';
+$w_ApacheDoesNotIf = '不需要 <IfModule ModName>.';
 
 // Aestan Tray 菜单 PromptText 的 输入提示
 // 换行符请使用 \r\n
