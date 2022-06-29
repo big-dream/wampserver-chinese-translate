@@ -2,6 +2,7 @@
 // 3.2.5 - documentation-of added for languages requiring it
 // for English is identical to documentation
 // 3.2.6 - txtNoHosts
+// 3.2.8 - phpNotExists - txtProjectsLink -	phpExtensions - phpVersionsUse
 
 $langues = array(
     'langue' => '中文',
@@ -25,13 +26,14 @@ $langues = array(
     'txtProjet' => '你的项目',
     'txtNoProjet' => '尚无项目<br/>如果想创建项目，可以在“wamp/www”目录下创建一个文件夹',
     'txtProjects' => '这些都是“%s”目录下的文件夹。<br />如果你想通过域名直接访问这些文件夹，你需要将这些文件夹在“httpd-vhost.conf”里将它们定义为虚拟主机',
+	'txtProjectsLink' =>'但是，你可以在“右键菜单 - Wamp设置 - 风险项”中开启“允许链接到项目主页”',
     'txtAlias' => '你的别名',
     'txtNoAlias' => '尚无别名<br />如果想创建别名，可以在“wamp/alias”目录下创建',
     'txtVhost' => '你的虚拟主机',
     'txtServerName' => '主机名 %s 存在语法错误，文件：%s',
     'txtDocRoot' => '%s 域名使用了 %s 目录，此目录应该保留给 localhost',
     'txtTLDdev' => '%s 使用了 %s 顶级域，该顶级域被浏览器做了强制策略，不适合用来本地使用！请使用其它顶级域，例如：.test',
-    'txtNoHosts' => 'The ServerName %s is not defined into hosts file.',
+    'txtNoHosts' => '域名 %s 未在 hosts 文件中定义.',
     'txtServerNameIp' => 'IP %s 无效，主机名： %s ，文件： %s',
     'txtVhostNotClean' => '%s 文件尚未清理，里面还包含一些虚拟主机配置示例，例如: dummy-host.example.com',
     'txtNoVhost' => '还没有虚拟主机，您可以在 wamp/bin/apache/apache%s/conf/extra/httpd-vhosts.conf 文件里添加一个',
@@ -49,6 +51,9 @@ $langues = array(
     'mysqlportUsed' => 'MySQL 端口：',
     'mariaportUsed' => 'MariaDB 端口：',
     'defaultDBMS' => '默认DBMS',
+	'phpNotExists' => 'PHP 版本不存在',
     'HelpMySQLMariaDB' => '如何使用 MySQL 和 MariaDB?<br>什么是默认数据库管理系统?<br>如何更改默认数据库管理系统?<br>可以阅读我们的相关帮助信息: 右键单击 Wampmanager 图标 -> 帮助 -> MariaDB - MySQL',
     'nolocalhost' => '最好在 wamp/bin/apache/apache%s/conf/extra/httpd-vhosts.conf 文件里定义虚拟主机而不是在网址中使用 localhost 目录',
-);
+    'phpExtensions' => '已加载 PHP 扩展',
+    'phpVersionsUse' => '使用的 PHP 版本',
+	);
