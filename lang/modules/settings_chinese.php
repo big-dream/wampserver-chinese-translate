@@ -26,6 +26,13 @@
 //       $w_settings 	apacheCompareVersion - apacheRestoreFiles - apacheGracefulRestart - LinksOnProjectsHomePage
 //                    ApacheWampParams - apachePhpCurlDll
 //       Suppress : $w_enterServiceNameApache - $w_enterServiceNameMysql - $w_enterServiceNameAll
+// 3.2.7 $w_showExcludedPorts
+// 3.2.8 $w_phpNotExists - LinksOnProjectsHomeByIp - CheckVirtualHost - $w_PHPversionsUse - $w_All_Versions
+//       $w_settings 	ScrollListsHomePage
+// 3.2.9 $w_phpparam_obs - $w_ApacheCompiledIn - $w_ApacheDoesNotIf - $w_mod_not_disable
+//       $w_NoDefaultDBMS
+// 3.3.0 $w_settings Browser BrowserChange
+// Suppress apachePhpCurlDll
 
 // 项目子菜单
 $w_projectsSubMenu = '项目列表';
@@ -54,6 +61,7 @@ $w_settings = array(
     'HomepageAtStartup' => '启动时打开主页',
     'MenuItemOnline' => '显示切换在线/离线菜单',
     'ItemServicesNames' => '工具菜单项: 更改服务名称',
+    'CheckVirtualHost' => 'Check VirtualHost definitions',
     'NotCheckVirtualHost' => '不检查虚拟主机是否已定义',
     'NotCheckDuplicate' => '不检查 ServerName 是否重复',
     'VhostAllLocalIp' => '允许在虚拟主机中使用本地IP（非 127.* ）',
@@ -82,7 +90,10 @@ $w_settings = array(
     'apacheRestoreFiles' => '允许恢复 Apache 文件',
     'apacheGracefulRestart' => '允许 Apache 平滑重启',
     'LinksOnProjectsHomePage' => '允许链接到项目主页',
-    'apachePhpCurlDll' => '允许 Apache 使用 PHP 中的 libcrypto-*.dll 和 libssl-*.dll',
+    'LinksOnProjectsHomeByIp' => 'Link on projects by \'local link IP\'',
+    'ScrollListsHomePage' => 'Allow scrolling of lists on home page',
+    'WampserverBrowser' => 'Wampserver browser',
+    'BrowserChange' => 'Set Wampserver browser',
 );
 
 // 右键子菜单-工具
@@ -98,6 +109,7 @@ $w_vhostConfig = '显示 Apache 中有效的虚拟主机';
 $w_apacheLoadedModules = '显示 Apache 已加载的模块';
 $w_apacheLoadedIncludes = '显示 Apache 已加载的额外配置文件';
 $w_apacheDefineVariables = '显示 Apache 变量 (已定义)';
+$w_showExcludedPorts = 'Show the ports excluded by the system';
 $w_testAliasDir = '检查别名（Alias）与目录的关联';
 $w_verifyxDebugdll = '检查未使用的 xDebug 扩展 dll';
 $w_empty = '清空';
@@ -118,6 +130,7 @@ $w_addingVer = '添加 Apache, PHP, MySQL, MariaDB 等版本';
 $w_deleteListenPort = '删除 Apache 监听端口';
 $w_delete = '删除';
 $w_defaultDBMS = '默认 DBMS:';
+$w_NoDefaultDBMS = 'Default DBMS : none';
 $w_invertDefault = '调换默认 DBMS ';
 $w_changeCLI = '更改 PHP CLI 版本';
 $w_reinstallServices = '重新安装所有服务';
@@ -133,6 +146,7 @@ $w_restore = '重置';
 $w_checkUpdates = '检查更新';
 $w_apacheTools = 'Apache 工具';
 $w_PHPloadedExt = '显示 PHP 已加载扩展';
+$w_PHPversionsUse = 'Show the use of PHP versions';
 
 // 杂项
 $w_ext_spec = '专用扩展';
@@ -141,6 +155,7 @@ $w_phpparam_info = '仅供参考';
 $w_ext_nodll = '无 dll 文件';
 $w_ext_noline = "无 'extension='";
 $w_mod_fixed = "固定模块";
+$w_mod_not_disable = "These modules should not be disabled";
 $w_no_module = '无模块文件';
 $w_no_moduleload = "无 'LoadModule'";
 $w_mysql_none = "none";
@@ -154,6 +169,11 @@ $w_Size = "大小";
 $w_Time = "时间";
 $w_Integer = "整数数值";
 $w_phpMyAdminHelp = "PHPMyAdmin 帮助";
+$w_phpNotExists = 'PHP version doesn\'t exist';
+$w_All_Versions = 'All versions';
+$w_phpparam_obs = 'Settings Depreciated | Deleted | New';
+$w_ApacheCompiledIn = 'Built-in modules';
+$w_ApacheDoesNotIf = 'Do not require <IfModule ModName>.';
 
 // Aestan Tray 菜单 PromptText 的 输入提示
 // 换行符请使用 \r\n

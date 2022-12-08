@@ -2,6 +2,8 @@
 // 3.2.5 - documentation-of added for languages requiring it
 // for English is identical to documentation
 // 3.2.6 - txtNoHosts
+// 3.2.8 - phpNotExists - txtProjectsLink -	phpExtensions - phpVersionsUse
+// 3.3.0 - txtPathNoSlash
 
 $langues = array(
     'langue' => '中文',
@@ -25,8 +27,9 @@ $langues = array(
     'txtProjet' => '你的项目',
     'txtNoProjet' => '尚无项目<br/>如果想创建项目，可以在“wamp/www”目录下创建一个文件夹',
     'txtProjects' => '这些都是“%s”目录下的文件夹。<br />如果你想通过域名直接访问这些文件夹，你需要将这些文件夹在“httpd-vhost.conf”里将它们定义为虚拟主机',
+    'txtProjectsLink' =>'However, you can use Right-Click, Wamp Settings, Warning: risky..., Allow links on projects...',
     'txtAlias' => '你的别名',
-    'txtNoAlias' => '尚无别名<br />如果想创建别名，可以在“wamp/alias”目录下创建',
+    'txtNoAlias' => '尚无别名<br />可以在菜单里创建一个新的',
     'txtVhost' => '你的虚拟主机',
     'txtServerName' => '主机名 %s 存在语法错误，文件：%s',
     'txtDocRoot' => '%s 域名使用了 %s 目录，此目录应该保留给 localhost',
@@ -38,6 +41,7 @@ $langues = array(
     'txtNoIncVhost' => '请在 wamp/bin/apache/apache%s/conf/httpd.conf 文件添加 <i>Include conf/extra/httpd-vhosts.conf</i> 配置项，或取消该项的注释',
     'txtNoVhostFile' => '文件“ %s ”不存在',
     'txtNoPath' => '路径%s不存在，定义自%s（文件：%s）',
+    'txtPathNoSlash' => 'The path %s for %s is not ended with a slash /',
     'txtNotWritable' => '文件（%s）不可写',
     'txtNbNotEqual' => '%s 的数量与 %s 的数量不匹配，文件：%s',
     'txtAddVhost' => '添加一个虚拟主机',
@@ -49,6 +53,9 @@ $langues = array(
     'mysqlportUsed' => 'MySQL 端口：',
     'mariaportUsed' => 'MariaDB 端口：',
     'defaultDBMS' => '默认DBMS',
+    'phpNotExists' => 'PHP version doesn\'t exist',
     'HelpMySQLMariaDB' => '如何使用 MySQL 和 MariaDB?<br>什么是默认数据库管理系统?<br>如何更改默认数据库管理系统?<br>可以阅读我们的相关帮助信息: 右键单击 Wampmanager 图标 -> 帮助 -> MariaDB - MySQL',
     'nolocalhost' => '最好在 wamp/bin/apache/apache%s/conf/extra/httpd-vhosts.conf 文件里定义虚拟主机而不是在网址中使用 localhost 目录',
+    'phpExtensions' => 'Loaded PHP extensions',
+    'phpVersionsUse' => 'Use of PHP versions',
 );

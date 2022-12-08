@@ -7,15 +7,20 @@
 //3.1.1   $w_cmdWindows - $w_mysqlCommand - $w_mariadbCommand - $w_apacheCommand - $w_services_msc
 //3.2.0		$w_helpForums - $w_helpUse
 //3.2.1   $w_apacheSettings - $w_apacheDefaults
-//3.2.2 $w_helpFile modified
-//3.2.6 $w_startedOn - $w_restartWamp - $w_phpCommand
+//3.2.2   $w_helpFile modified
+//3.2.6   $w_startedOn - $w_restartWamp - $w_phpCommand
+//3.2.7   $w_changelog - $w_warning
+//        --- Suppress: $w_putOnline - $w_putOffline
+//3.2.9   $w_startOfServices - $w_servicesStarted - $w_bepatient - $w_ready - $w_state_services
+//      --- Suppress: $w_serverOffline - $w_serverOnline
+//3.3.0   $w_waitConfig - $file_charset
+
+$file_charset = 'GB2312';
 
 $w_allServicesRunning = '所有服务正常运行中';
 $w_oneServiceRunning = '%n / %t 个服务正在运行';
 $w_allServicesStopped = '%t 个服务都没有运行';
-
-$w_serverOffline = '服务器离线(本机模式)';
-$w_serverOnline = '服务器在线(开放模式)';
+$w_state_services = 'Right-Click -> Tools -> Check state of services';
 
 $w_about = '关于...';
 $w_helpFile = '文件 & 文档';
@@ -52,8 +57,6 @@ $w_mariadbDoc = 'MariaDB '.$w_doc;
 $w_startServices = '启动所有服务';
 $w_stopServices = '停止所有服务';
 $w_restartServices = '重新启动所有服务';
-$w_putOnline = '切换到在线状态';
-$w_putOffline = '切换到离线状态';
 // Format ICU from https://unicode-org.github.io/icu/userguide/format_parse/datetime/#date-field-symbol-table
 // be careful
 $w_FormatDate = "Y-MM-dd HH:mm z";
@@ -63,6 +66,7 @@ $w_restartWamp = '重启(并清除DNS缓存和日志)';
 $w_apacheErrorLog = $w_apache . ' 错误日志';
 $w_apacheAccessLog = $w_apache . ' 访问日志';
 $w_phpLog = 'PHP 错误日志';
+$w_changelog ='Changelog';
 $w_phpDoc = 'PHP '.$w_doc;
 $w_mysqlLog = 'MySQL 日志';
 $w_mariadbLog = 'MariaDB 日志';
@@ -90,5 +94,11 @@ $w_mariadbCommand = '在 ' . $w_cmdWindows . ' 打开 MariaDB/bin 目录';
 $w_noDBMS = '无数据库管理系统（DBMS）';
 
 $w_language = '语言';
+
+$w_startOfServices = 'Start services';
+$w_servicesStarted = 'Services started';
+$w_bepatient = 'Be patient !';
+$w_ready = 'Ready !';
+$w_waitConfig = 'Update settings !';
 
 ?>
