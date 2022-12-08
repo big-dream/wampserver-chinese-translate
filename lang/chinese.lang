@@ -20,7 +20,7 @@ $file_charset = 'GB2312';
 $w_allServicesRunning = '所有服务正常运行中';
 $w_oneServiceRunning = '%n / %t 个服务正在运行';
 $w_allServicesStopped = '%t 个服务都没有运行';
-$w_state_services = 'Right-Click -> Tools -> Check state of services';
+$w_state_services = '右键单击 -> 工具 -> 检查服务状态';
 
 $w_about = '关于...';
 $w_helpFile = '文件 & 文档';
@@ -62,11 +62,12 @@ $w_restartServices = '重新启动所有服务';
 $w_FormatDate = "Y-MM-dd HH:mm z";
 $w_startedOn = '启动时间: ';
 $w_restartWamp = '重启(并清除DNS缓存和日志)';
+$w_warning = '警告 !';
 
 $w_apacheErrorLog = $w_apache . ' 错误日志';
 $w_apacheAccessLog = $w_apache . ' 访问日志';
 $w_phpLog = 'PHP 错误日志';
-$w_changelog ='Changelog';
+$w_changelog ='更新日志';
 $w_phpDoc = 'PHP '.$w_doc;
 $w_mysqlLog = 'MySQL 日志';
 $w_mariadbLog = 'MariaDB 日志';
@@ -95,10 +96,10 @@ $w_noDBMS = '无数据库管理系统（DBMS）';
 
 $w_language = '语言';
 
-$w_startOfServices = 'Start services';
-$w_servicesStarted = 'Services started';
-$w_bepatient = 'Be patient !';
-$w_ready = 'Ready !';
-$w_waitConfig = 'Update settings !';
+$w_startOfServices = '启动服务中';
+$w_servicesStarted = '服务已启动';
+$w_bepatient = '请稍后...';
+$w_ready = '完成 !';
+$w_waitConfig = '更新设置...';
 
 ?>
