@@ -91,12 +91,12 @@ $w_settings = array(
     'apacheCompareVersion' => '允许比较 Apache 设置',
     'apacheRestoreFiles' => '允许恢复 Apache 文件',
     'apacheGracefulRestart' => '允许 Apache 平滑重启',
-    'LinksOnProjectsHomePage' => '允许链接到项目主页',
-    'LinksOnProjectsHomeByIp' => 'Link on projects by \'local link IP\'',
-    'ScrollListsHomePage' => 'Allow scrolling of lists on home page',
-    'WampserverBrowser' => 'Wampserver browser',
-    'BrowserChange' => 'Set Wampserver browser',
-    'httpsReady' => 'Wampserver ready to support https',
+    'LinksOnProjectsHomePage' => '允许项目链接到主页',
+    'LinksOnProjectsHomeByIp' => '通过本地 IP 链接项目',
+    'ScrollListsHomePage' => '启用主页上项目列表滚动',
+    'WampserverBrowser' => 'Wampserver 浏览器',
+    'BrowserChange' => '设置 Wampserver 浏览器',
+    'httpsReady' => '支持 HTTPS',
 );
 
 // 右键子菜单-工具
@@ -112,7 +112,7 @@ $w_vhostConfig = '显示 Apache 中有效的虚拟主机';
 $w_apacheLoadedModules = '显示 Apache 已加载的模块';
 $w_apacheLoadedIncludes = '显示 Apache 已加载的额外配置文件';
 $w_apacheDefineVariables = '显示 Apache 变量 (已定义)';
-$w_showExcludedPorts = 'Show the ports excluded by the system';
+$w_showExcludedPorts = '显示系统占用的端口';
 $w_testAliasDir = '检查别名（Alias）与目录的关联';
 $w_verifyxDebugdll = '检查未使用的 xDebug 扩展 dll';
 $w_empty = '清空';
@@ -149,7 +149,7 @@ $w_restore = '重置';
 $w_checkUpdates = '检查更新';
 $w_apacheTools = 'Apache 工具';
 $w_PHPloadedExt = '显示 PHP 已加载扩展';
-$w_PHPversionsUse = 'Show the use of PHP versions';
+$w_PHPversionsUse = '显示使用的 PHP 版本';
 
 // 杂项
 $w_ext_spec = '专用扩展';
@@ -158,7 +158,7 @@ $w_phpparam_info = '仅供参考';
 $w_ext_nodll = '无 dll 文件';
 $w_ext_noline = "无 'extension='";
 $w_mod_fixed = "固定模块";
-$w_mod_not_disable = "These modules should not be disabled";
+$w_mod_not_disable = "不能禁用的模块";
 $w_no_module = '无模块文件';
 $w_no_moduleload = "无 'LoadModule'";
 $w_mysql_none = "none";
@@ -172,16 +172,16 @@ $w_Size = "大小";
 $w_Time = "时间";
 $w_Integer = "整数数值";
 $w_phpMyAdminHelp = "PHPMyAdmin 帮助";
-$w_wampHttpsHelp = 'Wampserver HTTPS mode help';
-$w_phpNotExists = 'PHP version doesn\'t exist';
-$w_All_Versions = 'All versions';
-$w_phpparam_obs = 'Settings Depreciated | Deleted | New';
-$w_ApacheCompiledIn = 'Built-in modules';
-$w_ApacheDoesNotIf = 'Do not require <IfModule ModName>.';
-$w_PhpMyAdminGoHidedb = 'Hide native databases';
-$w_PhpMyAdminGoNoPassword = 'Allow connection without password';
-$w_ConvertHttps = 'HTTPS mode for VirtualHost';
-$w_MariaDBMySQLHelp = 'Help MariaDB - MySQL';
+$w_wampHttpsHelp = 'HTTPS 模式帮助';
+$w_phpNotExists = 'PHP 版本不存在';
+$w_All_Versions = '所有版本';
+$w_phpparam_obs = '弃用 | 已删除 | 新 的设置';
+$w_ApacheCompiledIn = '内置模块';
+$w_ApacheDoesNotIf = '不需要 <IfModule ModName>.';
+$w_PhpMyAdminGoHidedb = '隐藏原生数据库';
+$w_PhpMyAdminGoNoPassword = '允许无密码连接';
+$w_ConvertHttps = 'VirtualHost 的 HTTPS 模式';
+$w_MariaDBMySQLHelp = 'MariaDB/MySQL 帮助';
 
 // Aestan Tray 菜单 PromptText 的 输入提示
 // 换行符请使用 \r\n
