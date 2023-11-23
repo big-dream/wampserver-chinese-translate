@@ -14,6 +14,7 @@
 //3.2.9   $w_startOfServices - $w_servicesStarted - $w_bepatient - $w_ready - $w_state_services
 //      --- Suppress: $w_serverOffline - $w_serverOnline
 //3.3.0   $w_waitConfig - $file_charset
+//3.3.2 --- Modified $w_helpForums
 
 $file_charset = 'GB2312';
 

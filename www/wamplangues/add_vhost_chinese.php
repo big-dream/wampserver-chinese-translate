@@ -9,13 +9,13 @@
 //  modified: VirtualHostPort (%s replaced by below ) - Start - VirtualCreated - However - HoweverWamp
 //  array $langues_help added.
 //3.3.0 - Modification of lines FcgidInitialEnv
+//3.3.2 - Suppress $langues[''VirtualSubMenuOn']
 
 $langues = array(
     'langue' => '简体中文',
     'locale' => 'chinese',
     'addVirtual' => '添加虚拟主机',
     'backHome' => '返回首页',
-    'VirtualSubMenuOn' => '必须将 <code>Wampmanager右键菜单</code> - <code>Wamp设置</code> - <code>显示虚拟主机菜单</code> 勾选上，然后重新加载本页面才能正常使用',
     'UncommentInclude' => '取消 %s 文件 <code>#Include conf/extra/httpd-vhosts.conf</code> 内容的注释 <small>(删除 # 符号)</small>',
     'FileNotExists' => '文件 <code>%s</code> 不存在',
     'txtTLDdev' => '主机名 %s 使用了 %s 顶级域，该顶级域被浏览器做了强制策略，不适合用来本地使用！请使用其它顶级域，例如：.test',

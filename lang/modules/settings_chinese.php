@@ -32,7 +32,10 @@
 // 3.2.9 $w_phpparam_obs - $w_ApacheCompiledIn - $w_ApacheDoesNotIf - $w_mod_not_disable
 //       $w_NoDefaultDBMS
 // 3.3.0 $w_settings Browser BrowserChange
-// Suppress apachePhpCurlDll
+//       Suppress apachePhpCurlDll
+// 3.3.2 $w_PhpMyAdminGoHidedb - $w_PhpMyAdminGoNoPassword - $w_ConvertHttps - $w_wampHttpsHelp - $w_wampHttpsHelpTxt
+//       $w_MariaDBMySQLHelp - $w_MariaDBMySQLHelpTxt - $w_settings httpsReady
+//       suppress $w_settings['ShowphmyadMenu']
 
 // 项目子菜单
 $w_projectsSubMenu = '项目列表';
@@ -68,7 +71,6 @@ $w_settings = array(
     'SupportMySQL' => '启用 MySQL',
     'SupportMariaDB' => '启用 MariaDB',
     'DaredevilOptions' => '更改下列值有风险，不熟悉者勿改！',
-    'ShowphmyadMenu' => '显示 PHPMyAdmin 菜单',
     'ShowadminerMenu' => '显示 Adminer 菜单',
     'mariadbUseConsolePrompt' => '修改默认的 MariaDB 控制台提示',
     'mysqlUseConsolePrompt' => '修改默认的 MySQL 控制台提示',
@@ -94,6 +96,7 @@ $w_settings = array(
     'ScrollListsHomePage' => 'Allow scrolling of lists on home page',
     'WampserverBrowser' => 'Wampserver browser',
     'BrowserChange' => 'Set Wampserver browser',
+    'httpsReady' => 'Wampserver ready to support https',
 );
 
 // 右键子菜单-工具
@@ -169,11 +172,16 @@ $w_Size = "大小";
 $w_Time = "时间";
 $w_Integer = "整数数值";
 $w_phpMyAdminHelp = "PHPMyAdmin 帮助";
+$w_wampHttpsHelp = 'Wampserver HTTPS mode help';
 $w_phpNotExists = 'PHP version doesn\'t exist';
 $w_All_Versions = 'All versions';
 $w_phpparam_obs = 'Settings Depreciated | Deleted | New';
 $w_ApacheCompiledIn = 'Built-in modules';
 $w_ApacheDoesNotIf = 'Do not require <IfModule ModName>.';
+$w_PhpMyAdminGoHidedb = 'Hide native databases';
+$w_PhpMyAdminGoNoPassword = 'Allow connection without password';
+$w_ConvertHttps = 'HTTPS mode for VirtualHost';
+$w_MariaDBMySQLHelp = 'Help MariaDB - MySQL';
 
 // Aestan Tray 菜单 PromptText 的 输入提示
 // 换行符请使用 \r\n
@@ -220,4 +228,7 @@ $w_PhpMyAdminBigFileTxt = "\r\n-- 导入大文件\r\n导入大文件时，可能会超出最大内存
 $w_ApacheRestoreInfo = "--- 恢复 Apache 文件\r\n从 Apache 2.4.41 开始，在完成安装时，会复制 httpd.conf 和 httpd-vhosts.conf 文件到备份文件夹中。\r\n如果 Apache 出现问题或不需要的修改，你可以将这两个还原回去。\r\n当前，这么操作之后，你可能会丢失安装之后所修改的配置。";
 $w_ApacheCompareInfo = "--- Comparing Apache versions\r\nIf you have at least two versions of Apache, you have the possibility to compare the current version with a previous version.\r\nThe following are compared:\r\n- LoadModule\r\n- Include\r\n- httpd-vhosts.conf files\r\n- httpd-ssl.conf files\r\n- openssl.cnf files\r\n- Presence and content of the Certs folder\r\nYou have the possibility to copy the configuration of an old version on the current version.\r\n*** WARNING *** No backups will be made, it is your responsibility to make backups BEFORE copying the configurations.";
 $w_Refresh_Restart_Info = "--- Differences between '".$w_refresh."' and '".$w_restartWamp."'\r\n-- ".$w_refresh.":\r\n- Performs various checks,\r\n- Rereads the configuration files of Wampserver, Apache, PHP, MySQL and MariaDB,\r\n- Modifies the Wampmanager configuration file accordingly and updates the menus,\r\n- Performs a 'Graceful Restart Apache',\r\n- Reloads the Aestan Tray menu.\r\nThere is no interruption of the Apache, PHP, MySQL and MariaDB connections.\r\n\r\n-- ".$w_restartWamp.":\r\n- Stop the services :".$c_apacheService.", ".$c_mysqlService." and ".$c_mariadbService.",\r\n- Empty all the log files,\r\n- Empty the tmp folder,\r\n- Exit Wampserver,\r\n- Starts Wampserver 'normally'.\r\nThere is thus a total cut of the connections Apache, PHP, MySQL and MariaDB and put back in place these under other identifications";
+$w_wampHttpsHelpTxt = "-- Wampserver HTTPS mode\r\nBefore you can create an HTTPS VirtualHost, Wampserver must be able to support it.\r\nTo do this, you need to modify some files, add others and create certificates.\r\nThis preparation will be carried out automatically by validating the menu item, if it is not already checked:\r\n\r\n   Right-click -> Wamp settings -> Wampserver ready to support https\r\n\r\nOnce this has been done, the menu item will be checked and remain so.\r\n\r\n-- Switch a VirtualHost to HTTPS mode\r\nA VirtualHost in http mode must exist and be operational.\r\nVirtualHosts that can be switched to HTTPS mode are displayed in the menu:\r\n\r\n   Left-click -> Your VirtualHosts -> HTTPS mode for VirtualHost\r\n\r\nSimply click on the VirtualHost you want to convert to HTTPS mode.\r\n   That's all there is to it!\r\n\r\n- Browser warning because self-signed certificate.\r\n-- Mozilla Firefox\r\nWarning: probable security risk\r\nAdvanced button: Error code: SEC_ERROR_UNKNOWN_ISSUER\r\nValidate: Accept risk and continue.\r\n-- Opera\r\nYour connection is not private\r\nNET::ERR_CERT_AUTHORITY_INVALID\r\nValidate: Help me understand\r\nValidate: Continue on site name (dangerous)\r\n-- Chrome\r\nYour connection is not private\r\nNET::ERR_CERT_AUTHORITY_INVALID\r\nValidate : Advanced settings\r\nValidate : Continue to site site name (dangerous)\r\n-- Edge\r\nYour connection is not private\r\nNET::ERR_CERT_AUTHORITY_INVALID\r\nValidate : Advanced\r\nContinue to site name (not secure)\r\n\r\nOf course, in principle, this will only work if the 'Force strict https mode' or similar option is not enabled in the browser settings.";
+$w_MariaDBMySQLHelpTxt ="- 1 - MySQL and MariaDB\r\n- 2 - Database connection via MariaDB or MySQL\r\n- 3 - Replace the default DBMS MariaDB with MySQL and vice versa\r\n- 4 - Only one database manager - No DBMS manager\r\n- 5 - Default DBMS: none - /!\ No Default DBMS\r\n- 6 - PhpMyAdmin\r\n\r\n- 1 - MySQL and MariaDB\r\nMySQL has been supported since the beginning of Wampserver and MariaDB has been supported since Wampserver 3.0.8.\r\nFor SQL connections the default port is and always has been port 3306.\r\nBoth MySQL and MariaDB are installed by the full installer.\r\nDepending on the versions of the full installer of Wampserver you used, either MySQL or MariaDB will be the default database manager.\r\n- If MySQL is the default DBMS, it uses port 3306 and therefore MariaDB will use port 3307.\r\n- If MariaDB is the default DBMS, it uses port 3306 and therefore MySQL will use port 3308.\r\nThe default database manager is shown in the Left-Click menu of Wampmanager\r\n\r\n- 2 - Database connection via MariaDB or MySQL\r\nThe default Database manager port is 3306. Connections that do not specify the port number will always be on the default port.\r\nIf the database manager (MySQL or MariaDB) you want to use is not the default one, it is therefore imperative to specify the port number in connection requests since it will not be using the default port 3306. We repeat, without specifying the port, it will be the default port that will be used, so 3306.\r\nNormally, connection scripts do not mention the port to use. For example:\r\n\$mysqli = new mysqli('127.0.0.1', 'user', 'password', 'database');\r\nor, in procedural :\r\n\$mysqli = mysqli_connect('127.0.0.0.1', 'user', 'password', 'database');\r\n\r\nSo, to connect with a manager that doesn't use port 3306, you have to specify the port number on the connection request:\r\n\$mysqli = new mysqli('127.0.0.1', 'user', 'password', 'database', '3307');\r\nor, procedurally:\r\n\$mysqli = mysqli_connect('127.0.0.0.1', 'user', 'password', 'database', '3307');\r\n\r\nTo check the connections on the MySQL or MariaDB database manager, use the script:\r\nwamp(64)\www\testmysql.php\r\nby putting 'http://localhost/testmysql.php' in the browser address bar having first modified the script according to your parameters.\r\n\r\n- 3 - Replace the default DBMS MariaDB with MySQL and vice versa\r\nImportant note : If you want to move a database from MySQL to MariaDB or visa versa, it is IMPERATIVE to BACKUP your databases (phpMyAdmin -> EXPORT) in format - SQL before switching DBMS.\r\nThis is the only reliable way to transfer a database between MySQL and MariaDB.\r\n- There is a tool to reverse the default DBMS with one click if both are enabled (MySQL AND MariaDB):\r\n- If MySQL is the default DBMS\r\nRight-click Wampmanager icon -> Tools -> Invert default DBMS MySQL <-> MariaDB\r\nor\r\n- If MariaDB is the default DBMS\r\nRight-click Wampmanager icon -> Tools -> Invert default DBMS MariaDB <-> MySQL\r\nOf course, you still have to import your previously saved databases.\r\n\r\n- 4 - Only one database manager - No database manager\r\nYou don't have to keep both MySQL and MariaDB managers active, you can deactivate the one that you do not require. You can even disable both database managers completely if you wish :\r\nRight-Click Wampmanager Icon -> Wamp Settings -> Allow MariaDB to deactivate - removes the green Tick\r\nRight-Click Wampmanager Icon -> Wamp Settings -> Allow MySQL to deactivate - removes the green Tick\r\nYou can reactivate either of both at a leater date if you and when you want to. This does not uninstall the DBMS, it just unregisters the Windows Service for that DBMS.\r\n\r\n- 5 - Default DBMS : none - /!\ No Default DBMS\r\nThis means that none of the database managers (MariaDB and/or MySQL) use port 3306 and it is therefore imperative to specify the port number in connection requests since this is not the default port 3306.\r\nIt is then essential that you choose which DBMS you want to use by default; to do this, use the built-in tools (Right-click -> Tools) to assign port 3306 (Use a port other than xxxx) to the DBMS (MariaDB or MySQL) you want to set as default.\r\n\r\n- 6 - PhpMyAdmin\r\nPhpMyAdmin is configured to allow you access to either MySQL or MariaDB depending on which ones are active.\r\nIf both DBMS's are activated, you will see a dropdown on the Login screen, called \"Server Choice\", the default server will be shown first in the dropdown list. Select the DBMS you want to use here as part of the login process.\r\nREMEMBER, if you have different user accounts you must use the correct one for the selected DBMS.\r\nALSO: If you have the same account i.e. `root` on both DBMS's, if you have set different passwords, you need to use the right password for the account and DBMS.\r\n";
+
 ?>

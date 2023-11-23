@@ -4,6 +4,7 @@
 // 3.2.6 - txtNoHosts
 // 3.2.8 - phpNotExists - txtProjectsLink -	phpExtensions - phpVersionsUse
 // 3.3.0 - txtPathNoSlash
+// 3.3.2 - txtSlashEnd
 
 $langues = array(
     'langue' => '中文',
@@ -41,6 +42,7 @@ $langues = array(
     'txtNoIncVhost' => '请在 wamp/bin/apache/apache%s/conf/httpd.conf 文件添加 <i>Include conf/extra/httpd-vhosts.conf</i> 配置项，或取消该项的注释',
     'txtNoVhostFile' => '文件“ %s ”不存在',
     'txtNoPath' => '路径%s不存在，定义自%s（文件：%s）',
+    'txtSlashEnd' => 'The %s path for %s is terminated by a slash (File %s)',
     'txtPathNoSlash' => '路径 %s （%s） 要以 / 结尾',
     'txtNotWritable' => '文件（%s）不可写',
     'txtNbNotEqual' => '%s 的数量与 %s 的数量不匹配，文件：%s',
